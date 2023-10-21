@@ -19,7 +19,7 @@ const patientSchema = new Schema(
       type: String,
       required: true,
     },
-    birthdate: {
+    birthDate: {
       type: Date,
       required: true,
     },
@@ -27,15 +27,17 @@ const patientSchema = new Schema(
       type: String,
       required: true,
     },
-    mobile_number: {
+    mobileNumber: {
       type: String,
       required: true,
     },
-    emergency_contact: {
+    emergencyContact: {
       type: {
         name: String,
         mobile_number: String,
+        relation: String,
       },
+      required: true,
     },
   },
   { timestamps: true }

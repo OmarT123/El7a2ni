@@ -19,11 +19,11 @@ const doctorSchema = new Schema(
       type: String,
       required: true,
     },
-    birthdate: {
+    birthDate: {
       type: Date,
       required: true,
     },
-    hourly_rate: {
+    hourlyRate: {
       type: Number,
       required: true,
     },
@@ -31,7 +31,7 @@ const doctorSchema = new Schema(
       type: String,
       required: true,
     },
-    educational_background: {
+    educationalBackground: {
       type: [String],
       required: true,
     },
