@@ -6,6 +6,7 @@ const MongoURI = process.env.MONGO_URI;
 
 const app = express();
 const port = process.env.PORT || "8000";
+const { createFamilyMember } = require("./Routes/patientController");
 
 mongoose
   .connect(MongoURI)
@@ -16,3 +17,6 @@ mongoose
     });
   })
   .catch((err) => console.log(err));
+
+app.use(express.json());
+app.put("/addFamilyMember", createFamilyMember);
