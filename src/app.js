@@ -1,9 +1,10 @@
 const express = require("express");
 const mongoose = require("mongoose");
 mongoose.set("strictQuery", false);
+const {addDoctor} = require('./Routes/doctorController');
+
 require("dotenv").config();
 const MongoURI = process.env.MONGO_URI;
-
 const app = express();
 const port = process.env.PORT || "8000";
 
@@ -16,3 +17,5 @@ mongoose
     });
   })
   .catch((err) => console.log(err));
+  app.use(express.json())
+  app.post("/addDoctor", addDoctor);
