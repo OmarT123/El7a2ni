@@ -24,11 +24,6 @@ const familyMemberSchema = new Schema(
       type: String,
       required: true,
     },
-    patient: {
-      type: mongoose.Types.ObjectId,
-      ref: "Patient",
-      required: true,
-    },
   },
   { timestamps: true }
 );
