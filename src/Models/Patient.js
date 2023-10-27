@@ -39,6 +39,12 @@ const patientSchema = new Schema(
       },
       required: true,
     },
+    familyMembers: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "FamilyMember",
+      },
+    ],
   },
   { timestamps: true }
 );

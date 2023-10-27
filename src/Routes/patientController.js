@@ -1,5 +1,6 @@
+const familyModel = require("../Models/FamilyMember.js");
 const patientModel = require('../Models/Patient.js');
-const { default: mongoose } = require('mongoose');
+const { default: mongoose } = require("mongoose");
 
 const createPatient = async(req,res) => {
     const{username,name, email,password,birthDate,gender,mobileNumber,emergencyContact} = req.body;
@@ -10,4 +11,35 @@ const createPatient = async(req,res) => {
         res.status(400).json({error:error.message})
     }
 }
-module.exports = {createPatient}; // to export it
+
+const createFamilyMember = async (req, res) => {
+  try {
+    let patientId = req.query.id;
+    let name = req.body.name;
+    let nationalId = req.body.nationalId;
+    let age = req.body.age;
+    let gender = req.body.gender;
+    let relationToPatient = req.body.relationToPatient;
+    if (
+      relationToPatient !== "wife" &&
+      relationToPatient !== "husband" &&
+      relationToPatient !== "son" &&
+      relationToPatient !== "daughter"
+    )
+      throw "Relation to Patient should be wife/husband/son/daughter";
+    let familyMember = await familyModel.create({
+      name,
+      nationalId,
+      age,
+      gender,
+      relationToPatient,
+      patient: patientId,
+    });
+    await familyMember.save();
+    res.send(familyMember);
+  } catch (err) {
+    res.send(err);
+  }
+};
+
+module.exports = { createFamilyMember, createPatient };
