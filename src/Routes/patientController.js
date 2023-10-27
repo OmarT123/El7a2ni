@@ -1,4 +1,5 @@
 const familyModel = require("../Models/FamilyMember.js");
+const patientModel = require("../Models/Patient");
 const { default: mongoose } = require("mongoose");
 
 const createFamilyMember = async (req, res) => {
@@ -22,9 +23,13 @@ const createFamilyMember = async (req, res) => {
       age,
       gender,
       relationToPatient,
-      patient: patientId,
     });
+    const patient = await patientModel.findById(patientId);
+    if (!patient)
+      return res.status(403).send("No such patient found in the database.");
     await familyMember.save();
+    patient.familyMembers.push(familyMember.id);
+    await patient.save();
     res.send(familyMember);
   } catch (err) {
     res.send(err);
