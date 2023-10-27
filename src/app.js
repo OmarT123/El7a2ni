@@ -4,9 +4,11 @@ mongoose.set("strictQuery", false);
 require("dotenv").config();
 const MongoURI = process.env.MONGO_URI;
 
+const patient = require('./Models/Patient');
+const {createPatient,createFamilyMember}= require('./Routes/patientController')
+
 const app = express();
 const port = process.env.PORT || "8000";
-const { createFamilyMember } = require("./Routes/patientController");
 
 mongoose
   .connect(MongoURI)
@@ -18,5 +20,7 @@ mongoose
   })
   .catch((err) => console.log(err));
 
-app.use(express.json());
+
+app.use(express.json())
+app.post("/addPatient",createPatient);
 app.put("/addFamilyMember", createFamilyMember);
