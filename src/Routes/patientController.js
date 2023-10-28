@@ -1,6 +1,6 @@
 const familyModel = require("../Models/FamilyMember.js");
 const patientModel = require("../Models/Patient.js");
-const { default: mongoose } = require("mongoose");
+const mongoose = require("mongoose");
 
 const createPatient = async (req, res) => {
   const {

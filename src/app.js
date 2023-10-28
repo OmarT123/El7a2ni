@@ -9,7 +9,11 @@ const {
   createPatient,
   createFamilyMember,
 } = require("./Routes/patientController");
-
+const {
+  addHealthPackage,
+  editHealthPackage,
+  deleteHealthPackage,
+} = require("./Routes/adminController.js");
 const app = express();
 const port = process.env.PORT || "8000";
 
@@ -24,5 +28,13 @@ mongoose
   .catch((err) => console.log(err));
 
 app.use(express.json());
+//Admin
+app.post("/addHealthPackage", addHealthPackage);
+app.put("/editHealthPackage", editHealthPackage);
+app.delete("/deleteHealthPackage", deleteHealthPackage);
+
+//Patient
 app.post("/addPatient", createPatient);
 app.post("/addFamilyMember", createFamilyMember);
+
+//Doctor
