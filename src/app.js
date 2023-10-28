@@ -2,6 +2,8 @@ const express = require("express");
 const mongoose = require("mongoose");
 mongoose.set("strictQuery", false);
 const {addDoctor} = require('./Routes/doctorController');
+const {viewDocInfo} = require('./Routes/adminController');
+
 
 require("dotenv").config();
 const MongoURI = process.env.MONGO_URI;
@@ -19,3 +21,4 @@ mongoose
   .catch((err) => console.log(err));
   app.use(express.json())
   app.post("/addDoctor", addDoctor);
+  app.get("/viewDocInfo", viewDocInfo);
