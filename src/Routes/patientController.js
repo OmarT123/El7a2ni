@@ -43,8 +43,9 @@ const createFamilyMember = async (req, res) => {
       relationToPatient !== "husband" &&
       relationToPatient !== "son" &&
       relationToPatient !== "daughter"
-    )
+    ) {
       throw "Relation to Patient should be wife/husband/son/daughter";
+    }
     let familyMember = await familyModel.create({
       name,
       nationalId,
