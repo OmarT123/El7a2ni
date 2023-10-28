@@ -1,34 +1,19 @@
 const familyModel = require("../Models/FamilyMember.js");
 const patientModel = require("../Models/Patient.js");
 const mongoose = require("mongoose");
+const doctorModel = require("../Models/Doctor.js");
+const healthPackageModel = require("../Models/HealthPackage.js");
+const FamilyMember = require("../Models/FamilyMember.js");
 
-const createPatient = async (req, res) => {
-  const {
-    username,
-    name,
-    email,
-    password,
-    birthDate,
-    gender,
-    mobileNumber,
-    emergencyContact,
-  } = req.body;
-  try {
-    const patient = await patientModel.create({
-      username,
-      name,
-      email,
-      password,
-      birthDate,
-      gender,
-      mobileNumber,
-      emergencyContact,
-    });
-    res.status(200).json(patient);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-};
+const createPatient = async(req,res) => {
+    const{username,name, email,password,birthDate,gender,mobileNumber,emergencyContact} = req.body;
+    try{
+        const patient = await patientModel.create({username,name, email,password,birthDate,gender,mobileNumber,emergencyContact});
+        res.status(200).json(patient);
+    }catch(error){
+        res.status(400).json({error:error.message})
+    }
+}
 
 const createFamilyMember = async (req, res) => {
   try {
@@ -65,4 +50,44 @@ const createFamilyMember = async (req, res) => {
   }
 };
 
-module.exports = { createFamilyMember, createPatient };
+
+
+const getDoctors = async (req, res) => {
+  try{
+    const doctors = await doctorModel.find({}).sort({createdAt: -1})
+    const clinicMarkUp= 10;
+    const patientId = req.body.patientId; 
+    const patient = await patientModel.findById(patientId);
+    //console.log( patient.healthPackageId);
+    const packageID= patient.healthPackageId;
+
+    const package= await healthPackageModel.findById(packageID);
+    const discount= package.doctorDiscount;
+
+    for (let index = 0; index < doctors.length; index++) {
+        const element = doctors[index];
+        const sessionPrice=(element.hourlyRate+10/100*clinicMarkUp-discount)
+        console.log(element.speciality,sessionPrice);
+    }
+    res.status(200).json(doctors)
+  }
+
+catch(error){
+  res.status(400).json({error:error.message})
+}
+}
+ 
+  const getADoctor = async (req, res) => {
+    try{
+  const doctorId=req.body.doctorId
+  const doctor= await doctorModel.findById(doctorId);
+  console.log(doctor.name,doctor.username,doctor.birthDate,doctor.hourlyRate,doctor.email,doctor.speciality,doctor.affiliation,doctor.educationalBackground);
+    
+    res.status(200).json(doctor)
+  }
+
+catch(error){
+  res.status(400).json({error:error.message})
+}
+  }
+  module.exports = { createFamilyMember, createPatient ,getDoctors,getADoctor};
