@@ -7,8 +7,19 @@ const {viewDocInfo} = require('./Routes/adminController');
 
 require("dotenv").config();
 const MongoURI = process.env.MONGO_URI;
+
+const {createPatient}= require('./Routes/patientController')
+
 const app = express();
 const port = process.env.PORT || "8000";
+
+//App variables
+const patient = require('./Models/Patient');
+// #Importing the userController
+
+
+
+
 
 mongoose
   .connect(MongoURI)
@@ -19,6 +30,10 @@ mongoose
     });
   })
   .catch((err) => console.log(err));
+
+app.use(express.json())
+app.post("/addPatient",createPatient);
+
   app.use(express.json())
   app.post("/addDoctor", addDoctor);
   app.get("/viewDocInfo", viewDocInfo);
