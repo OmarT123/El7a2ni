@@ -1,6 +1,7 @@
 const adminModel = require('../Models/Admin.js');
 const doctorModel = require('../Models/Doctor.js');
 const patientModel = require('../Models/Patient.js');
+const AppointmentModel = require('../Models/Appointment.js');
 const { default: mongoose } = require('mongoose');
 
 const addDoctor = async(req,res) =>{
@@ -31,5 +32,21 @@ const editDoctor = async (req, res) => {
       res.send(err.message);
     }
   };
-
-module.exports = {addDoctor,editDoctor};
+  const MyPatients = async (req, res) => {
+    try{
+    let id = req.query.id;
+    let AllmyAppointments= await AppointmentModel.find({ doctor:new mongoose.Types.ObjectId(id)}).populate({path:'patient'});
+    let patients = AllmyAppointments.map(appointment => appointment.patient);
+    let Patientinfo = patients.map(patient => ({
+      name: patient.name, 
+      birthDate: patient.birthDate ,
+      records:patient.HealthRecords
+    }));
+    res.status(200).json(Patientinfo);
+    }
+    catch(err){
+      res.send(err.message);
+    }
+  };
+    
+module.exports = {addDoctor,editDoctor,MyPatients};
