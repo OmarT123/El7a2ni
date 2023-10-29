@@ -1,23 +1,24 @@
 const express = require("express");
 const mongoose = require("mongoose");
 mongoose.set("strictQuery", false);
-const {addDoctor} = require('./Routes/doctorController');
-const {viewDocInfo} = require('./Routes/adminController');
-
 
 require("dotenv").config();
 const MongoURI = process.env.MONGO_URI;
 
-const {createPatient}= require('./Routes/patientController')
+const {addDoctor} = require('./Routes/doctorController');
+const {
+  createPatient,
+  createFamilyMember,
+} = require("./Routes/patientController");
+const {
+  addHealthPackage,
+  editHealthPackage,
+  deleteHealthPackage,
+  viewDocInfo
+} = require("./Routes/adminController.js");
 
 const app = express();
 const port = process.env.PORT || "8000";
-
-//App variables
-const patient = require('./Models/Patient');
-// #Importing the userController
-
-
 
 
 
@@ -32,8 +33,16 @@ mongoose
   .catch((err) => console.log(err));
 
 app.use(express.json())
-app.post("/addPatient",createPatient);
 
-  app.use(express.json())
-  app.post("/addDoctor", addDoctor);
-  app.get("/viewDocInfo", viewDocInfo);
+//Admin
+app.post("/addHealthPackage", addHealthPackage);
+app.put("/editHealthPackage", editHealthPackage);
+app.delete("/deleteHealthPackage", deleteHealthPackage);
+
+//Patient
+app.post("/addPatient", createPatient);
+app.post("/addFamilyMember", createFamilyMember);
+
+//Doctor
+app.post("/addDoctor", addDoctor);
+app.get("/viewDocInfo", viewDocInfo);
