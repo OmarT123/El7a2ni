@@ -40,7 +40,7 @@ const patientSchema = new Schema(
       required: true,
     },
     
-    healthPackageId: {
+    healthPackage: {
       type:mongoose.Types.ObjectId,
       ref: "HealthPackage",
     },
