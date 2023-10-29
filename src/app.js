@@ -5,22 +5,21 @@ mongoose.set("strictQuery", false);
 require("dotenv").config();
 const MongoURI = process.env.MONGO_URI;
 
-const {addDoctor} = require('./Routes/doctorController');
+const { addDoctor } = require("./Routes/doctorController");
 const {
   createPatient,
   createFamilyMember,
+  searchForDoctorByNameSpeciality,
 } = require("./Routes/patientController");
 const {
   addHealthPackage,
   editHealthPackage,
   deleteHealthPackage,
-  viewDocInfo
+  viewDocInfo,
 } = require("./Routes/adminController.js");
 
 const app = express();
 const port = process.env.PORT || "8000";
-
-
 
 mongoose
   .connect(MongoURI)
@@ -32,7 +31,7 @@ mongoose
   })
   .catch((err) => console.log(err));
 
-app.use(express.json())
+app.use(express.json());
 
 //Admin
 app.post("/addHealthPackage", addHealthPackage);
@@ -42,6 +41,7 @@ app.delete("/deleteHealthPackage", deleteHealthPackage);
 //Patient
 app.post("/addPatient", createPatient);
 app.post("/addFamilyMember", createFamilyMember);
+app.get("/searchDoctor", searchForDoctorByNameSpeciality);
 
 //Doctor
 app.post("/addDoctor", addDoctor);
