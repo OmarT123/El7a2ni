@@ -43,3 +43,4 @@ app.put("/addFamilyMember", createFamilyMember);
 app.post("/addHealthPackage",addHealthPackage);
 app.get("/viewDoctors",getDoctors);
 app.get("/viewADoctor",getADoctor)
+app.put("/editHealthPackage",editHealthPackage);
