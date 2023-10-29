@@ -1,5 +1,17 @@
+const doctorModel = require('../Models/Doctor.js');
 const adminModel = require("../Models/Admin.js");
 const healthPackageModel = require("../Models/HealthPackage.js");
+
+const viewDocInfo = async(req,res) =>{
+    try
+    {
+        const doctors = doctorModel.find({pendingApproval:true}).populate().then((doctors) => res.json(doctors))
+    }
+    catch(err)
+    {
+        res.json({message:err.message})
+    }
+}
 
 const addHealthPackage = async (req, res) => {
   let { name, price, doctorDiscount, medicineDiscount, familyDiscount } =
@@ -49,4 +61,4 @@ const deleteHealthPackage = async (req, res) => {
   }
 };
 
-module.exports = { addHealthPackage, editHealthPackage, deleteHealthPackage };
+module.exports = { addHealthPackage, editHealthPackage, , viewDocInfo };
