@@ -5,22 +5,22 @@ mongoose.set("strictQuery", false);
 require("dotenv").config();
 const MongoURI = process.env.MONGO_URI;
 
-const {addDoctor, editDoctor,myPatients} = require('./Routes/doctorController');
+const {addDoctor, editDoctor,filterAppointmentsForDoctor, createAppointment,myPatients} = require('./Routes/doctorController');
 const {
   createPatient,
   createFamilyMember,
+  searchForDoctorByNameSpeciality,
+  filterAppointmentsForPatient
 } = require("./Routes/patientController");
 const {
   addHealthPackage,
   editHealthPackage,
   deleteHealthPackage,
-  viewDocInfo
+  viewDocInfo,
 } = require("./Routes/adminController.js");
 
 const app = express();
 const port = process.env.PORT || "8000";
-
-
 
 mongoose
   .connect(MongoURI)
@@ -32,7 +32,7 @@ mongoose
   })
   .catch((err) => console.log(err));
 
-app.use(express.json())
+app.use(express.json());
 
 //Admin
 app.post("/addHealthPackage", addHealthPackage);
@@ -43,8 +43,14 @@ app.get("/viewDocInfo", viewDocInfo);
 //Patient
 app.post("/addPatient", createPatient);
 app.post("/addFamilyMember", createFamilyMember);
+app.get("/searchDoctor", searchForDoctorByNameSpeciality);
+app.get("/filterAppointmentsForPatient", filterAppointmentsForPatient);
+
 
 //Doctor
+app.get("/filterAppointmentsForDoctor", filterAppointmentsForDoctor);
+app.post("/addAppointment", createAppointment);
 app.post("/addDoctor", addDoctor);
 app.put("/editDoctor",editDoctor);
 app.get("/viewmypatients",myPatients);
+app.get("/viewDocInfo", viewDocInfo);
