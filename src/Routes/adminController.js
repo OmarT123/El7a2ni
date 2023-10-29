@@ -61,4 +61,4 @@ const deleteHealthPackage = async (req, res) => {
   }
 };
 
-module.exports = { addHealthPackage, editHealthPackage, , viewDocInfo };
+module.exports = { addHealthPackage, editHealthPackage,viewDocInfo,deleteHealthPackage };

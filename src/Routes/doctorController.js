@@ -13,4 +13,23 @@ const addDoctor = async(req,res) =>{
     }
 
 }
-module.exports = {addDoctor};
+const editDoctor = async (req, res) => {
+    let id = req.query.id;
+    let { email, hourlyRate,affiliation } = req.body;
+    try {
+      let updatedDoctor = await doctorModel.findByIdAndUpdate(
+        id,
+        {
+          email,
+          hourlyRate,
+          affiliation
+        },
+        { new: true }
+      );
+      res.send(updatedDoctor);
+    } catch (err) {
+      res.send(err.message);
+    }
+  };
+
+module.exports = {addDoctor,editDoctor};
