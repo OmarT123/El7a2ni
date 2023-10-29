@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
-const HealthPackage = require("./HealthPackage");//import
 
 const patientSchema = new Schema(
   {
@@ -41,8 +40,9 @@ const patientSchema = new Schema(
       required: true,
     },
     
-    healthPackageId: {
-      type:String,
+    healthPackage: {
+      type:mongoose.Types.ObjectId,
+      ref: "HealthPackage",
     },
 
     familyMembers: [
