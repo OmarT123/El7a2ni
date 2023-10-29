@@ -1,5 +1,6 @@
 const familyModel = require("../Models/FamilyMember.js");
 const patientModel = require("../Models/Patient.js");
+const doctorModel = require("../Models/Doctor.js");
 const mongoose = require("mongoose");
 
 const createPatient = async (req, res) => {
@@ -64,5 +65,25 @@ const createFamilyMember = async (req, res) => {
     res.send(err);
   }
 };
+const searchForDoctorByNameSpeciality = async (req, res) => {
+  const baseQuery = {};
+  if (req.body.name) {
+    baseQuery["name"] = new RegExp(req.body.name, "i");
+  }
+  if (req.body.speciality) {
+    baseQuery["speciality"] = new RegExp(req.body.speciality, "i");
+  }
+  console.log({ name: baseQuery.name });
+  try {
+    const doctors = await doctorModel.find(baseQuery);
+    res.json(doctors);
+  } catch (err) {
+    res.status(500).send({ message: "No doctors found!" });
+  }
+};
 
-module.exports = { createFamilyMember, createPatient };
+module.exports = {
+  createFamilyMember,
+  createPatient,
+  searchForDoctorByNameSpeciality,
+};
