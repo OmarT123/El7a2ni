@@ -5,7 +5,7 @@ mongoose.set("strictQuery", false);
 require("dotenv").config();
 const MongoURI = process.env.MONGO_URI;
 
-const {addDoctor, editDoctor,filterAppointmentsForDoctor, createAppointment} = require('./Routes/doctorController');
+const {addDoctor, editDoctor,filterAppointmentsForDoctor, createAppointment,myPatients} = require('./Routes/doctorController');
 const {
   createPatient,
   createFamilyMember,
@@ -38,6 +38,7 @@ app.use(express.json());
 app.post("/addHealthPackage", addHealthPackage);
 app.put("/editHealthPackage", editHealthPackage);
 app.delete("/deleteHealthPackage", deleteHealthPackage);
+app.get("/viewDocInfo", viewDocInfo);
 
 //Patient
 app.post("/addPatient", createPatient);
@@ -50,5 +51,6 @@ app.get("/filterAppointmentsForPatient", filterAppointmentsForPatient);
 app.get("/filterAppointmentsForDoctor", filterAppointmentsForDoctor);
 app.post("/addAppointment", createAppointment);
 app.post("/addDoctor", addDoctor);
-app.get("/viewDocInfo", viewDocInfo);
 app.put("/editDoctor",editDoctor);
+app.get("/viewmypatients",myPatients);
+app.get("/viewDocInfo", viewDocInfo);
