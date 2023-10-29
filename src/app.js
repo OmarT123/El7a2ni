@@ -4,7 +4,6 @@ mongoose.set("strictQuery", false);
 require("dotenv").config();
 const MongoURI = process.env.MONGO_URI;
 
-const patient = require("./Models/Patient");
 const {
   createPatient,
   createFamilyMember,getDoctors,getADoctor
@@ -16,15 +15,6 @@ const {
 } = require("./Routes/adminController.js");
 const app = express();
 const port = process.env.PORT || "8000";
-
-//App variables
-//const patient = require('./Models/Patient');
-const hPackage = require('./Models/HealthPackage');
-// #Importing the userController
-
-
-
-
 
 mongoose
   .connect(MongoURI)
