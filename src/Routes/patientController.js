@@ -73,7 +73,6 @@ const searchForDoctorByNameSpeciality = async (req, res) => {
   if (req.body.speciality) {
     baseQuery["speciality"] = new RegExp(req.body.speciality, "i");
   }
-  console.log({ name: baseQuery.name });
   try {
     const doctors = await doctorModel.find(baseQuery);
     res.json(doctors);
