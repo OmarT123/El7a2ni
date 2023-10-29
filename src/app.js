@@ -5,7 +5,10 @@ require("dotenv").config();
 const MongoURI = process.env.MONGO_URI;
 
 const patient = require('./Models/Patient');
-const {createPatient,createFamilyMember}= require('./Routes/patientController')
+const {createPatient,createFamilyMember,filterAppointmentsForPatient}= require('./Routes/patientController');
+const {filterAppointmentsForDoctor, createAppointment}= require('./Routes/doctorController');
+
+
 
 const app = express();
 const port = process.env.PORT || "8000";
@@ -22,5 +25,14 @@ mongoose
 
 
 app.use(express.json())
+
+//Patient
 app.post("/addPatient",createPatient);
 app.put("/addFamilyMember", createFamilyMember);
+app.get("/filterAppointmentsForPatient", filterAppointmentsForPatient);
+
+
+//Doctor
+app.get("/filterAppointmentsForDoctor", filterAppointmentsForDoctor);
+app.post("/addAppointment", createAppointment);
+
