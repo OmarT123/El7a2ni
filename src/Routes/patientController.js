@@ -1,5 +1,6 @@
 const familyModel = require("../Models/FamilyMember.js");
-const patientModel = require("../Models/Patient.js");
+const patientModel = require('../Models/Patient.js');
+const appointmentModel = require('../Models/Appointment.js');
 const doctorModel = require("../Models/Doctor.js");
 const mongoose = require("mongoose");
 
@@ -81,8 +82,52 @@ const searchForDoctorByNameSpeciality = async (req, res) => {
   }
 };
 
+const filterAppointmentsForPatient = async (req, res) => {
+  // Need login
+  const dateToBeFiltered = req.body.date;
+  const statusToBeFiltered = req.body.status;
+  const filterQuery = {};
+
+  if (dateToBeFiltered) {
+    filterQuery["date"] = dateToBeFiltered;
+  }
+
+  if (statusToBeFiltered) {
+    filterQuery["status"] = statusToBeFiltered;
+  }
+  if(req.query.id){
+    const id = req.query.id
+    filterQuery["patient"] = new mongoose.Types.ObjectId(id) ;
+    try {
+      console.log(id)
+      const filteredAppointments = await appointmentModel.find(filterQuery).populate({path:"doctor"});
+      if (filteredAppointments.length === 0) {
+        return res.status(404).json({ error: 'No matching appointments found for the patient.' });
+      }
+      res.json(filteredAppointments);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'An error occurred while retrieving appointments.' });
+    }
+  }else{
+    try{
+    const filteredAppointments = await appointmentModel.find(filterQuery);
+    res.json(filteredAppointments);
+    }
+    catch(err){
+      console.error(err);
+      res.status(404).json({ error: 'No matching appointments found for the patient.' });
+    }
+  }
+
+ 
+}
+
+
+
 module.exports = {
   createFamilyMember,
   createPatient,
   searchForDoctorByNameSpeciality,
+  filterAppointmentsForPatient
 };
