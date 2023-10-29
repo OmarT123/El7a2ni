@@ -30,7 +30,7 @@ const filterAppointmentsForDoctor = async (req, res) => {
       const id = req.query.id
       filterQuery["doctor"] = new mongoose.Types.ObjectId(id) ;
       try {
-        const filteredAppointments = await appointmentModel.find(filterQuery);
+        const filteredAppointments = await appointmentModel.find(filterQuery).populate({path:"patient"});
         if (filteredAppointments.length === 0) {
           return res.status(404).json({ error: 'No matching appointments found for the Doctor.' });
         }
