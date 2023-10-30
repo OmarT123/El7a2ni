@@ -120,6 +120,27 @@ const editDoctor = async (req, res) => {
       res.send(err.message);
     }
   };
+  const exactPatients = async (req, res) => {
+    try{
+    let id=req.query.id;
+    let {name}= req.body;
+    let AllmyAppointments= await appointmentModel.find({ doctor:new mongoose.Types.ObjectId(id)}).populate({path:'patient'});
+    let patients = AllmyAppointments.map(appointment => appointment.patient);
+    let filteredPatients = patients.filter(patient => patient.name === name);
+    let Patientinfo = filteredPatients.map(patient => ({
+      name: patient.name,
+      birthDate: patient.birthDate,
+      gender: patient.gender,
+      mobileNumber:patient.mobileNumber,
+      records: patient.HealthRecords
+    }));
+    res.status(200).json(Patientinfo);
+    }
+    catch(err){
+      res.send(err.message);
+    }
+  };
+
     
-module.exports = { addDoctor,editDoctor,filterAppointmentsForDoctor, createAppointment,myPatients };
+module.exports = { addDoctor,editDoctor,filterAppointmentsForDoctor, createAppointment,myPatients ,exactPatients};
 
