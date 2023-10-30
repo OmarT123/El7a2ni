@@ -10,7 +10,8 @@ const {
   createPatient,
   createFamilyMember,
   searchForDoctorByNameSpeciality,
-  filterAppointmentsForPatient
+  filterAppointmentsForPatient,
+  selectDoctorFromFilterSearch
 } = require("./Routes/patientController");
 const {
   addHealthPackage,
@@ -45,6 +46,7 @@ app.post("/addPatient", createPatient);
 app.post("/addFamilyMember", createFamilyMember);
 app.get("/searchDoctor", searchForDoctorByNameSpeciality);
 app.get("/filterAppointmentsForPatient", filterAppointmentsForPatient);
+app.get("/selectDoctorFromFilterSearch",selectDoctorFromFilterSearch);
 
 
 //Doctor
