@@ -5,7 +5,7 @@ mongoose.set("strictQuery", false);
 require("dotenv").config();
 const MongoURI = process.env.MONGO_URI;
 
-const {addDoctor, editDoctor,filterAppointmentsForDoctor, createAppointment,myPatients} = require('./Routes/doctorController');
+const {addDoctor, editDoctor,filterAppointmentsForDoctor, createAppointment,myPatients,filterPatientsByAppointments} = require('./Routes/doctorController');
 const {
   createPatient,
   createFamilyMember,
@@ -54,3 +54,4 @@ app.post("/addDoctor", addDoctor);
 app.put("/editDoctor",editDoctor);
 app.get("/viewmypatients",myPatients);
 app.get("/viewDocInfo", viewDocInfo);
+app.get("/filterPatientsByAppointments",filterPatientsByAppointments);
