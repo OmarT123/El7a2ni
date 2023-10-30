@@ -45,6 +45,11 @@ const patientSchema = new Schema(
         ref: "FamilyMember",
       },
     ],
+    HealthRecords: [
+      { 
+        type: String,
+      }
+    ]
   },
   { timestamps: true }
 );
