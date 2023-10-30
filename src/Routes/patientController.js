@@ -122,12 +122,22 @@ const filterAppointmentsForPatient = async (req, res) => {
 
  
 }
+const selectDoctorFromFilterSearch = async (req, res) => {
+  let doctorID = new mongoose.Types.ObjectId(req.query.id);
 
+  try {
+    const doctorList = await doctorModel.findById(doctorID);
+    res.json(doctorList);
+  } catch (error) {
+    res.json(err.message);
+  }
+};
 
 
 module.exports = {
   createFamilyMember,
   createPatient,
   searchForDoctorByNameSpeciality,
-  filterAppointmentsForPatient
+  filterAppointmentsForPatient,
+  selectDoctorFromFilterSearch
 };
