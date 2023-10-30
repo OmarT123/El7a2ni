@@ -38,14 +38,11 @@ const doctorSchema = new Schema(
     pendingApproval: {
       type: Boolean,
       default: true,
-  },
-    speciality:{
-      type:String,
+    },
+    speciality: {
+      type: String,
       required: true,
     },
-
-
-
   },
   { timestamps: true }
 );
