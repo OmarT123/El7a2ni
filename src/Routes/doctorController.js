@@ -120,6 +120,21 @@ const editDoctor = async (req, res) => {
       res.send(err.message);
     }
   };
+
+const filterPatientsByAppointments = async (req, res) => {
+  let doctorID = new mongoose.Types.ObjectId(req.query.id);
+  try {
+    const appointments = await appointmentModel
+      .find({ doctor: doctorID, date: { $gte: new Date() } })
+      .populate("patient");
+    const patients = appointments
+      .filter((appointment) => appointment.status !== "canceled")
+      .map((appointment) => appointment.patient);
+    res.json(patients);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
     
-module.exports = { addDoctor,editDoctor,filterAppointmentsForDoctor, createAppointment,myPatients };
+module.exports = { addDoctor,editDoctor,filterAppointmentsForDoctor, createAppointment,myPatients ,filterPatientsByAppointments};
 
