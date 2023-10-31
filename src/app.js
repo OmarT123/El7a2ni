@@ -5,13 +5,14 @@ mongoose.set("strictQuery", false);
 require("dotenv").config();
 const MongoURI = process.env.MONGO_URI;
 
-const {addDoctor, editDoctor,filterAppointmentsForDoctor, createAppointment,myPatients} = require('./Routes/doctorController');
+const {addDoctor, editDoctor,filterAppointmentsForDoctor, createAppointment,myPatients,exactPatients,filterPatientsByAppointments} = require('./Routes/doctorController');
 const {
   createPatient,
   createFamilyMember,
   searchForDoctorByNameSpeciality,
   filterAppointmentsForPatient,
   selectDoctorFromFilterSearch
+  getFamilyMembers
 } = require("./Routes/patientController");
 const {
   addHealthPackage,
@@ -47,7 +48,7 @@ app.post("/addFamilyMember", createFamilyMember);
 app.get("/searchDoctor", searchForDoctorByNameSpeciality);
 app.get("/filterAppointmentsForPatient", filterAppointmentsForPatient);
 app.get("/selectDoctorFromFilterSearch",selectDoctorFromFilterSearch);
-
+app.get("/getFamilyMembers", getFamilyMembers);
 
 //Doctor
 app.get("/filterAppointmentsForDoctor", filterAppointmentsForDoctor);
@@ -55,4 +56,5 @@ app.post("/addAppointment", createAppointment);
 app.post("/addDoctor", addDoctor);
 app.put("/editDoctor",editDoctor);
 app.get("/viewmypatients",myPatients);
-app.get("/viewDocInfo", viewDocInfo);
+app.get("/filterPatientsByAppointments",filterPatientsByAppointments);
+app.get("/viewmypatientsbyname",exactPatients);

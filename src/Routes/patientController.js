@@ -119,8 +119,6 @@ const filterAppointmentsForPatient = async (req, res) => {
       res.status(404).json({ error: 'No matching appointments found for the patient.' });
     }
   }
-
- 
 }
 const selectDoctorFromFilterSearch = async (req, res) => {
   let doctorID = new mongoose.Types.ObjectId(req.query.id);
@@ -133,6 +131,18 @@ const selectDoctorFromFilterSearch = async (req, res) => {
   }
 };
 
+const getFamilyMembers = async (req, res) => {
+  try {
+    const patientId = new mongoose.Types.ObjectId(req.query.id);
+    const patientList = await patientModel
+      .findById(patientId)
+      .populate({ path: "familyMembers" });
+    const familyMember = patient.familyMembers;
+    res.json(familyMember);
+  } catch (err) {
+    res.json(err.message);
+  }
+};
 
 module.exports = {
   createFamilyMember,
@@ -140,4 +150,5 @@ module.exports = {
   searchForDoctorByNameSpeciality,
   filterAppointmentsForPatient,
   selectDoctorFromFilterSearch
+  getFamilyMembers
 };
