@@ -11,6 +11,7 @@ const {
   createFamilyMember,
   searchForDoctorByNameSpeciality,
   filterAppointmentsForPatient,
+  selectDoctorFromFilterSearch
   getFamilyMembers
 } = require("./Routes/patientController");
 const {
@@ -46,6 +47,7 @@ app.post("/addPatient", createPatient);
 app.post("/addFamilyMember", createFamilyMember);
 app.get("/searchDoctor", searchForDoctorByNameSpeciality);
 app.get("/filterAppointmentsForPatient", filterAppointmentsForPatient);
+app.get("/selectDoctorFromFilterSearch",selectDoctorFromFilterSearch);
 app.get("/getFamilyMembers", getFamilyMembers);
 
 //Doctor
@@ -54,6 +56,5 @@ app.post("/addAppointment", createAppointment);
 app.post("/addDoctor", addDoctor);
 app.put("/editDoctor",editDoctor);
 app.get("/viewmypatients",myPatients);
-app.get("/viewDocInfo", viewDocInfo);
 app.get("/filterPatientsByAppointments",filterPatientsByAppointments);
 app.get("/viewmypatientsbyname",exactPatients);
