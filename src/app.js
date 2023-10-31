@@ -18,6 +18,9 @@ const {
   editHealthPackage,
   deleteHealthPackage,
   viewDocInfo,
+  deletePatient,
+  deleteDoctor,
+  deleteAdmin
 } = require("./Routes/adminController.js");
 
 const app = express();
@@ -40,6 +43,9 @@ app.post("/addHealthPackage", addHealthPackage);
 app.put("/editHealthPackage", editHealthPackage);
 app.delete("/deleteHealthPackage", deleteHealthPackage);
 app.get("/viewDocInfo", viewDocInfo);
+app.delete("/deletePatient",deletePatient);
+app.delete("/deleteDoctor",deleteDoctor);
+app.delete("/deleteAdmin",deleteAdmin);
 
 //Patient
 app.post("/addPatient", createPatient);
@@ -47,6 +53,7 @@ app.post("/addFamilyMember", createFamilyMember);
 app.get("/searchDoctor", searchForDoctorByNameSpeciality);
 app.get("/filterAppointmentsForPatient", filterAppointmentsForPatient);
 app.get("/getFamilyMembers", getFamilyMembers);
+
 
 //Doctor
 app.get("/filterAppointmentsForDoctor", filterAppointmentsForDoctor);
