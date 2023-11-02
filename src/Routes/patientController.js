@@ -2,6 +2,7 @@ const familyModel = require("../Models/FamilyMember.js");
 const patientModel = require('../Models/Patient.js');
 const appointmentModel = require('../Models/Appointment.js');
 const doctorModel = require("../Models/Doctor.js");
+const prescriptionModel = require("../Models/Prescription.js");
 const mongoose = require("mongoose");
 
 const createPatient = async (req, res) => {
@@ -134,10 +135,35 @@ const getFamilyMembers = async (req, res) => {
   }
 };
 
+const viewMyPrescriptions = async (req, res) => {
+  try {
+    const patientId = req.query.id;
+    const prescriptions = await prescriptionModel.find({ patient: new mongoose.Types.ObjectId(patientId) })
+    res.json(prescriptions);
+  }
+  catch (err) {
+    res.json(err.message);
+
+  }
+}
+
+const selectPrescription = async (req, res) => {
+  try {
+    const prescriptionId = req.query.prescriptionId;
+    const prescription = await prescriptionModel.findById(prescriptionId);
+    res.status(200).json(prescription);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+
 module.exports = {
   createFamilyMember,
   createPatient,
   searchForDoctorByNameSpeciality,
   filterAppointmentsForPatient,
-  getFamilyMembers
+  getFamilyMembers,
+  viewMyPrescriptions,
+  selectPrescription
 };
