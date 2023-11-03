@@ -1,4 +1,5 @@
 const doctorModel = require("../Models/Doctor.js");
+const patientModel = require("../Models/Patient.js");
 const adminModel = require("../Models/Admin.js");
 const healthPackageModel = require("../Models/HealthPackage.js");
 
@@ -60,6 +61,34 @@ const deleteHealthPackage = async (req, res) => {
     res.send(err);
   }
 };
+const deletePatient = async (req, res) => {
+  const patientId = req.query.id; 
+  try {
+    await patientModel.findByIdAndDelete(patientId);
+    res.status(200).json({ message: 'Patient deleted successfully from the Database' });
+  } catch (err) {
+    res.status(404).json({ message: err.message });
+  }
+};
+const deleteDoctor = async (req, res) => {
+  const doctorId = req.query.id; 
+  try {
+    await doctorModel.findByIdAndDelete(doctorId);
+    res.status(200).json({ message: 'Doctor deleted successfully from the Database' });
+  } catch (err) {
+    res.status(404).json({ message: err.message });
+  }
+};
+const deleteAdmin = async (req, res) => {
+  const adminId = req.query.id; 
+  try {
+     await adminModel.findByIdAndDelete(adminId);
+    res.status(200).json({ message: 'admin deleted successfully from the Database' });
+  } catch (err) {
+    res.status(404).json({ message: err.message });
+  }
+};
+
 
 
 module.exports = {
@@ -67,4 +96,7 @@ module.exports = {
   editHealthPackage,
   viewDocInfo,
   deleteHealthPackage,
+  deletePatient,
+  deleteDoctor,
+  deleteAdmin,
 };
