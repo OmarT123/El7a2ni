@@ -1,6 +1,6 @@
 const familyModel = require("../Models/FamilyMember.js");
-const patientModel = require('../Models/Patient.js');
-const appointmentModel = require('../Models/Appointment.js');
+const patientModel = require("../Models/Patient.js");
+const appointmentModel = require("../Models/Appointment.js");
 const doctorModel = require("../Models/Doctor.js");
 const prescriptionModel = require("../Models/Prescription.js");
 const mongoose = require("mongoose");
@@ -29,7 +29,7 @@ const createPatient = async (req, res) => {
     });
     res.status(200).json(patient);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(404).json({ error: error.message });
   }
 };
 
@@ -58,7 +58,7 @@ const createFamilyMember = async (req, res) => {
     });
     const patient = await patientModel.findById(patientId);
     if (!patient)
-      return res.status(403).send("No such patient found in the database.");
+      return res.status(404).send("No such patient found in the database.");
     await familyMember.save();
     patient.familyMembers.push(familyMember.id);
     await patient.save();
@@ -96,31 +96,32 @@ const filterAppointmentsForPatient = async (req, res) => {
   if (statusToBeFiltered) {
     filterQuery["status"] = statusToBeFiltered;
   }
-  if(req.query.id){
-    const id = req.query.id
-    filterQuery["patient"] = new mongoose.Types.ObjectId(id) ;
+  if (req.query.id) {
+    const id = req.query.id;
+    filterQuery["patient"] = new mongoose.Types.ObjectId(id);
     try {
-      console.log(id)
-      const filteredAppointments = await appointmentModel.find(filterQuery).populate({path:"doctor"});
+      console.log(id);
+      const filteredAppointments = await appointmentModel
+        .find(filterQuery)
+        .populate({ path: "doctor" });
       if (filteredAppointments.length === 0) {
-        return res.status(404).json({ error: 'No matching appointments found for the patient.' });
+        return res.status(404).json({ error: "No matching appointments found for the patient." });
       }
       res.json(filteredAppointments);
     } catch (err) {
       console.error(err);
-      res.status(500).json({ error: 'An error occurred while retrieving appointments.' });
+      res.status(500).json({ error: "An error occurred while retrieving appointments." });
     }
-  }else{
-    try{
-    const filteredAppointments = await appointmentModel.find(filterQuery);
-    res.json(filteredAppointments);
-    }
-    catch(err){
+  } else {
+    try {
+      const filteredAppointments = await appointmentModel.find(filterQuery);
+      res.json(filteredAppointments);
+    } catch (err) {
       console.error(err);
-      res.status(404).json({ error: 'No matching appointments found for the patient.' });
+      res.status(404).json({ error: "No matching appointments found for the patient." });
     }
   }
-}
+  
 const selectDoctorFromFilterSearch = async (req, res) => {
   let doctorID = new mongoose.Types.ObjectId(req.query.id);
 
@@ -131,7 +132,7 @@ const selectDoctorFromFilterSearch = async (req, res) => {
     res.json(err.message);
   }
 };
-
+  
 const getFamilyMembers = async (req, res) => {
   try {
     const patientId = new mongoose.Types.ObjectId(req.query.id);
@@ -144,8 +145,8 @@ const getFamilyMembers = async (req, res) => {
     res.json(err.message);
   }
 };
-
-const viewMyPrescriptions = async (req, res) => {
+  
+ const viewMyPrescriptions = async (req, res) => {
   try {
     const patientId = req.query.id;
     const prescriptions = await prescriptionModel.find({ patient: new mongoose.Types.ObjectId(patientId) })
@@ -155,18 +156,28 @@ const viewMyPrescriptions = async (req, res) => {
     res.json(err.message);
 
   }
-}
+};
 
-const selectPrescription = async (req, res) => {
+
+const selectDoctorFromFilterSearch = async (req, res) => {
+  let doctorID = new mongoose.Types.ObjectId(req.query.id);
+  try {
+    const doctorList = await doctorModel.findById(doctorID);
+    res.json(doctorList);
+  } catch (error) {
+    res.json(err.message);
+  }
+};
+  
+  const selectPrescription = async (req, res) => {
   try {
     const prescriptionId = req.query.prescriptionId;
     const prescription = await prescriptionModel.findById(prescriptionId);
     res.status(200).json(prescription);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(404).json({ error: error.message });
   }
 };
-
 
 module.exports = {
   createFamilyMember,
@@ -174,6 +185,7 @@ module.exports = {
   searchForDoctorByNameSpeciality,
   filterAppointmentsForPatient,
   getFamilyMembers,
+  selectDoctorFromFilterSearch,
   viewMyPrescriptions,
   selectPrescription,
   selectDoctorFromFilterSearch
