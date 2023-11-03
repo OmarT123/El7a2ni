@@ -13,13 +13,17 @@ const {
   filterAppointmentsForPatient,
   getFamilyMembers,
   viewMyPrescriptions,
-  selectPrescription
+  selectPrescription,
+  selectDoctorFromFilterSearch
 } = require("./Routes/patientController");
 const {
   addHealthPackage,
   editHealthPackage,
   deleteHealthPackage,
   viewDocInfo,
+  deletePatient,
+  deleteDoctor,
+  deleteAdmin
 } = require("./Routes/adminController.js");
 
 const app = express();
@@ -42,15 +46,20 @@ app.post("/addHealthPackage", addHealthPackage);
 app.put("/editHealthPackage", editHealthPackage);
 app.delete("/deleteHealthPackage", deleteHealthPackage);
 app.get("/viewDocInfo", viewDocInfo);
+app.delete("/deletePatient",deletePatient);
+app.delete("/deleteDoctor",deleteDoctor);
+app.delete("/deleteAdmin",deleteAdmin);
 
 //Patient
 app.post("/addPatient", createPatient);
 app.post("/addFamilyMember", createFamilyMember);
 app.get("/searchDoctor", searchForDoctorByNameSpeciality);
 app.get("/filterAppointmentsForPatient", filterAppointmentsForPatient);
+app.get("/selectDoctorFromFilterSearch",selectDoctorFromFilterSearch);
 app.get("/getFamilyMembers", getFamilyMembers);
 app.get("/viewMyPrescriptions",viewMyPrescriptions);
 app.get("/selectPrescription",selectPrescription);
+
 
 
 //Doctor
@@ -59,7 +68,6 @@ app.post("/addAppointment", createAppointment);
 app.post("/addDoctor", addDoctor);
 app.put("/editDoctor",editDoctor);
 app.get("/viewmypatients",myPatients);
-app.get("/viewDocInfo", viewDocInfo);
 app.get("/filterPatientsByAppointments",filterPatientsByAppointments);
 app.get("/viewmypatientsbyname",exactPatients);
 app.post("/createPrescription",createPrescription);
