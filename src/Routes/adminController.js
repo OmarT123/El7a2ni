@@ -62,30 +62,30 @@ const deleteHealthPackage = async (req, res) => {
   }
 };
 const deletePatient = async (req, res) => {
-  const patientid = req.query.id; 
+  const patientId = req.query.id; 
   try {
-    const deletedPatient = await patientModel.findByIdAndDelete(patientid);
-    res.status(200).json({ message: 'Patient deleted successfully' });
+    await patientModel.findByIdAndDelete(patientId);
+    res.status(200).json({ message: 'Patient deleted successfully from the Database' });
   } catch (err) {
-    res.status(200).json({ message: err.message });
+    res.status(404).json({ message: err.message });
   }
 };
 const deleteDoctor = async (req, res) => {
-  const doctorid = req.query.id; 
+  const doctorId = req.query.id; 
   try {
-    const deletedDoctor = await doctorModel.findByIdAndDelete(doctorid);
-    res.status(200).json({ message: 'Doctor deleted successfully' });
+    await doctorModel.findByIdAndDelete(doctorId);
+    res.status(200).json({ message: 'Doctor deleted successfully from the Database' });
   } catch (err) {
-    res.status(200).json({ message: err.message });
+    res.status(404).json({ message: err.message });
   }
 };
 const deleteAdmin = async (req, res) => {
-  const adminid = req.query.id; 
+  const adminId = req.query.id; 
   try {
-    const deletedAdmin = await adminModel.findByIdAndDelete(adminid);
-    res.status(200).json({ message: 'admin deleted successfully' });
+     await adminModel.findByIdAndDelete(adminId);
+    res.status(200).json({ message: 'admin deleted successfully from the Database' });
   } catch (err) {
-    res.status(200).json({ message: err.message });
+    res.status(404).json({ message: err.message });
   }
 };
 
@@ -99,6 +99,4 @@ module.exports = {
   deletePatient,
   deleteDoctor,
   deleteAdmin,
-  
-
 };
