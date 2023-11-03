@@ -2,6 +2,7 @@ const doctorModel = require('../Models/Doctor.js');
 const patientModel = require('../Models/Patient.js');
 const appointmentModel = require('../Models/Appointment.js');
 const adminModel = require("../Models/Admin.js");
+const prescriptionModel = require("../Models/Prescription.js");
 const { default: mongoose } = require("mongoose");
 
 
@@ -156,6 +157,14 @@ const filterPatientsByAppointments = async (req, res) => {
     }
   };
 
-    
-module.exports = { addDoctor,editDoctor,filterAppointmentsForDoctor, createAppointment,myPatients ,exactPatients,filterPatientsByAppointments};
+  const createPrescription = async(req,res)=>{
+    try {
+      let prescription = await prescriptionModel.create({filled:req.body.filled, patient:req.body.patient,doctor:req.body.patient,medicines:req.body.medicines})
+      await prescription.save();
+      res.send(prescription)
+    }catch(err){
+      res.send(err.message)
+    }
+  }    
+module.exports = { addDoctor,editDoctor,filterAppointmentsForDoctor, createAppointment,myPatients ,exactPatients,filterPatientsByAppointments,createPrescription};
 
