@@ -2,6 +2,7 @@ const doctorModel = require("../Models/Doctor.js");
 const patientModel = require("../Models/Patient.js");
 const appointmentModel = require("../Models/Appointment.js");
 const adminModel = require("../Models/Admin.js");
+const prescriptionModel = require("../Models/Prescription.js");
 const { default: mongoose } = require("mongoose");
 
 const createPrescription = async(req,res)=>{
@@ -152,6 +153,28 @@ const viewPatient = async (req, res) => {
     res.json(err.message);
   }
 };
+
+  const exactPatients = async (req, res) => {
+    try{
+    let id=req.query.id;
+    let {name}= req.body;
+    let AllmyAppointments= await appointmentModel.find({ doctor:new mongoose.Types.ObjectId(id)}).populate({path:'patient'});
+    let patients = AllmyAppointments.map(appointment => appointment.patient);
+    let filteredPatients = patients.filter(patient => patient.name === name);
+    let Patientinfo = filteredPatients.map(patient => ({
+      name: patient.name,
+      birthDate: patient.birthDate,
+      gender: patient.gender,
+      mobileNumber:patient.mobileNumber,
+      records: patient.HealthRecords
+    }));
+    res.status(200).json(Patientinfo);
+    }
+    catch(err){
+      res.send(err.message);
+    }
+  };
+
 
 const filterPatientsByAppointments = async (req, res) => {
   let doctorID = new mongoose.Types.ObjectId(req.query.id);
