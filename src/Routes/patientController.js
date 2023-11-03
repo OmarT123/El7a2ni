@@ -79,7 +79,7 @@ const searchForDoctorByNameSpeciality = async (req, res) => {
     const doctors = await doctorModel.find(baseQuery);
     res.json(doctors);
   } catch (err) {
-    res.status(500).send({ message: "No doctors found!" });
+    res.status(404).send({ message: "No doctors found!" });
   }
 };
 
@@ -103,7 +103,7 @@ const filterPrescriptionByDateDoctorStatus = async (req, res) => {
     res.json(prescriptions);
   } catch (err) {
     //res.status(500).send({ message: "No prescriptions found!" });
-    res.send(err);
+    res.status(404).send({ message: "No prescriptions found!" });
   }
 }
 
@@ -224,7 +224,6 @@ const filterDoctorsSpecialityDate = async(req,res)=>{
         if (!found)
           availableDoctors.push(doctors[i])
       }
-      //doctors.filter(doctor => !(busyDoctorsMapped.includes(doctor._id)));
       res.send(availableDoctors)
     }else {let query = {};
     if (req.body.speciality)
