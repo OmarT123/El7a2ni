@@ -23,6 +23,8 @@ const {
   searchForDoctorByNameSpeciality,
   filterAppointmentsForPatient,
   getFamilyMembers,
+  filterPrescriptionByDateDoctorStatus,
+  filterDoctorsSpecialityDate,
   viewMyPrescriptions,
   selectPrescription,
   selectDoctorFromFilterSearch
@@ -68,6 +70,8 @@ app.get("/searchDoctor", searchForDoctorByNameSpeciality);
 app.get("/filterAppointmentsForPatient", filterAppointmentsForPatient);
 app.get("/selectDoctorFromFilterSearch",selectDoctorFromFilterSearch);
 app.get("/getFamilyMembers", getFamilyMembers);
+app.get("/filterPrescriptionByDateDoctorStatus",filterPrescriptionByDateDoctorStatus);
+app.get("/filterDoctorsSpecialityDate", filterDoctorsSpecialityDate);
 app.get("/viewMyPrescriptions",viewMyPrescriptions);
 app.get("/selectPrescription",selectPrescription);
 
