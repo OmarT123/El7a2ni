@@ -2,6 +2,7 @@ const familyModel = require("../Models/FamilyMember.js");
 const patientModel = require('../Models/Patient.js');
 const appointmentModel = require('../Models/Appointment.js');
 const doctorModel = require("../Models/Doctor.js");
+const prescriptionModel = require("../Models/Prescription.js");
 const mongoose = require("mongoose");
 
 const createPatient = async (req, res) => {
@@ -82,6 +83,30 @@ const searchForDoctorByNameSpeciality = async (req, res) => {
   }
 };
 
+const filterPrescriptionByDateDoctorStatus = async (req, res) => {
+  const baseQuery = {};
+  if (req.body.doctor) {
+    //baseQuery["doctor"] = new RegExp(req.body.doctor, "i");
+    baseQuery["doctor"] = new mongoose.Types.ObjectId(req.body.doctor);
+  }
+  if (req.body.filled || req.body.filled == false) {
+    //baseQuery["filled"] = new RegExp(req.body.filled, "i");
+    baseQuery["filled"] = req.body.filled;
+  }
+  if (req.body.date) {
+    //baseQuery["date"] = new RegExp(`^${req.body.date.replace(/\//, "\\/")}$`);
+    baseQuery["createdAt"] = req.body.date;
+  }
+  try {
+    console.log(baseQuery);
+    const prescriptions = await prescriptionModel.find(baseQuery);
+    res.json(prescriptions);
+  } catch (err) {
+    //res.status(500).send({ message: "No prescriptions found!" });
+    res.send(err);
+  }
+}
+
 const filterAppointmentsForPatient = async (req, res) => {
   // Need login
   const dateToBeFiltered = req.body.date;
@@ -134,10 +159,47 @@ const getFamilyMembers = async (req, res) => {
   }
 };
 
+const filterDoctorsSpecialityDate = async(req,res)=>{
+  try{
+    if (req.body.date) {
+      let busyDoctors = await appointmentModel.find({date:req.body.date});
+      const busyDoctorsMapped = busyDoctors.map(appointment=>appointment.doctor);
+      //console.log(busyDoctorsMapped);
+      let query = {};
+      if (req.body.speciality)
+        query["speciality"]=req.body.speciality
+      let doctors = await doctorModel.find(query);
+      let availableDoctors = [];
+      for (let i = 0; i < doctors.length; i++){
+        let found = false;
+        for (let j = 0; j < busyDoctorsMapped.length;j++)
+        {
+          if (toString(doctors[i]) === toString(busyDoctorsMapped[j]))
+            found = true;
+        }
+        if (!found)
+          availableDoctors.push(doctors[i])
+      }
+      //doctors.filter(doctor => !(busyDoctorsMapped.includes(doctor._id)));
+      res.send(availableDoctors)
+    }else {let query = {};
+    if (req.body.speciality)
+      query["speciality"]=req.body.speciality
+      let doctors = await doctorModel.find(query)
+      res.send(doctors)
+    }
+  }catch(err)
+  {
+    res.send(err.message)
+  }
+}
+
 module.exports = {
   createFamilyMember,
   createPatient,
   searchForDoctorByNameSpeciality,
   filterAppointmentsForPatient,
-  getFamilyMembers
+  getFamilyMembers,
+  filterPrescriptionByDateDoctorStatus,
+  filterDoctorsSpecialityDate
 };

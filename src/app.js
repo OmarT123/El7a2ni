@@ -11,7 +11,9 @@ const {
   createFamilyMember,
   searchForDoctorByNameSpeciality,
   filterAppointmentsForPatient,
-  getFamilyMembers
+  getFamilyMembers,
+  filterPrescriptionByDateDoctorStatus,
+  filterDoctorsSpecialityDate
 } = require("./Routes/patientController");
 const {
   addHealthPackage,
@@ -47,6 +49,8 @@ app.post("/addFamilyMember", createFamilyMember);
 app.get("/searchDoctor", searchForDoctorByNameSpeciality);
 app.get("/filterAppointmentsForPatient", filterAppointmentsForPatient);
 app.get("/getFamilyMembers", getFamilyMembers);
+app.get("/filterPrescriptionByDateDoctorStatus",filterPrescriptionByDateDoctorStatus);
+app.get("/filterDoctorsSpecialityDate", filterDoctorsSpecialityDate);
 
 //Doctor
 app.get("/filterAppointmentsForDoctor", filterAppointmentsForDoctor);
