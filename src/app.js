@@ -15,7 +15,6 @@ const {
   viewPatient,
   createPrescription,
   exactPatients,
-  myPatients
 } = require("./Routes/doctorController");
 const {
   createPatient,

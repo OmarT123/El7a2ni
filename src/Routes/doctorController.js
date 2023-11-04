@@ -198,5 +198,7 @@ module.exports = {
   createAppointment,
   myPatients,
   filterPatientsByAppointments,
-  viewPatient
+  viewPatient,
+  createPrescription,
+  exactPatients
 };
