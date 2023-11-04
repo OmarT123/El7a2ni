@@ -1,14 +1,25 @@
 import {BrowserRouter, Routes, Route} from 'react-router-dom'
 
-import NavBar from './components/NavBar'
+// pages & components
+import Home from './pages/Home'
+import Navbar from './components/NavBar'
+import UnapprovedDoctors from './pages/unApprovedDoctors'
+
 function App() {
   return (
     <div className="App">
       <BrowserRouter>
-        <NavBar />
+        <Navbar />
         <div className='pages'>
-          <Routes>
-
+          <Routes> {/*Add all the routes to all the functionalities/pages here.*/}
+          <Route 
+              path="/" 
+              element={<Home />} 
+            />
+            <Route 
+              path="/viewDocInfo" 
+              element={<UnapprovedDoctors />} 
+            />
           </Routes>
         </div>
       </BrowserRouter>
