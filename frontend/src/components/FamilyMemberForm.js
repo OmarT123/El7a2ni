@@ -22,7 +22,7 @@ const FamilyMemberForm  = ({handleClick}) => {
     }
 
     return (
-        <form className='create'>
+        <form className='create family-form'>
             <h3>Add new Family Member</h3>
 
             <label>Name:</label>
@@ -64,7 +64,7 @@ const FamilyMemberForm  = ({handleClick}) => {
             </select>
 
             <button onClick={handleSubmit}>Add Family Member</button>
-        {message && <h3>{message}</h3>}
+            {message && <h3>{message}</h3>}
         </form>
     )
 }
