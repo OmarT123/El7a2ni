@@ -64,7 +64,7 @@ const FamilyMemberForm  = ({handleClick}) => {
             </select>
 
             <button onClick={handleSubmit}>Add Family Member</button>
-        {message && <h3>{message}</h3>}
+            {message && <h3>{message}</h3>}
         </form>
     )
 }

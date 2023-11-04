@@ -31,6 +31,11 @@ header a {
   margin: 0 auto;
 }
 
+.search-container {
+  display: flex;
+  flex-direction: row;
+}
+
 .create {
   display: flex;
   flex-direction: column;
@@ -41,9 +46,21 @@ header a {
   background-color: #fff
 }
 
+.create > h3 {
+  text-align: center;
+}
+
 .create > button {
   margin: 10px auto;
   width: 50%
+}
+
+.search-results {
+  display: flex;
+  flex-direction: column;
+  width: 60%;
+  padding: 30px;
+  border-radius: 7px;
 }
 
 .family-container {
@@ -63,6 +80,7 @@ header a {
   justify-content: space-evenly;
   text-align: center;
   flex-wrap: wrap;
+  font-size: 10px;
   margin: 10px;
   padding: 10px 20px;
   border-radius: 5px;
