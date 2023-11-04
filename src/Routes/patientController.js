@@ -62,7 +62,7 @@ const createFamilyMember = async (req, res) => {
     await familyMember.save();
     patient.familyMembers.push(familyMember.id);
     await patient.save();
-    res.send(familyMember);
+    res.json("Family Member added successfully");
   } catch (err) {
     res.send(err);
   }
@@ -159,10 +159,8 @@ const selectDoctorFromFilterSearch = async (req, res) => {
   
 const getFamilyMembers = async (req, res) => {
   try {
-    const patientId = new mongoose.Types.ObjectId(req.query.id);
-    const patientList = await patientModel
-      .findById(patientId)
-      .populate({ path: "familyMembers" });
+    const patientId = req.query.id;
+    const patient = await patientModel.findById(patientId).populate({path:"familyMembers"})
     const familyMember = patient.familyMembers;
     res.json(familyMember);
   } catch (err) {
