@@ -118,7 +118,7 @@ const editDoctor = async (req, res) => {
       },
       { new: true }
     );
-    res.send(updatedDoctor);
+    res.json("Details updated successfully");
   } catch (err) {
     res.send(err.message);
   }
@@ -133,7 +133,8 @@ const myPatients = async (req, res) => {
     let Patientinfo = patients.map((patient) => ({
       name: patient.name,
       birthDate: patient.birthDate,
-      records: patient.HealthRecords,
+      gender: patient.gender,
+      mobileNumber: patient.mobileNumber,
     }));
     res.status(200).json(Patientinfo);
   } catch (err) {
@@ -166,7 +167,6 @@ const viewPatient = async (req, res) => {
       birthDate: patient.birthDate,
       gender: patient.gender,
       mobileNumber:patient.mobileNumber,
-      records: patient.HealthRecords
     }));
     res.status(200).json(Patientinfo);
     }
