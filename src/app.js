@@ -26,7 +26,8 @@ const {
   filterDoctorsSpecialityDate,
   viewMyPrescriptions,
   selectPrescription,
-  selectDoctorFromFilterSearch
+  selectDoctorFromFilterSearch,
+  getDoctors
 } = require("./Routes/patientController");
 const {
   addHealthPackage,
@@ -73,6 +74,7 @@ app.get("/filterPrescriptionByDateDoctorStatus",filterPrescriptionByDateDoctorSt
 app.get("/filterDoctorsSpecialityDate", filterDoctorsSpecialityDate);
 app.get("/viewMyPrescriptions",viewMyPrescriptions);
 app.get("/selectPrescription",selectPrescription);
+app.get("/allDoctors", getDoctors)
 
 
 //Doctor

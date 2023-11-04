@@ -8,6 +8,7 @@ const DoctorDetails = ({doctor}) =>
             <p><strong>hourlyRate: </strong>{doctor.hourlyRate}</p>
             <p><strong>affiliation: </strong>{doctor.affiliation}</p>
             <p><strong>speciality: </strong>{doctor.speciality}</p>
+            {doctor.sessionPrice && <p><strong>session price: </strong>{doctor.sessionPrice}</p>}
         </div>
     )
 }

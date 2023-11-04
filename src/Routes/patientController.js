@@ -69,11 +69,11 @@ const createFamilyMember = async (req, res) => {
 };
 const searchForDoctorByNameSpeciality = async (req, res) => {
   const baseQuery = {};
-  if (req.body.name) {
-    baseQuery["name"] = new RegExp(req.body.name, "i");
+  if (req.query.name) {
+    baseQuery["name"] = new RegExp(req.query.name, "i");
   }
-  if (req.body.speciality) {
-    baseQuery["speciality"] = new RegExp(req.body.speciality, "i");
+  if (req.query.speciality) {
+    baseQuery["speciality"] = new RegExp(req.query.speciality, "i");
   }
   try {
     const doctors = await doctorModel.find(baseQuery);
@@ -224,6 +224,27 @@ const filterDoctorsSpecialityDate = async(req,res)=>{
   }
 }
 
+const getDoctors = async (req, res) => {
+  try{
+    const doctors = await doctorModel.find({})
+    const clinicMarkUp= 10;
+    const patientId = req.query.id;
+    const patient = await patientModel.findById(patientId).populate({path:"healthPackage"});
+    const discount = 0
+    let data=[]
+    for (let index = 0; index < doctors.length; index++) {
+        const element = doctors[index]._doc;
+        const sessionPrice=(element.hourlyRate+10/100*clinicMarkUp-discount)
+        data.push( {...element,sessionPrice:sessionPrice});
+    }
+    res.status(200).json(data)
+  }
+
+catch(error){
+  res.status(400).json({error:error.message})
+}
+}
+
 module.exports = {
   createFamilyMember,
   createPatient,
@@ -234,5 +255,6 @@ module.exports = {
   filterDoctorsSpecialityDate,
   selectDoctorFromFilterSearch,
   viewMyPrescriptions,
-  selectPrescription
+  selectPrescription,
+  getDoctors
 };

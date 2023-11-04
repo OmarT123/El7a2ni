@@ -15,10 +15,23 @@ const SearchDoctor = () => {
             body['name']=name
         if (speciality !== '')
             body['speciality']=speciality
-        await axios.get("/searchDoctor",body)
+        console.log(body)
+        await axios.get("/searchDoctor",{params : body})
         .then((res)=>{
             const docs = res.data
             //console.log(docs)
+            setDoctors(docs)
+        }).catch((err)=>console.log(err))
+    }
+
+    const displayAll = async(e) => {
+        e.preventDefault()
+
+        //temporary id
+        const id = "6546851fd349b37530412e8d"
+        await axios.get("/allDoctors?id="+id)
+        .then((res)=>{
+            const docs = res.data
             setDoctors(docs)
         }).catch((err)=>console.log(err))
     }
@@ -43,6 +56,7 @@ const SearchDoctor = () => {
                 />
 
                 <button onClick={handleSubmit}>Search</button>
+                <button onClick={displayAll}>View All Doctors</button>
             </form>
             <div className='search-results'>
                 {doctors && doctors.map((doctor)=>(
