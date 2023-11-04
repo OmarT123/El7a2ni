@@ -22,7 +22,7 @@ const FamilyMemberForm  = ({handleClick}) => {
     }
 
     return (
-        <form className='create'>
+        <form className='create family-form'>
             <h3>Add new Family Member</h3>
 
             <label>Name:</label>

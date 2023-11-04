@@ -192,13 +192,13 @@ const getFamilyMembers = async (req, res) => {
 
 const filterDoctorsSpecialityDate = async(req,res)=>{
   try{
-    if (req.body.date) {
-      let busyDoctors = await appointmentModel.find({date:req.body.date});
+    if (req.query.date) {
+      let busyDoctors = await appointmentModel.find({date:req.query.date});
       const busyDoctorsMapped = busyDoctors.map(appointment=>appointment.doctor);
       //console.log(busyDoctorsMapped);
       let query = {};
-      if (req.body.speciality)
-        query["speciality"]=req.body.speciality
+      if (req.query.speciality)
+        query["speciality"]=req.query.speciality
       let doctors = await doctorModel.find(query);
       let availableDoctors = [];
       for (let i = 0; i < doctors.length; i++){
@@ -213,8 +213,8 @@ const filterDoctorsSpecialityDate = async(req,res)=>{
       }
       res.send(availableDoctors)
     }else {let query = {};
-    if (req.body.speciality)
-      query["speciality"]=req.body.speciality
+    if (req.query.speciality)
+      query["speciality"]=req.query.speciality
       let doctors = await doctorModel.find(query)
       res.send(doctors)
     }

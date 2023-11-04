@@ -36,14 +36,24 @@ header a {
   flex-direction: row;
 }
 
+.form-container {
+  max-width: 40%;
+  margin-right: 40px;
+}
+
 .create {
   display: flex;
   flex-direction: column;
   max-width: 40%;
   margin: 0 auto;
+  margin-top: 20px;
   padding: 30px;
   border-radius: 7px;
   background-color: #fff
+}
+
+.form-container > .create {
+  max-width: 100%;
 }
 
 .create > h3 {
@@ -72,6 +82,10 @@ header a {
 .family-members {
   width: 60%;
   font-size: 10px;
+}
+
+.family-form {
+  max-height: 330px
 }
 
 .details {
