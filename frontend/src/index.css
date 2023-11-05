@@ -30,20 +30,81 @@ header a {
   padding: 20px;
   margin: 0 auto;
 }
+/* homepage */
+.home {
+  display: grid;
+  grid-template-columns: 3fr 1fr;
+  gap: 100px;
+}
+.pharmacist-details, .doctor-details {
+  background: #fff;
+  border-radius: 4px;
+  margin: 20px auto;
+  padding: 20px;
+  position: relative;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
+}
+.pharmacist-details, .doctor-details h4 {
+  margin: 0 0 10px 0;
+  font-size: 1.2em;
+  color: var(--primary);
+}
+.pharmacist-details, .doctor-details p {
+  margin: 0;
+  font-size: 0.9em;
+  color: #555;
+}
+.pharmacist-details, .doctor-details span {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  cursor: pointer;
+  background: #f1f1f1;
+  padding: 6px;
+  border-radius: 50%;
+  color: #333;
+}
+
+.search-container {
+  display: flex;
+  flex-direction: row;
+}
+
+.form-container {
+  max-width: 40%;
+  margin-right: 40px;
+}
 
 .create {
   display: flex;
   flex-direction: column;
   max-width: 40%;
   margin: 0 auto;
+  margin-top: 20px;
   padding: 30px;
   border-radius: 7px;
   background-color: #fff
 }
 
+.form-container > .create {
+  max-width: 100%;
+}
+
+.create > h3 {
+  text-align: center;
+}
+
 .create > button {
   margin: 10px auto;
   width: 50%
+}
+
+.search-results {
+  display: flex;
+  flex-direction: column;
+  width: 60%;
+  padding: 30px;
+  border-radius: 7px;
 }
 
 .family-container {
@@ -57,14 +118,24 @@ header a {
   font-size: 10px;
 }
 
+.family-form {
+  max-height: 330px
+}
+
 .details {
   display: flex;
   flex-direction: row;
   justify-content: space-evenly;
   text-align: center;
   flex-wrap: wrap;
+  font-size: 10px;
   margin: 10px;
   padding: 10px 20px;
   border-radius: 5px;
   background-color: #fff;
+}
+
+a {
+    color:#333;
+    text-decoration: none;
 }

@@ -15,9 +15,9 @@ const FamilyMembers = () => {
         await axios.get('/getFamilyMembers?id='+id).then(
        (res) => {
            const members = res.data
-           console.log(members)
+           //console.log(members)
            setFamilyMembers(members)
-           console.log(familyMembers)
+           //console.log(familyMembers)
         }
         )
     }
