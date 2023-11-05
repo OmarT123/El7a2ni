@@ -32,8 +32,8 @@ const createAppointment = async (req, res) => {
 
 const filterAppointmentsForDoctor = async (req, res) => {
   // Need login
-  const dateToBeFiltered = req.body.date;
-  const statusToBeFiltered = req.body.status;
+  const dateToBeFiltered = req.query.date;
+  const statusToBeFiltered = req.query.status;
   const filterQuery = {};
 
   if (dateToBeFiltered) {
@@ -51,9 +51,7 @@ const filterAppointmentsForDoctor = async (req, res) => {
         .find(filterQuery)
         .populate({ path: "patient" });
       if (filteredAppointments.length === 0) {
-        return res
-          .status(404)
-          .json({ error: "No matching appointments found for the Doctor." });
+        return res.json("No matching appointments found for the Doctor." );
       }
       res.json(filteredAppointments);
     } catch (err) {
@@ -65,11 +63,16 @@ const filterAppointmentsForDoctor = async (req, res) => {
   } else {
     try {
       const filteredAppointments = await appointmentModel.find(filterQuery);
-      res.json(filteredAppointments);
+      if (filteredAppointments.length === 0) {
+        return res.json("No matching appointments found for the Doctor." );
+      } 
+      else{
+        res.json(filteredAppointments);
+      }     
     } catch (err) {
       console.error(err);
       res
-        .status(404)
+        .status(500)
         .json({ error: "No matching appointments found for the Doctor." });
     }
   }
