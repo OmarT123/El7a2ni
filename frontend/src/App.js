@@ -6,6 +6,7 @@ import Home from './pages/Home'
 import FilterAppointments from './components/FilterAppointments';
 import FilterAppointmentsForDoctor from './pages/FilterAppointmentsForDoctor';
 import FilterAppointmentsForPatient from './pages/FilterAppointmentsForPatient';
+import AddAdmin from './pages/AddAdmin';
 
 function App() {
   return (
@@ -18,6 +19,8 @@ function App() {
             <Route path='/FamilyMembers' element={<FamilyMembers/>}/>
             <Route path='/FilterAppointmentsForPatient' element={<FilterAppointmentsForPatient/>}/>
             <Route path='/FilterAppointmentsForDoctor' element={<FilterAppointmentsForDoctor/>}/>
+            <Route path='/AddAdmin' element={<AddAdmin/>}/>
+
             
           </Routes>
         </div>

@@ -29,6 +29,7 @@ const {
   selectDoctorFromFilterSearch
 } = require("./Routes/patientController");
 const {
+  addAdmin,
   addHealthPackage,
   editHealthPackage,
   deleteHealthPackage,
@@ -61,6 +62,7 @@ app.get("/viewDocInfo", viewDocInfo);
 app.delete("/deletePatient",deletePatient);
 app.delete("/deleteDoctor",deleteDoctor);
 app.delete("/deleteAdmin",deleteAdmin);
+app.post("/addAdmin",addAdmin);
 
 //Patient
 app.post("/addPatient", createPatient);
