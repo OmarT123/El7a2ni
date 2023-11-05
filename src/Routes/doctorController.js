@@ -130,13 +130,7 @@ const myPatients = async (req, res) => {
       .find({ doctor: new mongoose.Types.ObjectId(id) })
       .populate({ path: "patient" });
     let patients = AllmyAppointments.map((appointment) => appointment.patient);
-    let Patientinfo = patients.map((patient) => ({
-      name: patient.name,
-      birthDate: patient.birthDate,
-      gender: patient.gender,
-      mobileNumber: patient.mobileNumber,
-    }));
-    res.status(200).json(Patientinfo);
+    res.status(200).json(patients);
   } catch (err) {
     res.send(err.message);
   }
