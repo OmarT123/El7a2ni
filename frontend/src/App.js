@@ -13,6 +13,7 @@ import Patient from './pages/Patient'
 import FilterAppointmentsForDoctor from './pages/FilterAppointmentsForDoctor';
 import FilterAppointmentsForPatient from './pages/FilterAppointmentsForPatient';
 import AddAdmin from './pages/AddAdmin';
+import FilterPatientsByAppointments from './pages/FilterPatientsByAppointments'
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
             <Route path='/searchDoctor' element={<SearchDoctor/>}/>
             <Route path="/doctor" element={<Doctor/>}/>
             <Route path="/patient" element={<Patient/>}/>
+            <Route path="/FilterPatientsByAppointments" element={<FilterPatientsByAppointments />} />
           </Routes>
         </div>
       </BrowserRouter>
