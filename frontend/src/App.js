@@ -7,6 +7,9 @@ import FilterAppointments from './components/FilterAppointments';
 import FilterAppointmentsForDoctor from './pages/FilterAppointmentsForDoctor';
 import FilterAppointmentsForPatient from './pages/FilterAppointmentsForPatient';
 import AddAdmin from './pages/AddAdmin';
+import DeletePatient from './pages/DeletePatient';
+import DeleteAdmin from './pages/DeleteAdmin';
+import DeleteDoctor from './pages/DeleteDoctor';
 
 function App() {
   return (
@@ -20,6 +23,11 @@ function App() {
             <Route path='/FilterAppointmentsForPatient' element={<FilterAppointmentsForPatient/>}/>
             <Route path='/FilterAppointmentsForDoctor' element={<FilterAppointmentsForDoctor/>}/>
             <Route path='/AddAdmin' element={<AddAdmin/>}/>
+            <Route path='/DeletePatient' element={<DeletePatient/>}/>
+            <Route path='/DeleteAdmin' element={<DeleteAdmin/>}/>
+            <Route path='/DeleteDoctor' element={<DeleteDoctor/>}/>
+
+
 
             
           </Routes>
