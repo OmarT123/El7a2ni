@@ -49,7 +49,11 @@ const patientSchema = new Schema(
       { 
         type: String,
       }
-    ]
+    ],
+    healthPackage: {
+      type: mongoose.Types.ObjectId,
+      ref: 'HealthPackage',
+    }
   },
   { timestamps: true }
 );

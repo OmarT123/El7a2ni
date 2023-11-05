@@ -62,18 +62,18 @@ const createFamilyMember = async (req, res) => {
     await familyMember.save();
     patient.familyMembers.push(familyMember.id);
     await patient.save();
-    res.send(familyMember);
+    res.json("Family Member added successfully");
   } catch (err) {
     res.send(err);
   }
 };
 const searchForDoctorByNameSpeciality = async (req, res) => {
   const baseQuery = {};
-  if (req.body.name) {
-    baseQuery["name"] = new RegExp(req.body.name, "i");
+  if (req.query.name) {
+    baseQuery["name"] = new RegExp(req.query.name, "i");
   }
-  if (req.body.speciality) {
-    baseQuery["speciality"] = new RegExp(req.body.speciality, "i");
+  if (req.query.speciality) {
+    baseQuery["speciality"] = new RegExp(req.query.speciality, "i");
   }
   try {
     const doctors = await doctorModel.find(baseQuery);
@@ -159,10 +159,8 @@ const selectDoctorFromFilterSearch = async (req, res) => {
   
 const getFamilyMembers = async (req, res) => {
   try {
-    const patientId = new mongoose.Types.ObjectId(req.query.id);
-    const patientList = await patientModel
-      .findById(patientId)
-      .populate({ path: "familyMembers" });
+    const patientId = req.query.id;
+    const patient = await patientModel.findById(patientId).populate({path:"familyMembers"})
     const familyMember = patient.familyMembers;
     res.json(familyMember);
   } catch (err) {
@@ -194,13 +192,13 @@ const getFamilyMembers = async (req, res) => {
 
 const filterDoctorsSpecialityDate = async(req,res)=>{
   try{
-    if (req.body.date) {
-      let busyDoctors = await appointmentModel.find({date:req.body.date});
+    if (req.query.date) {
+      let busyDoctors = await appointmentModel.find({date:req.query.date});
       const busyDoctorsMapped = busyDoctors.map(appointment=>appointment.doctor);
       //console.log(busyDoctorsMapped);
       let query = {};
-      if (req.body.speciality)
-        query["speciality"]=req.body.speciality
+      if (req.query.speciality)
+        query["speciality"]=req.query.speciality
       let doctors = await doctorModel.find(query);
       let availableDoctors = [];
       for (let i = 0; i < doctors.length; i++){
@@ -215,8 +213,8 @@ const filterDoctorsSpecialityDate = async(req,res)=>{
       }
       res.send(availableDoctors)
     }else {let query = {};
-    if (req.body.speciality)
-      query["speciality"]=req.body.speciality
+    if (req.query.speciality)
+      query["speciality"]=req.query.speciality
       let doctors = await doctorModel.find(query)
       res.send(doctors)
     }
@@ -224,6 +222,27 @@ const filterDoctorsSpecialityDate = async(req,res)=>{
   {
     res.send(err.message)
   }
+}
+
+const getDoctors = async (req, res) => {
+  try{
+    const doctors = await doctorModel.find({})
+    const clinicMarkUp= 10;
+    const patientId = req.query.id;
+    const patient = await patientModel.findById(patientId).populate({path:"healthPackage"});
+    const discount = 0
+    let data=[]
+    for (let index = 0; index < doctors.length; index++) {
+        const element = doctors[index]._doc;
+        const sessionPrice=(element.hourlyRate+10/100*clinicMarkUp-discount)
+        data.push( {...element,sessionPrice:sessionPrice});
+    }
+    res.status(200).json(data)
+  }
+
+catch(error){
+  res.status(400).json({error:error.message})
+}
 }
 
 module.exports = {
@@ -236,5 +255,6 @@ module.exports = {
   filterDoctorsSpecialityDate,
   selectDoctorFromFilterSearch,
   viewMyPrescriptions,
-  selectPrescription
+  selectPrescription,
+  getDoctors
 };
