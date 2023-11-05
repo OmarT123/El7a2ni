@@ -13,9 +13,7 @@ const UnapprovedDoctors = () => {
     await axios.get('/viewDocInfo').then(
             (res) => { 
                 const doctors = res.data
-                console.log(doctors)
                 setDoctors(doctors)
-                
             }
              );
           }
