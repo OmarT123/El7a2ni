@@ -7,6 +7,7 @@ import UnapprovedDoctors from './pages/unApprovedDoctors'
 import FamilyMembers from './pages/FamilyMembers';
 import FilterAppointmentsForDoctor from './pages/FilterAppointmentsForDoctor';
 import FilterAppointmentsForPatient from './pages/FilterAppointmentsForPatient';
+import AddAdmin from './pages/AddAdmin';
 import SearchDoctor from './pages/SearchDoctor';
 import Doctor from './pages/Doctor';
 
@@ -22,6 +23,7 @@ function App() {
             <Route path='/FamilyMembers' element={<FamilyMembers/>}/>
             <Route path='/FilterAppointmentsForPatient' element={<FilterAppointmentsForPatient/>}/>
             <Route path='/FilterAppointmentsForDoctor' element={<FilterAppointmentsForDoctor/>}/>
+            <Route path='/AddAdmin' element={<AddAdmin/>}/>
             <Route path='/searchDoctor' element={<SearchDoctor/>}/>
             <Route path="/doctor" element={<Doctor/>}/>
           </Routes>
