@@ -16,9 +16,6 @@ const MyPatients = () => {
 
         }
          );
-
-
-
     }
     useEffect(() => 
     {
