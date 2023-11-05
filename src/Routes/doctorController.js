@@ -121,7 +121,7 @@ const editDoctor = async (req, res) => {
       },
       { new: true }
     );
-    res.send(updatedDoctor);
+    res.json("Details updated successfully");
   } catch (err) {
     res.send(err.message);
   }
@@ -133,12 +133,7 @@ const myPatients = async (req, res) => {
       .find({ doctor: new mongoose.Types.ObjectId(id) })
       .populate({ path: "patient" });
     let patients = AllmyAppointments.map((appointment) => appointment.patient);
-    let Patientinfo = patients.map((patient) => ({
-      name: patient.name,
-      birthDate: patient.birthDate,
-      records: patient.HealthRecords,
-    }));
-    res.status(200).json(Patientinfo);
+    res.status(200).json(patients);
   } catch (err) {
     res.send(err.message);
   }
@@ -169,7 +164,6 @@ const viewPatient = async (req, res) => {
       birthDate: patient.birthDate,
       gender: patient.gender,
       mobileNumber:patient.mobileNumber,
-      records: patient.HealthRecords
     }));
     res.status(200).json(Patientinfo);
     }

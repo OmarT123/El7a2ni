@@ -85,6 +85,15 @@ header a {
   border-radius: 7px;
   background-color: #fff
 }
+.edit {
+  display: flex;
+  flex-direction: column;
+  max-width: 40%;
+  margin: 0 auto;
+  padding: 30px;
+  border-radius: 7px;
+  background-color: navajowhite;
+}
 
 .form-container > .create {
   max-width: 100%;
@@ -97,6 +106,24 @@ header a {
 .create > button {
   margin: 10px auto;
   width: 50%
+}
+
+.user-info{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  text-align: center;
+  flex-wrap: wrap;
+  font-size: 10px;
+  margin: 10px;
+  padding: 10px 20px;
+  border-radius: 5px;
+  background-color: #fff;
+}
+.patients-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
 }
 
 .search-results {
@@ -114,6 +141,10 @@ header a {
 }
 
 .family-members {
+  width: 60%;
+  font-size: 10px;
+}
+.Patient {
   width: 60%;
   font-size: 10px;
 }
