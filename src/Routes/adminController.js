@@ -3,6 +3,19 @@ const patientModel = require("../Models/Patient.js");
 const adminModel = require("../Models/Admin.js");
 const healthPackageModel = require("../Models/HealthPackage.js");
 
+
+const addAdmin = async (req, res) => {
+  let username = req.body.username;
+  let password = req.body.password;
+  try {
+    const admin = await adminModel.create({ username, password });
+    await admin.save();
+    res.json("Admin Created Successfully !!");
+  } catch (err) {
+    res.send(err.message);
+  }
+};
+
 const viewDocInfo = async (req, res) => {
   try {
     const doctors = doctorModel
@@ -99,4 +112,5 @@ module.exports = {
   deletePatient,
   deleteDoctor,
   deleteAdmin,
+  addAdmin
 };
