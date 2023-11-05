@@ -3,7 +3,6 @@ import {BrowserRouter, Routes, Route} from 'react-router-dom'
 import NavBar from './components/NavBar'
 import FamilyMembers from './pages/FamilyMembers';
 import Home from './pages/Home'
-import FilterAppointments from './components/FilterAppointments';
 import FilterAppointmentsForDoctor from './pages/FilterAppointmentsForDoctor';
 import FilterAppointmentsForPatient from './pages/FilterAppointmentsForPatient';
 
