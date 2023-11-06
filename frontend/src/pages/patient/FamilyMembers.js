@@ -1,8 +1,8 @@
 import axios from 'axios'
 import {useState,useEffect} from 'react'
 
-import FamilyMemberForm from '../components/FamilyMemberForm'
-import FamilyMemberDetails from '../components/FamilyMemberDetails'
+import FamilyMemberForm from '../../components/patient/FamilyMemberForm'
+import FamilyMemberDetails from '../../components/patient/FamilyMemberDetails'
 
 const FamilyMembers = () => {
     const [familyMembers, setFamilyMembers] = useState(null)
