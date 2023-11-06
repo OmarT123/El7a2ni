@@ -3,19 +3,6 @@ const patientModel = require("../Models/Patient.js");
 const adminModel = require("../Models/Admin.js");
 const healthPackageModel = require("../Models/HealthPackage.js");
 
-
-const addAdmin = async (req, res) => {
-  let username = req.body.username;
-  let password = req.body.password;
-  try {
-    const admin = await adminModel.create({ username, password });
-    await admin.save();
-    res.json("Admin Created Successfully !!");
-  } catch (err) {
-    res.send(err.message);
-  }
-};
-
 const viewDocInfo = async (req, res) => {
   try {
     const doctors = doctorModel
@@ -102,41 +89,6 @@ const deleteAdmin = async (req, res) => {
   }
 };
 
-const getAllPatients = async (req,res) => {
-
-  try {
-    const allPatient = await patientModel.find({}).populate({path:'familyMembers'}).exec();
-    res.json(allPatient);
-  }
-  catch(error){
-    res.status(500).json({ error: error.message });
-
-  }
-}
-const getAllDoctors = async (req,res) => {
-
-  try {
-    const allDoctors = await doctorModel.find({});
-    res.json(allDoctors);
-  }
-  catch(error){
-    res.status(500).json({ error: error.message });
-
-  }
-}
-
-const getAllAdmins = async (req,res) => {
-
-  try {
-    const allAdmins = await adminModel.find({});
-    res.json(allAdmins);
-  }
-  catch(error){
-    res.status(500).json({ error: error.message });
-
-  }
-}
-
 
 
 module.exports = {
@@ -147,8 +99,4 @@ module.exports = {
   deletePatient,
   deleteDoctor,
   deleteAdmin,
-  addAdmin,
-  getAllPatients,
-  getAllAdmins,
-  getAllDoctors
 };
