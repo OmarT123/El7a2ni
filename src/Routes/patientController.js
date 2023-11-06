@@ -27,7 +27,7 @@ const createPatient = async (req, res) => {
       mobileNumber,
       emergencyContact,
     });
-    res.status(200).json(patient);
+    res.status(200).json("Created Successfully");
   } catch (error) {
     res.status(404).json({ error: error.message });
   }
@@ -85,23 +85,29 @@ const searchForDoctorByNameSpeciality = async (req, res) => {
 
 const filterPrescriptionByDateDoctorStatus = async (req, res) => {
   const baseQuery = {};
-  if (req.body.doctor) {
-    //baseQuery["doctor"] = new RegExp(req.body.doctor, "i");
-    baseQuery["doctor"] = new mongoose.Types.ObjectId(req.body.doctor);
-  }
-  if (req.body.filled || req.body.filled == false) {
+  baseQuery["patient"]=new mongoose.Types.ObjectId(req.query.id)
+  // if (req.query.doctor) {
+  //   //baseQuery["doctor"] = new RegExp(req.body.doctor, "i");
+  //   baseQuery["doctor"] = new mongoose.Types.ObjectId(req.query.doctor);
+  // }
+  if (req.query.filled || req.query.filled == false) {
     //baseQuery["filled"] = new RegExp(req.body.filled, "i");
-    baseQuery["filled"] = req.body.filled;
+    baseQuery["filled"] = req.query.filled;
   }
-  if (req.body.date) {
+  if (req.query.date) {
     //baseQuery["date"] = new RegExp(`^${req.body.date.replace(/\//, "\\/")}$`);
-    baseQuery["createdAt"] = req.body.date;
+    baseQuery["createdAt"] = req.query.date;
   }
   try {
-    console.log(baseQuery);
-    const prescriptions = await prescriptionModel.find(baseQuery);
-    res.json(prescriptions);
-  } catch (err) {
+    const prescriptions = await prescriptionModel.find(baseQuery).populate({path:"doctor"});
+    if (!req.query.doctor)
+      res.json(prescriptions);
+    else{
+      const searchName = new RegExp(req.query.doctor, "i")
+      const result = prescriptions.filter(elem => elem.doctor.name === searchName)
+      
+    }
+    } catch (err) {
     //res.status(500).send({ message: "No prescriptions found!" });
     res.status(404).send({ message: "No prescriptions found!" });
   }
@@ -180,7 +186,7 @@ const getFamilyMembers = async (req, res) => {
  const viewMyPrescriptions = async (req, res) => {
   try {
     const patientId = req.query.id;
-    const prescriptions = await prescriptionModel.find({ patient: new mongoose.Types.ObjectId(patientId) })
+    const prescriptions = await prescriptionModel.find({ patient: new mongoose.Types.ObjectId(patientId) }).populate({path:"doctor", model:"Doctor", select:"name"})
     res.json(prescriptions);
   }
   catch (err) {

@@ -7,7 +7,7 @@ const { default: mongoose } = require("mongoose");
 
 const createPrescription = async(req,res)=>{
   try {
-    let prescription = await prescriptionModel.create({filled:req.body.filled, patient:req.body.patient,doctor:req.body.patient,medicines:req.body.medicines})
+    let prescription = await prescriptionModel.create({filled:req.body.filled, patient:req.body.patient,doctor:req.body.doctor,medicines:req.body.medicines})
     await prescription.save();
     res.send(prescription)
   }catch(err){
@@ -102,7 +102,7 @@ const addDoctor = async (req, res) => {
       educationalBackground,
       speciality,
     });
-    res.status(200).json(doctor);
+    res.status(200).json("Applied Successfully");
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
