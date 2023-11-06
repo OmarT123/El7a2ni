@@ -1,7 +1,6 @@
-import {Link} from 'react-router-dom'
+import {Link} from 'react-router-dom';
 const DoctorDetails = ({doctor}) => 
-{
-    const pageLink = "/doctor?id="+doctor._id
+{   const pageLink = "/doctor?id="+doctor._id;
     return (
         <Link to={pageLink}>
             <div className="doctor-details">

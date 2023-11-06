@@ -3,11 +3,13 @@ import {BrowserRouter, Routes, Route} from 'react-router-dom'
 
 import Home from './pages/Home'
 import NavBar from './components/NavBar'
+import UnapprovedDoctors from './pages/admin/unApprovedDoctors';
 import HealthPackage from './pages/HealthPackage';
 import HealthPackageInfo from './pages/HealthPackageInfo';
-import UnapprovedDoctors from './pages/admin/unApprovedDoctors';
 import FamilyMembers from './pages/patient/FamilyMembers'
 import DoctoreditForm from './components/doctor/DoctoreditForm';
+import ViewMyPrescriptions from './pages/ViewMyPrescriptions';
+import SelectedPrescription from './pages/SelectedPrescription';
 import MyPatients from './pages/doctor/MyPatients';
 import SearchDoctor from './pages/doctor/Doctor'
 import Prescription from './pages/patient/Prescription'
@@ -50,6 +52,13 @@ function App() {
             <Route path="/deleteDoctor" element={<DeleteDoctor/>}/>
             <Route path="/Prescription" element={<Prescription/>}/>
             <Route path="/FilterPatientsByAppointments" element={<FilterPatientsByAppointments/>}/>
+            <Route path='/SearchDoctor' element={<SearchDoctor/>}/>
+            <Route path="/doctor" element={<Doctor/>}/>
+            <Route path="/patient" element={<Patient/>}/>
+            <Route path="/ViewMyPrescriptions" element={<ViewMyPrescriptions/>}/>
+            <Route path="/SelectedPrescription" element={<SelectedPrescription/>}/>
+
+
           </Routes>
         </div>
       </BrowserRouter>

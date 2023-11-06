@@ -339,3 +339,53 @@ a {
   background-color: #D2B48C;
 
 }
+
+/* Styles for the outer container */
+.medicine-card , .prescription-card{
+  border: 1px solid #cccccc;
+  margin: 10px;
+  padding: 10px;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(53, 39, 39, 0.1);
+}
+
+/* Styles for the medicine information container */
+.medicine-info {
+  margin-top: 10px;
+  color :rgb(20, 186, 128)
+}
+
+/* Style for the medicine image */
+.medicine-image {
+  max-width: 100%;
+  height: auto;
+  margin-top: 10px;
+}
+
+/* Style for the h4 heading */
+.medicine-card  {
+  margin: 0;
+  font-size: 18px;
+  color: #333;
+}
+.h3-viewmyPres  {
+  margin: 0;
+  font-size: 18px;
+  color: rgb(186, 20, 20);
+}
+
+
+/* Style for the strong elements */
+strong {
+  display: block;
+  font-weight: bold;
+  margin: 5px 0;
+  color: #666;
+}
+
+/* Style for the loading message */
+.loading-message {
+  font-weight: bold;
+  color: #999;
+}
+

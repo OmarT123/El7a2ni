@@ -2,6 +2,7 @@ const familyModel = require("../Models/FamilyMember.js");
 const patientModel = require("../Models/Patient.js");
 const appointmentModel = require("../Models/Appointment.js");
 const doctorModel = require("../Models/Doctor.js");
+const medicineModel = require("../Models/Medicine.js")
 const prescriptionModel = require("../Models/Prescription.js");
 const mongoose = require("mongoose");
 
@@ -85,11 +86,11 @@ const searchForDoctorByNameSpeciality = async (req, res) => {
 
 const filterPrescriptionByDateDoctorStatus = async (req, res) => {
   const baseQuery = {};
-  baseQuery["patient"]=new mongoose.Types.ObjectId(req.query.id)
-  // if (req.query.doctor) {
-  //   //baseQuery["doctor"] = new RegExp(req.body.doctor, "i");
-  //   baseQuery["doctor"] = new mongoose.Types.ObjectId(req.query.doctor);
-  // }
+  baseQuery["patient"] =  new mongoose.Types.ObjectId(req.query.id)
+  if (req.query.doctor) {
+    //baseQuery["doctor"] = new RegExp(req.body.doctor, "i");
+    baseQuery["doctor"] = new mongoose.Types.ObjectId(req.query.doctor);
+  }
   if (req.query.filled || req.query.filled == false) {
     //baseQuery["filled"] = new RegExp(req.body.filled, "i");
     baseQuery["filled"] = req.query.filled;
@@ -99,15 +100,12 @@ const filterPrescriptionByDateDoctorStatus = async (req, res) => {
     baseQuery["createdAt"] = req.query.date;
   }
   try {
-    const prescriptions = await prescriptionModel.find(baseQuery).populate({path:"doctor"});
-    if (!req.query.doctor)
-      res.json(prescriptions);
-    else{
-      const searchName = new RegExp(req.query.doctor, "i")
-      const result = prescriptions.filter(elem => elem.doctor.name === searchName)
-      
-    }
-    } catch (err) {
+    const prescriptions = await prescriptionModel.find(baseQuery).populate({path:"medicines.medId"});
+    // console.log(baseQuery)
+    // console.log(prescriptions)
+    // const filtered = prescriptions.filter(pres => toString(pres._id) === req.query.id)
+    res.json(prescriptions);
+  } catch (err) {
     //res.status(500).send({ message: "No prescriptions found!" });
     res.status(404).send({ message: "No prescriptions found!" });
   }
@@ -186,7 +184,8 @@ const getFamilyMembers = async (req, res) => {
  const viewMyPrescriptions = async (req, res) => {
   try {
     const patientId = req.query.id;
-    const prescriptions = await prescriptionModel.find({ patient: new mongoose.Types.ObjectId(patientId) }).populate({path:"doctor", model:"Doctor", select:"name"})
+    const prescriptions = await prescriptionModel.find({ patient: new mongoose.Types.ObjectId(patientId) }).populate({path:'medicines.medId'}).exec();
+
     res.json(prescriptions);
   }
   catch (err) {
@@ -197,8 +196,9 @@ const getFamilyMembers = async (req, res) => {
   
   const selectPrescription = async (req, res) => {
   try {
-    const prescriptionId = req.query.prescriptionId;
-    const prescription = await prescriptionModel.findById(prescriptionId);
+    const prescriptionId = req.query.id;
+    const prescription = await prescriptionModel.findById(prescriptionId).populate({path :'medicines.medId'}).exec();
+    console.log(prescription)
     res.status(200).json(prescription);
   } catch (error) {
     res.status(404).json({ error: error.message });
