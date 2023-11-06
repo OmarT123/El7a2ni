@@ -27,7 +27,7 @@ const createPatient = async (req, res) => {
       mobileNumber,
       emergencyContact,
     });
-    res.status(200).json(patient);
+    res.status(200).json("Created Successfully");
   } catch (error) {
     res.status(404).json({ error: error.message });
   }
@@ -69,11 +69,11 @@ const createFamilyMember = async (req, res) => {
 };
 const searchForDoctorByNameSpeciality = async (req, res) => {
   const baseQuery = {};
-  if (req.body.name) {
-    baseQuery["name"] = new RegExp(req.body.name, "i");
+  if (req.query.name) {
+    baseQuery["name"] = new RegExp(req.query.name, "i");
   }
-  if (req.body.speciality) {
-    baseQuery["speciality"] = new RegExp(req.body.speciality, "i");
+  if (req.query.speciality) {
+    baseQuery["speciality"] = new RegExp(req.query.speciality, "i");
   }
   try {
     const doctors = await doctorModel.find(baseQuery);
@@ -85,23 +85,29 @@ const searchForDoctorByNameSpeciality = async (req, res) => {
 
 const filterPrescriptionByDateDoctorStatus = async (req, res) => {
   const baseQuery = {};
-  if (req.body.doctor) {
-    //baseQuery["doctor"] = new RegExp(req.body.doctor, "i");
-    baseQuery["doctor"] = new mongoose.Types.ObjectId(req.body.doctor);
-  }
-  if (req.body.filled || req.body.filled == false) {
+  baseQuery["patient"]=new mongoose.Types.ObjectId(req.query.id)
+  // if (req.query.doctor) {
+  //   //baseQuery["doctor"] = new RegExp(req.body.doctor, "i");
+  //   baseQuery["doctor"] = new mongoose.Types.ObjectId(req.query.doctor);
+  // }
+  if (req.query.filled || req.query.filled == false) {
     //baseQuery["filled"] = new RegExp(req.body.filled, "i");
-    baseQuery["filled"] = req.body.filled;
+    baseQuery["filled"] = req.query.filled;
   }
-  if (req.body.date) {
+  if (req.query.date) {
     //baseQuery["date"] = new RegExp(`^${req.body.date.replace(/\//, "\\/")}$`);
-    baseQuery["createdAt"] = req.body.date;
+    baseQuery["createdAt"] = req.query.date;
   }
   try {
-    console.log(baseQuery);
-    const prescriptions = await prescriptionModel.find(baseQuery);
-    res.json(prescriptions);
-  } catch (err) {
+    const prescriptions = await prescriptionModel.find(baseQuery).populate({path:"doctor"});
+    if (!req.query.doctor)
+      res.json(prescriptions);
+    else{
+      const searchName = new RegExp(req.query.doctor, "i")
+      const result = prescriptions.filter(elem => elem.doctor.name === searchName)
+      
+    }
+    } catch (err) {
     //res.status(500).send({ message: "No prescriptions found!" });
     res.status(404).send({ message: "No prescriptions found!" });
   }
@@ -180,7 +186,7 @@ const getFamilyMembers = async (req, res) => {
  const viewMyPrescriptions = async (req, res) => {
   try {
     const patientId = req.query.id;
-    const prescriptions = await prescriptionModel.find({ patient: new mongoose.Types.ObjectId(patientId) })
+    const prescriptions = await prescriptionModel.find({ patient: new mongoose.Types.ObjectId(patientId) }).populate({path:"doctor", model:"Doctor", select:"name"})
     res.json(prescriptions);
   }
   catch (err) {
@@ -201,13 +207,13 @@ const getFamilyMembers = async (req, res) => {
 
 const filterDoctorsSpecialityDate = async(req,res)=>{
   try{
-    if (req.body.date) {
-      let busyDoctors = await appointmentModel.find({date:req.body.date});
+    if (req.query.date) {
+      let busyDoctors = await appointmentModel.find({date:req.query.date});
       const busyDoctorsMapped = busyDoctors.map(appointment=>appointment.doctor);
       //console.log(busyDoctorsMapped);
       let query = {};
-      if (req.body.speciality)
-        query["speciality"]=req.body.speciality
+      if (req.query.speciality)
+        query["speciality"]=req.query.speciality
       let doctors = await doctorModel.find(query);
       let availableDoctors = [];
       for (let i = 0; i < doctors.length; i++){
@@ -222,8 +228,8 @@ const filterDoctorsSpecialityDate = async(req,res)=>{
       }
       res.send(availableDoctors)
     }else {let query = {};
-    if (req.body.speciality)
-      query["speciality"]=req.body.speciality
+    if (req.query.speciality)
+      query["speciality"]=req.query.speciality
       let doctors = await doctorModel.find(query)
       res.send(doctors)
     }
@@ -231,6 +237,27 @@ const filterDoctorsSpecialityDate = async(req,res)=>{
   {
     res.send(err.message)
   }
+}
+
+const getDoctors = async (req, res) => {
+  try{
+    const doctors = await doctorModel.find({})
+    const clinicMarkUp= 10;
+    const patientId = req.query.id;
+    const patient = await patientModel.findById(patientId).populate({path:"healthPackage"});
+    const discount = 0
+    let data=[]
+    for (let index = 0; index < doctors.length; index++) {
+        const element = doctors[index]._doc;
+        const sessionPrice=(element.hourlyRate+10/100*clinicMarkUp-discount)
+        data.push( {...element,sessionPrice:sessionPrice});
+    }
+    res.status(200).json(data)
+  }
+
+catch(error){
+  res.status(400).json({error:error.message})
+}
 }
 
 module.exports = {
@@ -243,5 +270,6 @@ module.exports = {
   filterDoctorsSpecialityDate,
   selectDoctorFromFilterSearch,
   viewMyPrescriptions,
-  selectPrescription
+  selectPrescription,
+  getDoctors
 };

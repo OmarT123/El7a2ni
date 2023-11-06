@@ -1,8 +1,8 @@
 import axios from 'axios'
 import {useState,useEffect} from 'react'
 
-import FamilyMemberForm from '../components/FamilyMemberForm'
-import FamilyMemberDetails from '../components/FamilyMemberDetails'
+import FamilyMemberForm from '../../components/patient/FamilyMemberForm'
+import FamilyMemberDetails from '../../components/patient/FamilyMemberDetails'
 
 const FamilyMembers = () => {
     const [familyMembers, setFamilyMembers] = useState(null)
@@ -10,14 +10,14 @@ const FamilyMembers = () => {
 
     const getFamilyMembers = async () => {
         // temporarily hard coded id until a user is logged in
-        const id = "6547e768dcd67a6e8e1d04bb";
+        const id = "654814b4801a1dd510bd5b98"
 
         await axios.get('/getFamilyMembers?id='+id).then(
        (res) => {
            const members = res.data
-           console.log(members)
+           //console.log(members)
            setFamilyMembers(members)
-           console.log(familyMembers)
+           //console.log(familyMembers)
         }
         )
     }
