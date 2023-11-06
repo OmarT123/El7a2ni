@@ -167,7 +167,7 @@ module.exports = {
   deleteAdmin,
   addAdmin,
   getAllHealthPackages,
-  getHealthPackage
+  getHealthPackage,
   getAllPatients,
   getAllAdmins,
   getAllDoctors

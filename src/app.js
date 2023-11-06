@@ -39,7 +39,7 @@ const {
   deleteDoctor,
   deleteAdmin,
   getAllHealthPackages,
-  getHealthPackage
+  getHealthPackage ,
   getAllAdmins,
   getAllDoctors,
   getAllPatients
