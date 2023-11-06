@@ -3,6 +3,8 @@ import {BrowserRouter, Routes, Route} from 'react-router-dom'
 
 import Home from './pages/Home'
 import NavBar from './components/NavBar'
+import HealthPackage from './pages/HealthPackage';
+import HealthPackageInfo from './pages/HealthPackageInfo';
 import UnapprovedDoctors from './pages/admin/unApprovedDoctors';
 import FamilyMembers from './pages/patient/FamilyMembers'
 import DoctoreditForm from './components/doctor/DoctoreditForm';
@@ -36,7 +38,8 @@ function App() {
             <Route path='/FilterAppointmentsForPatient' element={<FilterAppointmentsForPatient/>}/>
             <Route path='/FilterAppointmentsForDoctor' element={<FilterAppointmentsForDoctor/>}/>
             <Route path='/AddAdmin' element={<AddAdmin/>}/>
-
+            <Route path="/HealthPackage" element={<HealthPackage />} />
+            <Route path="/HealthPackageInfo" element={<HealthPackageInfo />} />
             <Route path="/SearchDoctor" element={<SearchDoctor />} />
             <Route path="/registerPatient" element={<RegisterPatient />} />
             <Route path="/registerDoctor" element={<RegisterDoctor />} />
@@ -47,9 +50,6 @@ function App() {
             <Route path="/deleteDoctor" element={<DeleteDoctor/>}/>
             <Route path="/Prescription" element={<Prescription/>}/>
             <Route path="/FilterPatientsByAppointments" element={<FilterPatientsByAppointments/>}/>
-            
-            
-            
           </Routes>
         </div>
       </BrowserRouter>

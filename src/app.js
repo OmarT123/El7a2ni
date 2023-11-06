@@ -38,6 +38,8 @@ const {
   deletePatient,
   deleteDoctor,
   deleteAdmin,
+  getAllHealthPackages,
+  getHealthPackage
   getAllAdmins,
   getAllDoctors,
   getAllPatients
@@ -67,11 +69,11 @@ app.delete("/deletePatient",deletePatient);
 app.delete("/deleteDoctor",deleteDoctor);
 app.delete("/deleteAdmin",deleteAdmin);
 app.post("/addAdmin",addAdmin);
+app.get("/getAllHealthPackages",getAllHealthPackages)
+app.get("/getHealthPackage",getHealthPackage)
 app.get("/getAllAdmins",getAllAdmins);
 app.get("/getAllDoctors",getAllDoctors);
 app.get("/getAllPatients",getAllPatients);
-
-
 
 //Patient
 app.post("/addPatient", createPatient);
