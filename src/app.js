@@ -29,17 +29,13 @@ const {
   selectDoctorFromFilterSearch
 } = require("./Routes/patientController");
 const {
-  addAdmin,
   addHealthPackage,
   editHealthPackage,
   deleteHealthPackage,
   viewDocInfo,
   deletePatient,
   deleteDoctor,
-  deleteAdmin,
-  getAllAdmins,
-  getAllDoctors,
-  getAllPatients
+  deleteAdmin
 } = require("./Routes/adminController.js");
 
 const app = express();
@@ -65,12 +61,6 @@ app.get("/viewDocInfo", viewDocInfo);
 app.delete("/deletePatient",deletePatient);
 app.delete("/deleteDoctor",deleteDoctor);
 app.delete("/deleteAdmin",deleteAdmin);
-app.post("/addAdmin",addAdmin);
-app.get("/getAllAdmins",getAllAdmins);
-app.get("/getAllDoctors",getAllDoctors);
-app.get("/getAllPatients",getAllPatients);
-
-
 
 //Patient
 app.post("/addPatient", createPatient);
