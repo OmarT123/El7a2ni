@@ -6,6 +6,7 @@ const doctorSchema = new Schema(
     username: {
       type: String,
       required: true,
+      unique : true
     },
     name: {
       type: String,

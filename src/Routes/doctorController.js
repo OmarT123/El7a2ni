@@ -7,7 +7,7 @@ const { default: mongoose } = require("mongoose");
 
 const createPrescription = async(req,res)=>{
   try {
-    let prescription = await prescriptionModel.create({filled:req.body.filled, patient:req.body.patient,doctor:req.body.patient,medicines:req.body.medicines})
+    let prescription = await prescriptionModel.create({filled:req.body.filled, patient:req.body.patient,doctor:req.body.doctor,medicines:req.body.medicines})
     await prescription.save();
     res.send(prescription)
   }catch(err){
@@ -102,7 +102,7 @@ const addDoctor = async (req, res) => {
       educationalBackground,
       speciality,
     });
-    res.status(200).json(doctor);
+    res.status(200).json("Applied Successfully");
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -155,17 +155,11 @@ const viewPatient = async (req, res) => {
   const exactPatients = async (req, res) => {
     try{
     let id=req.query.id;
-    let {name}= req.body;
+    let name= req.query.name;
     let AllmyAppointments= await appointmentModel.find({ doctor:new mongoose.Types.ObjectId(id)}).populate({path:'patient'});
     let patients = AllmyAppointments.map(appointment => appointment.patient);
     let filteredPatients = patients.filter(patient => patient.name === name);
-    let Patientinfo = filteredPatients.map(patient => ({
-      name: patient.name,
-      birthDate: patient.birthDate,
-      gender: patient.gender,
-      mobileNumber:patient.mobileNumber,
-    }));
-    res.status(200).json(Patientinfo);
+    res.status(200).json(filteredPatients);
     }
     catch(err){
       res.send(err.message);

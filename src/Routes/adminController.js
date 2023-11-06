@@ -116,10 +116,45 @@ const getHealthPackage = async (req,res) => {
     const id = req.query.id
     const hpackage = await healthPackageModel.findById(id)
     res.json(hpackage)
-
   }catch(err)
   {res.json(err.message)}
 }
+
+const getAllPatients = async (req,res) => {
+
+  try {
+    const allPatient = await patientModel.find({}).populate({path:'familyMembers'}).exec();
+    res.json(allPatient);
+  }
+  catch(error){
+    res.status(500).json({ error: error.message });
+
+  }
+}
+const getAllDoctors = async (req,res) => {
+
+  try {
+    const allDoctors = await doctorModel.find({});
+    res.json(allDoctors);
+  }
+  catch(error){
+    res.status(500).json({ error: error.message });
+
+  }
+}
+
+const getAllAdmins = async (req,res) => {
+
+  try {
+    const allAdmins = await adminModel.find({});
+    res.json(allAdmins);
+  }
+  catch(error){
+    res.status(500).json({ error: error.message });
+
+  }
+}
+
 
 
 module.exports = {
@@ -133,4 +168,7 @@ module.exports = {
   addAdmin,
   getAllHealthPackages,
   getHealthPackage
+  getAllPatients,
+  getAllAdmins,
+  getAllDoctors
 };

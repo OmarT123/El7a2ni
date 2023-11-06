@@ -40,6 +40,9 @@ const {
   deleteAdmin,
   getAllHealthPackages,
   getHealthPackage
+  getAllAdmins,
+  getAllDoctors,
+  getAllPatients
 } = require("./Routes/adminController.js");
 
 const app = express();
@@ -68,6 +71,9 @@ app.delete("/deleteAdmin",deleteAdmin);
 app.post("/addAdmin",addAdmin);
 app.get("/getAllHealthPackages",getAllHealthPackages)
 app.get("/getHealthPackage",getHealthPackage)
+app.get("/getAllAdmins",getAllAdmins);
+app.get("/getAllDoctors",getAllDoctors);
+app.get("/getAllPatients",getAllPatients);
 
 //Patient
 app.post("/addPatient", createPatient);
