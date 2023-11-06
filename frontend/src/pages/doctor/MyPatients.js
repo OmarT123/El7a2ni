@@ -9,7 +9,7 @@ const MyPatients = () => {
     const [Patients,setPatients] = useState([]);
     const[name,setName]=useState('');
    //hardcoded id for a doctor
-    const id = "653e568a25a9d07a9ad10789"
+    const id = "65496e4a5c31c981636dc271"
     
     
     const search = async(e) => {

@@ -13,7 +13,7 @@ const FamilyMemberForm  = ({handleClick}) => {
         e.preventDefault()
 
         // temporarily hard coded id until a user is logged in
-        const id = "654814b4801a1dd510bd5b98"
+        const id = "654965e73fe9729145b6ddbd"
 
         const familyMember = {name, nationalId, age, gender, relationToPatient}
         const response = await axios.post("/addFamilyMember?id="+id,familyMember)
