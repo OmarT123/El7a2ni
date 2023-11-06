@@ -6,6 +6,7 @@ const patientSchema = new Schema(
     username: {
       type: String,
       required: true,
+      uniqure : true
     },
     name: {
       type: String,

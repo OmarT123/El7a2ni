@@ -17,6 +17,9 @@ import FilterAppointmentsForDoctor from './pages/doctor/FilterAppointmentsForDoc
 import FilterAppointmentsForPatient from './pages/patient/FilterAppointmentsForPatient';
 import AddAdmin from './pages/admin/AddAdmin'
 import FilterPatientsByAppointments from './pages/doctor/FilterPatientsByAppointments'
+import DeletePatient from './pages/admin/DeletePatient';
+import DeleteAdmin from './pages/admin/DeleteAdmin';
+import DeleteDoctor from './pages/admin/DeleteDoctor';
 
 function App() {
   return (
@@ -33,13 +36,20 @@ function App() {
             <Route path='/FilterAppointmentsForPatient' element={<FilterAppointmentsForPatient/>}/>
             <Route path='/FilterAppointmentsForDoctor' element={<FilterAppointmentsForDoctor/>}/>
             <Route path='/AddAdmin' element={<AddAdmin/>}/>
-            <Route path='/searchDoctor' element={<SearchDoctor/>}/>
-            <Route path="/doctor" element={<Doctor/>}/>
-            <Route path="/patient" element={<Patient/>}/>
-            <Route path="/viewPrescriptions" element={<Prescription/>}/>
-            <Route path="/register" element={<RegisterPatient />} />
+
+            <Route path="/SearchDoctor" element={<SearchDoctor />} />
+            <Route path="/registerPatient" element={<RegisterPatient />} />
             <Route path="/registerDoctor" element={<RegisterDoctor />} />
-            <Route path="/FilterPatientsByAppointments" element={<FilterPatientsByAppointments />} />
+            <Route path="/patient" element={<Patient />} />
+            <Route path="/doctor" element={<Doctor />} />
+            <Route path="/deletePatient" element={<DeletePatient/>}/>
+            <Route path="/deleteAdmin" element={<DeleteAdmin/>}/>
+            <Route path="/deleteDoctor" element={<DeleteDoctor/>}/>
+            <Route path="/Prescription" element={<Prescription/>}/>
+            <Route path="/FilterPatientsByAppointments" element={<FilterPatientsByAppointments/>}/>
+            
+            
+            
           </Routes>
         </div>
       </BrowserRouter>
