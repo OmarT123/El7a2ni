@@ -9,9 +9,16 @@ const prescriptionSchema = new Schema(
     },
     medicines: [
       {
-        type: {medId:mongoose.Types.ObjectId, dosage:Number},
-        ref:"Medicine",
-        required: true,
+        medId : {
+          type : mongoose.Schema.Types.ObjectId,
+          ref : 'Medicine',
+          required : true
+        },
+        dosage : {
+          type : Number ,
+          required : true
+        }
+
       },
     ],
     patient: {

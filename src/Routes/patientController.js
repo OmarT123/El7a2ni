@@ -2,6 +2,7 @@ const familyModel = require("../Models/FamilyMember.js");
 const patientModel = require("../Models/Patient.js");
 const appointmentModel = require("../Models/Appointment.js");
 const doctorModel = require("../Models/Doctor.js");
+const medicineModel = require("../Models/Medicine.js")
 const prescriptionModel = require("../Models/Prescription.js");
 const mongoose = require("mongoose");
 
@@ -180,7 +181,8 @@ const getFamilyMembers = async (req, res) => {
  const viewMyPrescriptions = async (req, res) => {
   try {
     const patientId = req.query.id;
-    const prescriptions = await prescriptionModel.find({ patient: new mongoose.Types.ObjectId(patientId) })
+    const prescriptions = await prescriptionModel.find({ patient: new mongoose.Types.ObjectId(patientId) }).populate({path:'medicines.medId'}).exec();
+
     res.json(prescriptions);
   }
   catch (err) {
@@ -191,8 +193,9 @@ const getFamilyMembers = async (req, res) => {
   
   const selectPrescription = async (req, res) => {
   try {
-    const prescriptionId = req.query.prescriptionId;
-    const prescription = await prescriptionModel.findById(prescriptionId);
+    const prescriptionId = req.query.id;
+    const prescription = await prescriptionModel.findById(prescriptionId).populate({path :'medicines.medId'}).exec();
+    console.log(prescription)
     res.status(200).json(prescription);
   } catch (error) {
     res.status(404).json({ error: error.message });
