@@ -3,10 +3,10 @@ import {useEffect, useState} from 'react'
 
 const HealthPackageInfo = () => {
     const [healthPackage, setHealthPackage] = useState([])
-    const [price, setPrice] = useState(0)
-    const [doctorDiscount, setDoctorDiscount] = useState(0)
-    const [medicineDiscount, setMedicineDiscount] = useState(0)
-    const [familyDiscount, setFamilyDiscount] = useState(0)
+    const [price, setPrice] = useState('')
+    const [doctorDiscount, setDoctorDiscount] = useState('')
+    const [medicineDiscount, setMedicineDiscount] = useState('')
+    const [familyDiscount, setFamilyDiscount] = useState('')
 
     const getHealthPackage = async() => {
         const queryParams = new URLSearchParams(window.location.search)
@@ -25,13 +25,13 @@ const HealthPackageInfo = () => {
         const id = queryParams.get('id')
         
         const body = {}
-        if (price !== 0)
+        if (price !== '')
             body["price"]=price
-        if (doctorDiscount !== 0)
+        if (doctorDiscount !== '')
             body["doctorDiscount"]=doctorDiscount
-        if (medicineDiscount !== 0)
+        if (medicineDiscount !== '')
             body["medicineDiscount"]=medicineDiscount
-        if (familyDiscount !== 0)
+        if (familyDiscount !== '')
             body["familyDiscount"]=familyDiscount
         
         await axios.put("/editHealthPackage?id="+id,body).then(res=>alert(res.data)).catch(err=>console.log(err.message))
