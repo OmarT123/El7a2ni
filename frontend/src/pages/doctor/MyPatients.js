@@ -1,7 +1,7 @@
 import axios from 'axios';
 import {useState,useEffect} from 'react'
 
-import PatientDetail from '../components/PatientDetail'
+import PatientDetail from '../../components/patient/PatientDetail'
 
 
 

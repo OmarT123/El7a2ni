@@ -168,17 +168,17 @@ const viewPatient = async (req, res) => {
 
 
 const filterPatientsByAppointments = async (req, res) => {
-  let doctorID = new mongoose.Types.ObjectId(req.query.id);
+  let doctorID = req.query.id;
   try {
     const appointments = await appointmentModel
-      .find({ doctor: doctorID, date: { $gte: new Date() } })
-      .populate("patient");
+      .find({ doctor: doctorID})
+      .populate({path:"patient"}).exec();
     const patients = appointments
       .filter((appointment) => appointment.status !== "canceled")
       .map((appointment) => appointment.patient);
     res.json(patients);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(400).json(error.message);
   }
 };
 

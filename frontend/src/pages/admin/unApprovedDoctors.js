@@ -2,7 +2,7 @@ import {useEffect, useState} from 'react';
 import axios from 'axios';
 
 //components
-import DoctorDetails from '../components/DoctorDetails'
+import DoctorDetails from '../../components/patient/DoctorDetails'
 
 const UnapprovedDoctors = () => {
   const [doctors, setDoctors] = useState(null)
