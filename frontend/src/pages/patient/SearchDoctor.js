@@ -57,7 +57,7 @@ const SearchDoctor = () => {
             <div className='form-container'>
                 <form className='create'>
                     <h3>Search for a Doctor</h3>
-                    
+
                     <label>Name:</label>
                     <input
                     type="text" 
