@@ -86,21 +86,24 @@ const searchForDoctorByNameSpeciality = async (req, res) => {
 
 const filterPrescriptionByDateDoctorStatus = async (req, res) => {
   const baseQuery = {};
-  if (req.body.doctor) {
+  baseQuery["patient"] =  new mongoose.Types.ObjectId(req.query.id)
+  if (req.query.doctor) {
     //baseQuery["doctor"] = new RegExp(req.body.doctor, "i");
-    baseQuery["doctor"] = new mongoose.Types.ObjectId(req.body.doctor);
+    baseQuery["doctor"] = new mongoose.Types.ObjectId(req.query.doctor);
   }
-  if (req.body.filled || req.body.filled == false) {
+  if (req.query.filled || req.query.filled == false) {
     //baseQuery["filled"] = new RegExp(req.body.filled, "i");
-    baseQuery["filled"] = req.body.filled;
+    baseQuery["filled"] = req.query.filled;
   }
-  if (req.body.date) {
+  if (req.query.date) {
     //baseQuery["date"] = new RegExp(`^${req.body.date.replace(/\//, "\\/")}$`);
-    baseQuery["createdAt"] = req.body.date;
+    baseQuery["createdAt"] = req.query.date;
   }
   try {
-    console.log(baseQuery);
-    const prescriptions = await prescriptionModel.find(baseQuery);
+    const prescriptions = await prescriptionModel.find(baseQuery).populate({path:"medicines.medId"});
+    // console.log(baseQuery)
+    // console.log(prescriptions)
+    // const filtered = prescriptions.filter(pres => toString(pres._id) === req.query.id)
     res.json(prescriptions);
   } catch (err) {
     //res.status(500).send({ message: "No prescriptions found!" });

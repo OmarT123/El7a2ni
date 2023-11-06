@@ -3,8 +3,7 @@ import axios from 'axios'
 
 const DoctoreditForm  = () => {
     
-    
-    
+
     const [email, setMail] = useState('')
     const [hourlyRate, setRate] = useState(0)
     const [affiliation, setHospital] = useState('')
