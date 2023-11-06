@@ -28,7 +28,7 @@ const createPatient = async (req, res) => {
       mobileNumber,
       emergencyContact,
     });
-    res.status(200).json(patient);
+    res.status(200).json("Created Successfully");
   } catch (error) {
     res.status(404).json({ error: error.message });
   }
@@ -65,7 +65,7 @@ const createFamilyMember = async (req, res) => {
     await patient.save();
     res.json("Family Member added successfully");
   } catch (err) {
-    res.send(err);
+    res.json("Error in adding a family member!!");
   }
 };
 const searchForDoctorByNameSpeciality = async (req, res) => {

@@ -1,6 +1,5 @@
-import axios from 'axios';
-import {useState,useEffect} from 'react';
-import FilterAppointments from '../components/FilterAppointments';
+
+import FilterAppointments from '../../components/FilterAppointments';
 
 const FilterAppointmentsForPatient = () => {
     const id = "65412e405d731e77c33fbc4b";

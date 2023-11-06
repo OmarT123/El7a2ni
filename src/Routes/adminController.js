@@ -59,9 +59,9 @@ const editHealthPackage = async (req, res) => {
       },
       { new: true }
     );
-    res.send(updatedHealthPackage);
+    res.json("Updated Successully");
   } catch (err) {
-    res.send(err);
+    res.json(err.message);
   }
 };
 
@@ -69,9 +69,9 @@ const deleteHealthPackage = async (req, res) => {
   let id = req.query.id;
   try {
     await healthPackageModel.findByIdAndDelete(id);
-    res.send("Deleted Successfully");
+    res.json("Deleted Successfully");
   } catch (err) {
-    res.send(err);
+    res.json(err.message);
   }
 };
 const deletePatient = async (req, res) => {
@@ -101,6 +101,59 @@ const deleteAdmin = async (req, res) => {
     res.status(404).json({ message: err.message });
   }
 };
+const getAllHealthPackages = async (req,res) => {
+  try{
+    const packages = await healthPackageModel.find()
+    res.json(packages)
+  }
+  catch(err){
+    res.json(err.message)
+  }
+}
+
+const getHealthPackage = async (req,res) => {
+  try {
+    const id = req.query.id
+    const hpackage = await healthPackageModel.findById(id)
+    res.json(hpackage)
+  }catch(err)
+  {res.json(err.message)}
+}
+
+const getAllPatients = async (req,res) => {
+
+  try {
+    const allPatient = await patientModel.find({}).populate({path:'familyMembers'}).exec();
+    res.json(allPatient);
+  }
+  catch(error){
+    res.status(500).json({ error: error.message });
+
+  }
+}
+const getAllDoctors = async (req,res) => {
+
+  try {
+    const allDoctors = await doctorModel.find({});
+    res.json(allDoctors);
+  }
+  catch(error){
+    res.status(500).json({ error: error.message });
+
+  }
+}
+
+const getAllAdmins = async (req,res) => {
+
+  try {
+    const allAdmins = await adminModel.find({});
+    res.json(allAdmins);
+  }
+  catch(error){
+    res.status(500).json({ error: error.message });
+
+  }
+}
 
 
 
@@ -112,5 +165,10 @@ module.exports = {
   deletePatient,
   deleteDoctor,
   deleteAdmin,
-  addAdmin
+  addAdmin,
+  getAllHealthPackages,
+  getHealthPackage
+  getAllPatients,
+  getAllAdmins,
+  getAllDoctors
 };

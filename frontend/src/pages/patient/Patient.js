@@ -31,6 +31,7 @@ const Patient = () => {
         {showRecords && (
                 <div className='health-records'>
                     <h3>Health Records:</h3>
+                    <br></br>
                     <ul>
                         {patient.HealthRecords.map((record, index) => (
                             <li key={index}> {record}</li>
