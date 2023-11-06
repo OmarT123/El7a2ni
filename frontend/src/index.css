@@ -70,6 +70,7 @@ header a {
   flex-direction: row;
 }
 
+
 .form-container {
   max-width: 40%;
   margin-right: 40px;
@@ -169,4 +170,12 @@ header a {
 a {
     color:#333;
     text-decoration: none;
+}
+.health-records{
+  display: flex;
+  justify-content: center;
+  height: 100vh;
+  margin: 0;
+  background-color: #D2B48C;
+
 }

@@ -1,6 +1,6 @@
 import axios from 'axios'
 import {useState,useEffect} from 'react'
-import DoctorDetails from '../components/DoctorDetails'
+import DoctorDetails from '../../components/patient/DoctorDetails'
 
 const SearchDoctor = () => {
     const [name, setName] = useState('')
