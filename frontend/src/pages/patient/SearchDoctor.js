@@ -28,7 +28,7 @@ const SearchDoctor = () => {
         e.preventDefault()
 
         //temporary id
-        const id = "6546851fd349b37530412e8d"
+        const id = "654965e73fe9729145b6ddbd"
         await axios.get("/allDoctors?id="+id)
         .then((res)=>{
             const docs = res.data

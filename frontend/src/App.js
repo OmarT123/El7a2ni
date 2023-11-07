@@ -11,7 +11,7 @@ import DoctoreditForm from './components/doctor/DoctoreditForm';
 import ViewMyPrescriptions from './pages/ViewMyPrescriptions';
 import SelectedPrescription from './pages/SelectedPrescription';
 import MyPatients from './pages/doctor/MyPatients';
-import SearchDoctor from './pages/doctor/Doctor'
+import SearchDoctor from './pages/patient/SearchDoctor'
 import Prescription from './pages/patient/Prescription'
 import RegisterPatient from './pages/patient/RegisterPatient'
 import RegisterDoctor from './pages/doctor/RegisterDoctor'
@@ -52,9 +52,6 @@ function App() {
             <Route path="/deleteDoctor" element={<DeleteDoctor/>}/>
             <Route path="/Prescription" element={<Prescription/>}/>
             <Route path="/FilterPatientsByAppointments" element={<FilterPatientsByAppointments/>}/>
-            <Route path='/SearchDoctor' element={<SearchDoctor/>}/>
-            <Route path="/doctor" element={<Doctor/>}/>
-            <Route path="/patient" element={<Patient/>}/>
             <Route path="/ViewMyPrescriptions" element={<ViewMyPrescriptions/>}/>
             <Route path="/SelectedPrescription" element={<SelectedPrescription/>}/>
 

@@ -2,7 +2,7 @@
 import FilterAppointments from '../../components/FilterAppointments';
 
 const FilterAppointmentsForPatient = () => {
-    const id = "65412e405d731e77c33fbc4b";
+    const id = "654965e73fe9729145b6ddbd";
 
     return (
         <div className="Appointments-container">
