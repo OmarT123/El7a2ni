@@ -13,5 +13,4 @@ const FilterAppointmentsForDoctor = () => {
         </div>
     )
 }
-
 export default FilterAppointmentsForDoctor ;
