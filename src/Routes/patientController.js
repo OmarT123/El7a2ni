@@ -184,7 +184,8 @@ const getFamilyMembers = async (req, res) => {
  const viewMyPrescriptions = async (req, res) => {
   try {
     const patientId = req.query.id;
-    const prescriptions = await prescriptionModel.find({ patient: new mongoose.Types.ObjectId(patientId) }).populate({path:'medicines.medId'}).exec();
+    const prescriptions = await prescriptionModel.find({ patient: new mongoose.Types.ObjectId(patientId) }).populate({path:'medicines.medId'}).populate({path :'doctor'}).exec();
+    // console.log(prescriptions.doctor.name);
 
     res.json(prescriptions);
   }

@@ -28,6 +28,18 @@ const DisplayPrescription = ({ prescription }) => {
       ) : (
         <div>Loading prescription data...</div>
       )}
+      {/* {prescription.doctor ? (
+        prescription.doctor.map((doctor) => (
+          <div key={doctor._id} className="doctor-card">
+            <div>
+              <strong>Name: {doctor.name}</strong>
+            </div>
+      
+          </div>
+        ))
+      ) : (
+        <div>Loading prescription data...</div>
+      )} */}
     </Link>
   );
 };
