@@ -14,7 +14,7 @@ const ViewMyPrescriptions = () => {
 
     const FetchPrescriptions = async () => {
         try {
-          const id = "654814b4801a1dd510bd5b98";
+          const id = "654965e73fe9729145b6ddbd";
           const response = await axios.get('/viewMyPrescriptions?id=' + id);
           const list = response.data;
         //   console.log(list[0].medicines)
@@ -31,7 +31,7 @@ const ViewMyPrescriptions = () => {
       const search = async(e) => {
         e.preventDefault()
 
-        const id = "654814b4801a1dd510bd5b98"
+        const id = "654965e73fe9729145b6ddbd"
             const body = {}
             if (createdAt)
                 body["createdAt"] = createdAt
@@ -78,11 +78,21 @@ const ViewMyPrescriptions = () => {
             <div className="search-results view-prescriptions-container">
             
                 {!searchResults && <div><h3 className='h3-viewmyPres'>My Prescriptions</h3>
-                    {prescriptionList.length > 0 && prescriptionList.map((prescription) => (
-                        <div key={prescription._id} className="prescription-card">
-                            <DisplayPrescription key={prescription._id} prescription={prescription}/>
-                    </div> 
-                    ))}
+                {prescriptionList && prescriptionList.length > 0 && prescriptionList.map((prescription) => (
+                             <div key={prescription._id} className="prescription-card">
+                           <h4>Prescription Details:</h4>
+                              <p>Doctor: {prescription.doctor.name}</p>
+                                 <p>Medicines:</p>
+                            <ul>
+                              {prescription.medicines.map((medicine) => (
+                             <li key={medicine._id}>
+                               {medicine.medId.name} - {medicine.dosage}
+                     </li>
+                     ))}
+        </ul>
+        {/* Add more prescription details here */}
+      </div>
+    ))}
                 {message && <h3>{message}</h3>}</div>}
                 {prescriptionsFilter && 
                     <div>
