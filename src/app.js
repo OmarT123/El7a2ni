@@ -30,7 +30,6 @@ const {
   getDoctors
 } = require("./Routes/patientController");
 const {
-  addAdmin,
   addHealthPackage,
   editHealthPackage,
   deleteHealthPackage,
