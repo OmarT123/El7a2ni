@@ -34,7 +34,7 @@ const ViewMyPrescriptions = () => {
         const id = "654965e73fe9729145b6ddbd"
             const body = {}
             if (createdAt)
-                body["createdAt"] = createdAt
+                body["date"] = createdAt
             if (filled === "true" || filled === "false")
                 body["filled"]= filled === "true"?true:false
             if (doctor)

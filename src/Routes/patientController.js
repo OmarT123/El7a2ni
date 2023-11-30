@@ -96,8 +96,11 @@ const filterPrescriptionByDateDoctorStatus = async (req, res) => {
     baseQuery["filled"] = req.query.filled;
   }
   if (req.query.date) {
-    //baseQuery["date"] = new RegExp(`^${req.body.date.replace(/\//, "\\/")}$`);
-    baseQuery["createdAt"] = req.query.date;
+    const dateParam = req.query.date
+    const startDate = new Date(dateParam);
+    const endDate = new Date(dateParam);
+    endDate.setDate(endDate.getDate() + 1);
+    baseQuery["createdAt"] = { $gte: startDate, $lt: endDate };
   }
   try {
     const prescriptions = await prescriptionModel.find(baseQuery).populate({path:"medicines.medId"});
@@ -118,7 +121,11 @@ const filterAppointmentsForPatient = async (req, res) => {
   const filterQuery = {};
 
   if (dateToBeFiltered) {
-    filterQuery["date"] = dateToBeFiltered;
+    const dateParam = dateToBeFiltered
+    const startDate = new Date(dateParam);
+    const endDate = new Date(dateParam);
+    endDate.setDate(endDate.getDate() + 1);
+    filterQuery["date"] = { $gte: startDate, $lt: endDate };
   }
 
   if (statusToBeFiltered) {
@@ -160,13 +167,14 @@ const filterAppointmentsForPatient = async (req, res) => {
 };
   
 const selectDoctorFromFilterSearch = async (req, res) => {
-  let doctorID = new mongoose.Types.ObjectId(req.query.id);
-
+  
   try {
+    let doctorID = new mongoose.Types.ObjectId(req.query.id);
     const doctorList = await doctorModel.findById(doctorID);
     res.json(doctorList);
   } catch (error) {
-    res.json(err.message);
+    console.log(error.message)
+    res.json(error.message);
   }
 };
   
@@ -199,7 +207,7 @@ const getFamilyMembers = async (req, res) => {
   try {
     const prescriptionId = req.query.id;
     const prescription = await prescriptionModel.findById(prescriptionId).populate({path :'medicines.medId'}).exec();
-    console.log(prescription)
+    //console.log(prescription)
     res.status(200).json(prescription);
   } catch (error) {
     res.status(404).json({ error: error.message });
@@ -209,20 +217,31 @@ const getFamilyMembers = async (req, res) => {
 const filterDoctorsSpecialityDate = async(req,res)=>{
   try{
     if (req.query.date) {
-      let busyDoctors = await appointmentModel.find({date:req.query.date});
+      const dateParam = req.query.date
+      const startDate = new Date(dateParam);
+      const endDate = new Date(dateParam);
+      endDate.setDate(endDate.getDate() + 1);
+
+
+      let busyDoctors = await appointmentModel.find({createdAt:{ $gte: startDate, $lt: endDate }}).populate({path:"doctor"});
       const busyDoctorsMapped = busyDoctors.map(appointment=>appointment.doctor);
       //console.log(busyDoctorsMapped);
       let query = {};
       if (req.query.speciality)
         query["speciality"]=req.query.speciality
       let doctors = await doctorModel.find(query);
+      //console.log(doctors)
       let availableDoctors = [];
       for (let i = 0; i < doctors.length; i++){
         let found = false;
         for (let j = 0; j < busyDoctorsMapped.length;j++)
         {
-          if (toString(doctors[i]) === toString(busyDoctorsMapped[j]))
+          console.log(doctors[i].username)
+          console.log(busyDoctorsMapped[j].username)
+          if (doctors[i].username === busyDoctorsMapped[j].username)
+          { 
             found = true;
+          }
         }
         if (!found)
           availableDoctors.push(doctors[i])

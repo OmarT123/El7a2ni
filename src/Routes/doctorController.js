@@ -37,7 +37,11 @@ const filterAppointmentsForDoctor = async (req, res) => {
   const filterQuery = {};
 
   if (dateToBeFiltered) {
-    filterQuery["date"] = dateToBeFiltered;
+    const dateParam = req.query.date
+    const startDate = new Date(dateParam);
+    const endDate = new Date(dateParam);
+    endDate.setDate(endDate.getDate() + 1);
+    filterQuery["date"] = { $gte: startDate, $lt: endDate };
   }
 
   if (statusToBeFiltered) {

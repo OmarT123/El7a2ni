@@ -28,7 +28,7 @@ const SearchDoctor = () => {
         e.preventDefault()
 
         //temporary id
-        const id = "6546851fd349b37530412e8d"
+        const id = "65496e4a5c31c981636dc271"
         await axios.get("/allDoctors?id="+id)
         .then((res)=>{
             const docs = res.data
@@ -38,16 +38,18 @@ const SearchDoctor = () => {
 
     const searchSpecialityDate = async(e) => {
         e.preventDefault()
-
+       
         const body = {}
         if (date !== null)
             body['date']=date
         if (speciality !== '')
             body['speciality']=speciality
-        await axios.get("/filterDoctorsSpecialityDate",{params : body})
+        console.log(date)
+        console.log(speciality)
+            await axios.get("/filterDoctorsSpecialityDate",{params : body})
         .then((res)=>{
             const docs = res.data
-            //console.log(docs)
+            console.log(docs)
             setDoctors(docs)
         }).catch((err)=>console.log(err))
     }
