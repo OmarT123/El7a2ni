@@ -4,6 +4,7 @@ const appointmentModel = require("../Models/Appointment.js");
 const doctorModel = require("../Models/Doctor.js");
 const medicineModel = require("../Models/Medicine.js")
 const prescriptionModel = require("../Models/Prescription.js");
+const userModel = require("../Models/User.js")
 const mongoose = require("mongoose");
 
 const createPatient = async (req, res) => {
@@ -18,17 +19,28 @@ const createPatient = async (req, res) => {
     emergencyContact,
   } = req.body;
   try {
-    const patient = await patientModel.create({
-      username,
-      name,
-      email,
-      password,
-      birthDate,
-      gender,
-      mobileNumber,
-      emergencyContact,
-    });
-    res.status(200).json("Created Successfully");
+    const user = await userModel.findOne({username})
+    if (user)
+    {
+      res.status(409).json("Username already exists")
+    }
+    else {
+      const patient = await patientModel.create({
+        username,
+        name,
+        email,
+        password,
+        birthDate,
+        gender,
+        mobileNumber,
+        emergencyContact,
+      });
+      await userModel.create({
+        username, 
+        userId : patient._id
+      })
+      res.json("Created Successfully");
+    }
   } catch (error) {
     res.status(404).json({ error: error.message });
   }

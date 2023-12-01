@@ -2,15 +2,29 @@ const doctorModel = require("../Models/Doctor.js");
 const patientModel = require("../Models/Patient.js");
 const adminModel = require("../Models/Admin.js");
 const healthPackageModel = require("../Models/HealthPackage.js");
+const userModel = require("../Models/User.js")
 
 
 const addAdmin = async (req, res) => {
   let username = req.body.username;
   let password = req.body.password;
   try {
-    const admin = await adminModel.create({ username, password });
-    await admin.save();
-    res.json("Admin Created Successfully !!");
+    const user = await userModel.findOne({username})
+    console.log(user)
+    if (user)
+    {
+      res.json("Username already exists")
+    }
+    else {
+      console.log("no here")
+      const admin = await adminModel.create({ username, password });
+      await admin.save();
+      await userModel.create({
+        username, 
+        userId : admin._id
+      })
+      res.json("Admin Created Successfully !!");
+    }
   } catch (err) {
     res.send(err.message);
   }

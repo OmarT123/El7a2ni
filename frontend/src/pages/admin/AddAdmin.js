@@ -16,7 +16,9 @@ const AddAdmin  = () => {
         if (password !== "")
         NewAdminData['password']=password;
         const response = await axios.post("/addAdmin", NewAdminData);
-        setMessage(response.data);
+        //console.log(response)
+        //console.log(response.data)
+        alert(response.data);
     }
 
     return (
