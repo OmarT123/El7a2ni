@@ -17,7 +17,7 @@ const {
   exactPatients,
 } = require("./Routes/doctorController");
 const {
-  createPatient,
+  addPatient,
   createFamilyMember,
   searchForDoctorByNameSpeciality,
   filterAppointmentsForPatient,
@@ -44,6 +44,10 @@ const {
   getAllDoctors,
   getAllPatients
 } = require("./Routes/adminController.js");
+
+
+const{ login, logout} =require("./Routes/userController");
+
 
 const app = express();
 const port = process.env.PORT || "8000";
@@ -76,7 +80,7 @@ app.get("/getAllDoctors",getAllDoctors);
 app.get("/getAllPatients",getAllPatients);
 
 //Patient
-app.post("/addPatient", createPatient);
+app.post("/addPatient", addPatient);
 app.post("/addFamilyMember", createFamilyMember);
 app.get("/searchDoctor", searchForDoctorByNameSpeciality);
 app.get("/filterAppointmentsForPatient", filterAppointmentsForPatient);
@@ -100,3 +104,9 @@ app.get("/filterPatientsByAppointments", filterPatientsByAppointments);
 app.get("/viewPatient", viewPatient);
 app.get("/viewmypatientsbyname",exactPatients);
 app.post("/createPrescription",createPrescription);
+
+
+//user 
+
+app.post('/login', login);
+app.get('/logout', logout);

@@ -6,8 +6,8 @@ const medicineModel = require("../Models/Medicine.js")
 const prescriptionModel = require("../Models/Prescription.js");
 const userModel = require("../Models/User.js")
 const mongoose = require("mongoose");
-
-const createPatient = async (req, res) => {
+const bcrypt = require('bcrypt');
+const addPatient = async (req, res) => {
   const {
     username,
     name,
@@ -18,33 +18,53 @@ const createPatient = async (req, res) => {
     mobileNumber,
     emergencyContact,
   } = req.body;
+
   try {
-    const user = await userModel.findOne({username})
-    if (user)
-    {
-      res.status(409).json("Username already exists")
+    if (!username || !password || !name || !birthDate || !gender || !mobileNumber || !emergencyContact || !email) {
+      return res.status(400).json({ success: false, message: "All fields are required. Please provide valid information for each field!" });
     }
-    else {
+
+    // Password validation
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{10,}$/;
+    if (!passwordRegex.test(password)) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must contain at least 1 lowercase letter, 1 uppercase letter, 1 number, 1 special character, and be at least 10 characters long.",
+      });
+    }
+
+    const user = await userModel.findOne({ username });
+
+    if (user) {
+      return res.status(409).json({ success: false, message: "Username already exists." });
+    } else {
+      const salt = await bcrypt.genSalt();
+      const encryptedPassword = await bcrypt.hash(password, salt);
       const patient = await patientModel.create({
         username,
         name,
         email,
-        password,
+        password: encryptedPassword,
         birthDate,
         gender,
         mobileNumber,
         emergencyContact,
       });
+
+      await patient.save();
+
       await userModel.create({
-        username, 
-        userId : patient._id
-      })
-      res.json("Created Successfully");
+        username,
+        userId: patient._id,
+      });
+
+      return res.json({ success: true, message: "Created Successfully" });
     }
   } catch (error) {
-    res.status(404).json({ error: error.message });
+    return res.status(500).json({ success: false, error: error.message });
   }
 };
+
 
 const createFamilyMember = async (req, res) => {
   try {
@@ -116,13 +136,10 @@ const filterPrescriptionByDateDoctorStatus = async (req, res) => {
   }
   try {
     const prescriptions = await prescriptionModel.find(baseQuery).populate({path:"medicines.medId"});
-    // console.log(baseQuery)
-    // console.log(prescriptions)
-    // const filtered = prescriptions.filter(pres => toString(pres._id) === req.query.id)
+
     res.json(prescriptions);
   } catch (err) {
-    //res.status(500).send({ message: "No prescriptions found!" });
-    res.status(404).send({ message: "No prescriptions found!" });
+        res.status(404).send({ message: "No prescriptions found!" });
   }
 }
 
@@ -294,7 +311,7 @@ catch(error){
 
 module.exports = {
   createFamilyMember,
-  createPatient,
+  addPatient,
   searchForDoctorByNameSpeciality,
   filterAppointmentsForPatient,
   getFamilyMembers,

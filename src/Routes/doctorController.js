@@ -5,6 +5,7 @@ const adminModel = require("../Models/Admin.js");
 const prescriptionModel = require("../Models/Prescription.js");
 const userModel = require("../Models/User.js")
 const { default: mongoose } = require("mongoose");
+const bcrypt = require('bcrypt');
 
 const createPrescription = async(req,res)=>{
   try {
@@ -93,9 +94,36 @@ const addDoctor = async (req, res) => {
     hourlyRate,
     affiliation,
     educationalBackground,
-    speciality,
+    speciality
   } = req.body;
   try {
+    if(!username){
+      return res.status(400).json({ success: false, message: "Username is required. Please enter a valid username!" });
+    }
+    if(!password){
+      return res.status(400).json({ success: false, message: "Password is required. Please enter a valid password!" });
+    }
+    if(!name){
+      return res.status(400).json({ success: false, message: "name is required. Please enter a valid name!" });
+    }
+    if(!birthDate){
+      return res.status(400).json({ success: false, message: "birthDate is required. Please enter a valid birthDate!" });
+    }
+    if(!rate){
+      return res.status(400).json({ success: false, message: "HourlyRate is required. Please enter a valid HourlyRate!" });
+    }
+    if(!affiliation){
+      return res.status(400).json({ success: false, message: "affiliation is required. Please enter a valid affiliation!" });
+    }
+    if(!educationalBackground){
+      return res.status(400).json({ success: false, message: "educationalBackground is required. Please enter a valid educationalBackground!" });
+    }
+    if(!email){
+      return res.status(400).json({ success: false, message: "Email is required. Please enter a valid email!" });
+    }
+    if(!speciality){
+      return res.status(400).json({ success: false, message: "speciality is required. Please enter a valid speciality!" });
+    }
     const user = await userModel.findOne({username})
     console.log(user)
     if (user)
@@ -103,17 +131,20 @@ const addDoctor = async (req, res) => {
       res.json("Username already exists")
     }
     else {
+      const salt = await bcrypt.genSalt();
+      const encryptedPassword = await bcrypt.hash(password ,salt );
       const doctor = await doctorModel.create({
         username,
         name,
         email,
-        password,
+        password :encryptedPassword,
         birthDate,
         hourlyRate,
         affiliation,
         educationalBackground,
         speciality,
       });
+      await doctor.save();
       await userModel.create({
         username, 
         userId : doctor._id

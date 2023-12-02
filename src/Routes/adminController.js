@@ -3,32 +3,48 @@ const patientModel = require("../Models/Patient.js");
 const adminModel = require("../Models/Admin.js");
 const healthPackageModel = require("../Models/HealthPackage.js");
 const userModel = require("../Models/User.js")
+const bcrypt = require('bcrypt');
 
 
 const addAdmin = async (req, res) => {
   let username = req.body.username;
   let password = req.body.password;
+
   try {
-    const user = await userModel.findOne({username})
-    console.log(user)
-    if (user)
-    {
-      res.json("Username already exists")
+    if (!username || !password) {
+      return res.status(400).json({ success: false, message: "Username and password are required. Please enter valid credentials!" });
     }
-    else {
-      console.log("no here")
-      const admin = await adminModel.create({ username, password });
+
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{10,}$/;
+    if (!passwordRegex.test(password)) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must contain at least 1 lowercase letter, 1 uppercase letter, 1 number, 1 special character, and be at least 10 characters long.",
+      });
+    }
+
+    const user = await userModel.findOne({ username });
+
+    if (user) {
+      return res.status(409).json({ success: false, message: "Username already exists." });
+    } else {
+      const salt = await bcrypt.genSalt();
+      const encryptedPassword = await bcrypt.hash(password, salt);
+      const admin = await adminModel.create({ username, password: encryptedPassword });
       await admin.save();
+
       await userModel.create({
-        username, 
-        userId : admin._id
-      })
-      res.json("Admin Created Successfully !!");
+        username,
+        userId: admin._id,
+      });
+
+      return res.json({ success: true, message: "Admin Created Successfully !!" });
     }
   } catch (err) {
-    res.send(err.message);
+    return res.status(500).json({ success: false, error: err.message });
   }
 };
+
 
 const viewDocInfo = async (req, res) => {
   try {
