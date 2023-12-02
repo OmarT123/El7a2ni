@@ -16,20 +16,6 @@ const createPrescription = async(req,res)=>{
   }
 }
 
-const createAppointment = async (req, res) => {
-  try {
-    let appointment = await appointmentModel.create({
-      patient: req.body.patient,
-      doctor: req.body.doctor,
-      date: req.body.date,
-      status: req.body.status,
-    });
-    await appointment.save();
-    res.send(appointment);
-  } catch (err) {
-    res.send(err.message);
-  }
-};
 
 const filterAppointmentsForDoctor = async (req, res) => {
   // Need login
@@ -199,6 +185,55 @@ const filterPatientsByAppointments = async (req, res) => {
   }
 };
 
+const addAppointmentSlots = async (req,res) => {
+  const doctorID = req.query.id;
+  const doctor = await doctorModel.findById(doctorID);
+  
+  if(doctor.status === "approved")
+  {
+    const date = new Date(req.body.date);
+    const minTime = new Date(date.getTime()- 60 * 60 * 1000)
+    const maxTime = new Date(date.getTime() + 60 * 60 * 1000)
+    const existingAppointment = await appointmentModel.findOne({
+      doctor:doctor._id,
+      date: { $gt: minTime, $lt: maxTime },
+    });
+    if (existingAppointment)
+    {
+      res.json("There is already an appointment at this time")
+    }
+    else {
+      await appointmentModel.create({
+        doctor: doctor._id,
+        date,
+        status: 'free'
+      })
+      res.send("Appointment created successfully")
+    }
+  }
+  else
+    res.status(400).json("Please review your employment contract.")
+
+}
+
+
+const createAppointment = async (req, res) => {
+  try {
+    let appointment = await appointmentModel.create({
+      patient: req.body.patient,
+      doctor: req.body.doctor,
+      date: req.body.date,
+      status: req.body.status,
+    });
+    await appointment.save();
+    res.send(appointment);
+  } catch (err) {
+    res.send(err.message);
+  }
+};
+
+
+
 module.exports = {
   addDoctor,
   editDoctor,
@@ -208,5 +243,6 @@ module.exports = {
   filterPatientsByAppointments,
   viewPatient,
   createPrescription,
-  exactPatients
+  exactPatients,
+  addAppointmentSlots
 };

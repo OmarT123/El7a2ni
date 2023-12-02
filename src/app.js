@@ -15,6 +15,7 @@ const {
   viewPatient,
   createPrescription,
   exactPatients,
+  addAppointmentSlots,
 } = require("./Routes/doctorController");
 const {
   createPatient,
@@ -100,3 +101,4 @@ app.get("/filterPatientsByAppointments", filterPatientsByAppointments);
 app.get("/viewPatient", viewPatient);
 app.get("/viewmypatientsbyname",exactPatients);
 app.post("/createPrescription",createPrescription);
+app.post("/addAppointmentSlots", addAppointmentSlots);
