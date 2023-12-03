@@ -15,19 +15,20 @@ const addAdmin = async (req, res) => {
       return res.status(400).json({ success: false, message: "Username and password are required. Please enter valid credentials!" });
     }
 
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{10,}$/;
-    if (!passwordRegex.test(password)) {
-      return res.status(400).json({
-        success: false,
-        message: "Password must contain at least 1 lowercase letter, 1 uppercase letter, 1 number, 1 special character, and be at least 10 characters long.",
-      });
-    }
+     
 
     const user = await userModel.findOne({ username });
 
     if (user) {
       return res.status(409).json({ success: false, message: "Username already exists." });
     } else {
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%^&*()?])[A-Za-z\d@$!%^&*()?]{10,}$/;
+      if (!passwordRegex.test(password)) {
+        return res.status(400).json({
+          success: false,
+          message: "Password must contain at least 1 lowercase letter, 1 uppercase letter, 1 number, 1 special character, and be at least 10 characters long.",
+        });
+      }
       const salt = await bcrypt.genSalt();
       const encryptedPassword = await bcrypt.hash(password, salt);
       const admin = await adminModel.create({ username, password: encryptedPassword });

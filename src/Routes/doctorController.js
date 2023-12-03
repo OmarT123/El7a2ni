@@ -97,33 +97,11 @@ const addDoctor = async (req, res) => {
     speciality
   } = req.body;
   try {
-    if(!username){
-      return res.status(400).json({ success: false, message: "Username is required. Please enter a valid username!" });
+    if (!username || !password || !name || !birthDate || !hourlyRate || !affiliation || !educationalBackground || !speciality || !email) {
+      return res.status(400).json({ success: false, message: "All fields are required. Please provide valid information for each field!" });
     }
-    if(!password){
-      return res.status(400).json({ success: false, message: "Password is required. Please enter a valid password!" });
-    }
-    if(!name){
-      return res.status(400).json({ success: false, message: "name is required. Please enter a valid name!" });
-    }
-    if(!birthDate){
-      return res.status(400).json({ success: false, message: "birthDate is required. Please enter a valid birthDate!" });
-    }
-    if(!rate){
-      return res.status(400).json({ success: false, message: "HourlyRate is required. Please enter a valid HourlyRate!" });
-    }
-    if(!affiliation){
-      return res.status(400).json({ success: false, message: "affiliation is required. Please enter a valid affiliation!" });
-    }
-    if(!educationalBackground){
-      return res.status(400).json({ success: false, message: "educationalBackground is required. Please enter a valid educationalBackground!" });
-    }
-    if(!email){
-      return res.status(400).json({ success: false, message: "Email is required. Please enter a valid email!" });
-    }
-    if(!speciality){
-      return res.status(400).json({ success: false, message: "speciality is required. Please enter a valid speciality!" });
-    }
+
+
     const user = await userModel.findOne({username})
     console.log(user)
     if (user)
@@ -131,6 +109,15 @@ const addDoctor = async (req, res) => {
       res.json("Username already exists")
     }
     else {
+      
+      
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%^&*()?])[A-Za-z\d@$!%^&*()?]{10,}$/;
+    if (!passwordRegex.test(password)) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must contain at least 1 lowercase letter, 1 uppercase letter, 1 number, 1 special character, and be at least 10 characters long.",
+      });
+    }
       const salt = await bcrypt.genSalt();
       const encryptedPassword = await bcrypt.hash(password ,salt );
       const doctor = await doctorModel.create({

@@ -1,6 +1,8 @@
 const express = require("express");
 const mongoose = require("mongoose");
 mongoose.set("strictQuery", false);
+const cookieParser = require('cookie-parser');
+app.use(cookieParser());
 
 require("dotenv").config();
 const MongoURI = process.env.MONGO_URI;
@@ -46,7 +48,7 @@ const {
 } = require("./Routes/adminController.js");
 
 
-const{ login, logout} =require("./Routes/userController");
+const{ login, logout ,changePassword ,getUserFromTokenMiddleware} =require("./Routes/userController");
 
 
 const app = express();
@@ -109,4 +111,5 @@ app.post("/createPrescription",createPrescription);
 //user 
 
 app.post('/login', login);
+app.put('/changePassword', getUserFromTokenMiddleware, changePassword);
 app.get('/logout', logout);
