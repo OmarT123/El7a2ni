@@ -2,7 +2,6 @@ const express = require("express");
 const mongoose = require("mongoose");
 mongoose.set("strictQuery", false);
 const cookieParser = require('cookie-parser');
-app.use(cookieParser());
 
 require("dotenv").config();
 const MongoURI = process.env.MONGO_URI;
@@ -65,6 +64,7 @@ mongoose
   .catch((err) => console.log(err));
 
 app.use(express.json());
+app.use(cookieParser());
 
 //Admin
 app.post("/addHealthPackage", addHealthPackage);

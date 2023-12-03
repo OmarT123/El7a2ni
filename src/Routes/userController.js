@@ -2,25 +2,33 @@ const doctorModel = require('../Models/Doctor.js');
 const adminModel = require('../Models/Admin.js');
 const patientModel = require('../Models/Patient.js');
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
+const fs = require('fs');
+
+
 
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const maxAge = parseInt(process.env.MAXAGE);
+const secretKey = crypto.randomBytes(32).toString('hex');
 
-const createToken = async (name) => {
+fs.writeFileSync('.env', `JWT_SECRET=${secretKey}\n`);
+
+console.log('Secret key generated and saved to .env file.');
+
+
+const createToken = (name) => {
     try {
-        const saltRounds = parseInt(process.env.BCRYPT_TOKEN) ;
-        const secretKey = await bcrypt.genSalt(saltRounds);
-        
+        const secretKey = process.env.JWT_SECRET;
         return jwt.sign({ name }, secretKey, {
-            expiresIn: maxAge
-
+            expiresIn: maxAge,
         });
     } catch (error) {
         console.error("Error creating token:", error);
-        throw error; 
+        throw error;
     }
 };
+
 console.log(maxAge);
 console.log(maxAge);
 
@@ -31,7 +39,7 @@ const login = async (req, res) => {
         if (!username) {
             return res.status(400).json({ success: false, message: "Username is required. Please enter a valid username!" });
         }
-s
+
         if (!password) {
             return res.status(400).json({ success: false, message: "Password is required. Please enter a valid password!" });
         }
@@ -78,17 +86,15 @@ const logout = (req, res) => {
 };
 
 const getUserFromTokenMiddleware = async (req, res, next) => {
-    const token = req.cookies.userToken;
-
+    const token = req.headers.cookie.split('; ').find(row => row.startsWith('userToken')).split('=')[1];
     if (!token) {
         return res.status(401).json({ success: false, message: "User not authenticated" });
     }
 
     try {
-        const saltRounds = parseInt(process.env.BCRYPT_TOKEN);
-        const secretKey = await bcrypt.genSalt(saltRounds);
+        const secretKey = process.env.JWT_SECRET;
         const decodedToken = jwt.verify(token, secretKey);
-        req.user = decodedToken; 
+        req.username = decodedToken.name; 
         next(); 
     } catch (error) {
         console.error("Token verification error:", error);
@@ -96,13 +102,22 @@ const getUserFromTokenMiddleware = async (req, res, next) => {
     }
 };
 
+
 const changePassword = async (req, res) => {
     const { oldPassword, newPassword } = req.body;
-    const user = req.user; 
+    const username = req.username; 
 
     try {
-        // const user = getUserFromToken(req);
+        
+        let user = await adminModel.findOne({ username: username });
 
+        if (!user) {
+            user = await patientModel.findOne({ username: username });
+        }
+
+        if (!user) {
+            user = await doctorModel.findOne({ username: username });
+        }
         if (!user) {
             return res.status(401).json({ success: false, message: "User not authenticated" });
         }
@@ -138,12 +153,6 @@ const changePassword = async (req, res) => {
         return res.status(500).json({ success: false, error: "Internal server error" });
     }
 };
-
-
-
-// Make sure to protect the changePassword route with proper authentication middleware
-// For example, you might want to use a middleware that verifies the user's token before allowing them to change the password.
-
 
 module.exports = {
     login,
