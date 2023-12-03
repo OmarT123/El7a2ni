@@ -2,19 +2,13 @@ const doctorModel = require('../Models/Doctor.js');
 const adminModel = require('../Models/Admin.js');
 const patientModel = require('../Models/Patient.js');
 const bcrypt = require('bcrypt');
-const crypto = require('crypto');
-const fs = require('fs');
 
 
 
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const maxAge = parseInt(process.env.MAXAGE);
-const secretKey = crypto.randomBytes(32).toString('hex');
 
-fs.writeFileSync('.env', `JWT_SECRET=${secretKey}\n`);
-
-console.log('Secret key generated and saved to .env file.');
 
 
 const createToken = (name) => {
@@ -127,7 +121,7 @@ const changePassword = async (req, res) => {
         if (!passwordMatched) {
             return res.status(401).json({ success: false, message: "Invalid old password" });
         }
-        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{10,}$/;
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%^&*()?])[A-Za-z\d@$!%^&*()?]{10,}$/;
 
         if (!passwordRegex.test(newPassword)) {
             return res.status(400).json({
