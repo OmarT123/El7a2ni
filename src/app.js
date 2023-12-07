@@ -27,7 +27,9 @@ const {
   viewMyPrescriptions,
   selectPrescription,
   selectDoctorFromFilterSearch,
-  getDoctors
+  getDoctors,
+  viewMySubscribedHealthPackage,
+  CancelSubscription
 } = require("./Routes/patientController");
 const {
   addAdmin,
@@ -42,7 +44,7 @@ const {
   getHealthPackage ,
   getAllAdmins,
   getAllDoctors,
-  getAllPatients
+  getAllPatients,
 } = require("./Routes/adminController.js");
 
 const app = express();
@@ -86,8 +88,9 @@ app.get("/filterPrescriptionByDateDoctorStatus",filterPrescriptionByDateDoctorSt
 app.get("/filterDoctorsSpecialityDate", filterDoctorsSpecialityDate);
 app.get("/viewMyPrescriptions",viewMyPrescriptions);
 app.get("/selectPrescription",selectPrescription);
-app.get("/allDoctors", getDoctors)
-
+app.get("/allDoctors", getDoctors);
+app.get("/viewMySubscribedHealthPackage",viewMySubscribedHealthPackage);
+app.put("/CancelSubscription",CancelSubscription);
 
 //Doctor
 app.get("/filterAppointmentsForDoctor", filterAppointmentsForDoctor);
@@ -100,3 +103,4 @@ app.get("/filterPatientsByAppointments", filterPatientsByAppointments);
 app.get("/viewPatient", viewPatient);
 app.get("/viewmypatientsbyname",exactPatients);
 app.post("/createPrescription",createPrescription);
+

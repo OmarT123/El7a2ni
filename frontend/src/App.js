@@ -24,6 +24,8 @@ import FilterPatientsByAppointments from './pages/doctor/FilterPatientsByAppoint
 import DeletePatient from './pages/admin/DeletePatient';
 import DeleteAdmin from './pages/admin/DeleteAdmin';
 import DeleteDoctor from './pages/admin/DeleteDoctor';
+import ViewMySubscribedHealthPackage from './pages/patient/viewMySubscribedHealthPackage';
+import CancelSubscription from './pages/patient/CancelSubscription';
 
 function App() {
   return (
@@ -57,8 +59,8 @@ function App() {
             <Route path="/patient" element={<Patient/>}/>
             <Route path="/ViewMyPrescriptions" element={<ViewMyPrescriptions/>}/>
             <Route path="/SelectedPrescription" element={<SelectedPrescription/>}/>
-
-
+            <Route path="/ViewMySubscribedHealthPackage" element={<ViewMySubscribedHealthPackage/>}/>
+            <Route path="/CancelSubscription" element={<CancelSubscription/>}/>
           </Routes>
         </div>
       </BrowserRouter>
