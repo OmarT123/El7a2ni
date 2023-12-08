@@ -15,6 +15,7 @@ const {
   viewPatient,
   createPrescription,
   exactPatients,
+  viewDoctorAppointments,  //new Req.45//
 } = require("./Routes/doctorController");
 const {
   createPatient,
@@ -27,7 +28,8 @@ const {
   viewMyPrescriptions,
   selectPrescription,
   selectDoctorFromFilterSearch,
-  getDoctors
+  getDoctors,
+  viewPatientAppointments, //new Req.45//
 } = require("./Routes/patientController");
 const {
   addAdmin,
@@ -86,7 +88,10 @@ app.get("/filterPrescriptionByDateDoctorStatus",filterPrescriptionByDateDoctorSt
 app.get("/filterDoctorsSpecialityDate", filterDoctorsSpecialityDate);
 app.get("/viewMyPrescriptions",viewMyPrescriptions);
 app.get("/selectPrescription",selectPrescription);
-app.get("/allDoctors", getDoctors)
+app.get("/allDoctors", getDoctors);
+app.get("/viewPatientAppointments", viewPatientAppointments); //new Req.45//
+
+
 
 
 //Doctor
@@ -100,3 +105,4 @@ app.get("/filterPatientsByAppointments", filterPatientsByAppointments);
 app.get("/viewPatient", viewPatient);
 app.get("/viewmypatientsbyname",exactPatients);
 app.post("/createPrescription",createPrescription);
+app.get("/viewDoctorAppointments", viewDoctorAppointments); //new Req.45//
