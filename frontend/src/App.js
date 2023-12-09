@@ -17,6 +17,7 @@ import RegisterPatient from './pages/patient/RegisterPatient'
 import RegisterDoctor from './pages/doctor/RegisterDoctor'
 import Patient from './pages/patient/Patient'
 import Doctor from './pages/doctor/Doctor'
+import AddAppointmentSlots from './pages/doctor/AddAppointmentSlots'
 import FilterAppointmentsForDoctor from './pages/doctor/FilterAppointmentsForDoctor';
 import FilterAppointmentsForPatient from './pages/patient/FilterAppointmentsForPatient';
 import AddAdmin from './pages/admin/AddAdmin'
@@ -57,7 +58,7 @@ function App() {
             <Route path="/patient" element={<Patient/>}/>
             <Route path="/ViewMyPrescriptions" element={<ViewMyPrescriptions/>}/>
             <Route path="/SelectedPrescription" element={<SelectedPrescription/>}/>
-
+            <Route path="/AddAppointmentSlot" element={<AddAppointmentSlots/>}/>
 
           </Routes>
         </div>

@@ -132,10 +132,15 @@ const editDoctor = async (req, res) => {
 const myPatients = async (req, res) => {
   try {
     let id = req.query.id;
+    
     let AllmyAppointments = await appointmentModel
       .find({ doctor: new mongoose.Types.ObjectId(id) })
       .populate({ path: "patient" });
-    let patients = AllmyAppointments.map((appointment) => appointment.patient);
+    
+    let patients = AllmyAppointments
+    .map((appointment) => appointment.patient !== null ? appointment.patient : undefined)
+    .filter(patient => patient !== undefined);
+    
     res.status(200).json(patients);
   } catch (err) {
     res.send(err.message);
