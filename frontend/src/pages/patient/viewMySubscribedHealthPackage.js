@@ -23,7 +23,7 @@ const ViewMySubscribedHealthPackage = () => {
     };
     fetchHealthPackage()
     ;
-  }, [id]);
+  }, []);
 
   return (
     <div>
