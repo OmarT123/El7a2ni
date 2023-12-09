@@ -20,6 +20,7 @@ const createPatient = async (req, res) => {
     mobileNumber,
     emergencyContact,
     healthPackage,
+    wallet
   } = req.body;
   try {
     const user = await userModel.findOne({username})
@@ -38,6 +39,7 @@ const createPatient = async (req, res) => {
         mobileNumber,
         emergencyContact,
         healthPackage,
+        wallet
       });
       await userModel.create({
         username, 
@@ -335,6 +337,24 @@ try{
 }
 };
 
+const ViewMyWallet = async (req, res) => {
+  try {
+    const patientId = req.query.id;
+    const patient = await patientModel.findById(patientId).populate('wallet').exec();
+   
+    if (!patient) {
+      console.log('Patient not found');
+      return;
+    }
+    const wallet = patient.wallet;
+    res.json(wallet);
+  }
+  catch (err) {
+    res.json(err.message);
+
+  }
+};
+
 
 
 
@@ -352,5 +372,6 @@ module.exports = {
   selectPrescription,
   getDoctors,
   viewMySubscribedHealthPackage,
-  CancelSubscription
+  CancelSubscription,
+  ViewMyWallet
 };

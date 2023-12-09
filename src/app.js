@@ -15,6 +15,7 @@ const {
   viewPatient,
   createPrescription,
   exactPatients,
+  ViewDoctorWallet
 } = require("./Routes/doctorController");
 const {
   createPatient,
@@ -29,7 +30,8 @@ const {
   selectDoctorFromFilterSearch,
   getDoctors,
   viewMySubscribedHealthPackage,
-  CancelSubscription
+  CancelSubscription,
+  ViewMyWallet
 } = require("./Routes/patientController");
 const {
   addAdmin,
@@ -91,6 +93,7 @@ app.get("/selectPrescription",selectPrescription);
 app.get("/allDoctors", getDoctors);
 app.get("/viewMySubscribedHealthPackage",viewMySubscribedHealthPackage);
 app.put("/CancelSubscription",CancelSubscription);
+app.get("/ViewMyWallet",ViewMyWallet)
 
 //Doctor
 app.get("/filterAppointmentsForDoctor", filterAppointmentsForDoctor);
@@ -103,4 +106,5 @@ app.get("/filterPatientsByAppointments", filterPatientsByAppointments);
 app.get("/viewPatient", viewPatient);
 app.get("/viewmypatientsbyname",exactPatients);
 app.post("/createPrescription",createPrescription);
+app.get("/ViewDoctorWallet",ViewDoctorWallet)
 

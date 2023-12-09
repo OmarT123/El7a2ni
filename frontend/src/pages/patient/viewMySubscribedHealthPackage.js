@@ -2,10 +2,10 @@ import axios from 'axios'
 import {useState , useEffect} from 'react'
 
 
-const ViewMyPrescriptions = () => {
+const ViewMySubscribedHealthPackage = () => {
 
     const [HealthPackage, setHealthPackage] = useState(null);
-    const id = "6571009d25046534ac0de556"
+    const id = "657497dcb59b327adbc4229b"
 
   useEffect(() => {
     const fetchHealthPackage= async () => {
@@ -39,11 +39,11 @@ const ViewMyPrescriptions = () => {
           {/* Add more details as needed */}
         </div>
       ) : (
-        <p>Loading...</p>
+        <p>not subscribed to any health package</p>
       )}
     </div>
   );
 };
 
 
-export default ViewMyPrescriptions
+export default ViewMySubscribedHealthPackage
