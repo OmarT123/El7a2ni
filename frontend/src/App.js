@@ -5,6 +5,7 @@ import Home from './pages/Home'
 import NavBar from './components/NavBar'
 import UnapprovedDoctors from './pages/admin/unApprovedDoctors';
 import HealthPackage from './pages/HealthPackage';
+import ViewHealthPackages from './pages/patient/ViewHealthPackages';
 import HealthPackageInfo from './pages/HealthPackageInfo';
 import FamilyMembers from './pages/patient/FamilyMembers'
 import DoctoreditForm from './components/doctor/DoctoreditForm';
@@ -42,6 +43,7 @@ function App() {
             <Route path='/AddAdmin' element={<AddAdmin/>}/>
             <Route path="/HealthPackage" element={<HealthPackage />} />
             <Route path="/HealthPackageInfo" element={<HealthPackageInfo />} />
+            <Route path="/ViewHealthPackages" element={<ViewHealthPackages />} />
             <Route path="/SearchDoctor" element={<SearchDoctor />} />
             <Route path="/registerPatient" element={<RegisterPatient />} />
             <Route path="/registerDoctor" element={<RegisterDoctor />} />
