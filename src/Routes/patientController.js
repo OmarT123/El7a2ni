@@ -18,9 +18,7 @@ const createPatient = async (req, res) => {
     birthDate,
     gender,
     mobileNumber,
-    emergencyContact,
-    healthPackage,
-    wallet
+    emergencyContact
   } = req.body;
   try {
     const user = await userModel.findOne({username})
@@ -37,9 +35,7 @@ const createPatient = async (req, res) => {
         birthDate,
         gender,
         mobileNumber,
-        emergencyContact,
-        healthPackage,
-        wallet
+        emergencyContact
       });
       await userModel.create({
         username, 
