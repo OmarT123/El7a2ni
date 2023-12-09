@@ -199,6 +199,40 @@ const filterPatientsByAppointments = async (req, res) => {
   }
 };
 
+//new Req.45//
+const viewDoctorAppointments = async (req, res) => {
+  try {
+    const doctorID = req.query.id;
+    const currentDate = new Date();
+
+    const upcomingAppointments = await appointmentModel
+      .find({
+        doctor: doctorID,
+        date: { $gte: currentDate },
+      })
+      .populate({ path: "patient" });
+
+    const pastAppointments = await appointmentModel
+      .find({
+        doctor: doctorID,
+        date: { $lt: currentDate },
+      })
+      .populate({ path: "patient" });
+
+    const appointmentData = {
+      upcomingAppointments,
+      pastAppointments,
+    };
+
+    res.status(200).json(appointmentData);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+
+
+
 module.exports = {
   addDoctor,
   editDoctor,
@@ -208,5 +242,6 @@ module.exports = {
   filterPatientsByAppointments,
   viewPatient,
   createPrescription,
-  exactPatients
+  exactPatients,
+  viewDoctorAppointments, //new Req.45//
 };
