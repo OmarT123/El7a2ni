@@ -93,8 +93,7 @@ const addDoctor = async (req, res) => {
     hourlyRate,
     affiliation,
     educationalBackground,
-    speciality,
-    wallet
+    speciality
   } = req.body;
   try {
     const user = await userModel.findOne({username})
@@ -113,8 +112,7 @@ const addDoctor = async (req, res) => {
         hourlyRate,
         affiliation,
         educationalBackground,
-        speciality,
-        wallet
+        speciality
       });
       await userModel.create({
         username, 
