@@ -6,6 +6,8 @@ const medicineModel = require("../Models/Medicine.js")
 const prescriptionModel = require("../Models/Prescription.js");
 const userModel = require("../Models/User.js")
 const mongoose = require("mongoose");
+const HealthPackageModel = require("../Models/HealthPackage.js");
+
 
 const createPatient = async (req, res) => {
   const {
@@ -16,7 +18,7 @@ const createPatient = async (req, res) => {
     birthDate,
     gender,
     mobileNumber,
-    emergencyContact,
+    emergencyContact
   } = req.body;
   try {
     const user = await userModel.findOne({username})
@@ -33,7 +35,7 @@ const createPatient = async (req, res) => {
         birthDate,
         gender,
         mobileNumber,
-        emergencyContact,
+        emergencyContact
       });
       await userModel.create({
         username, 
@@ -293,7 +295,62 @@ catch(error){
 }
 
 
-//new Req.45//
+const viewMySubscribedHealthPackage = async (req, res) => {
+  try {
+    const patientId = req.query.id;
+    const patient = await patientModel.findById(patientId).populate('healthPackage').exec();
+   
+    if (!patient) {
+      console.log('Patient not found');
+      return;
+    }
+    const healthPackage = patient.healthPackage;
+    res.json(healthPackage);
+  }
+  catch (err) {
+    res.json(err.message);
+
+  }
+};
+
+
+const CancelSubscription= async (req, res) => {
+
+try{
+  const patientId = req.query.id;
+  const patient = await patientModel.findById(patientId);
+  if (!patient) {
+    return res.status(404).json({ message: 'Patient not found' });
+  }
+  patient.healthPackage = null;
+  await patient.save();
+
+  res.json({ message: 'Subscription canceled successfully' });
+} catch (error) {
+  console.error('Error canceling subscription:', error.message);
+  res.status(500).json({ message: 'Internal Server Error' });
+}
+};
+
+const ViewMyWallet = async (req, res) => {
+  try {
+    const patientId = req.query.id;
+    const patient = await patientModel.findById(patientId).populate('wallet').exec();
+   
+    if (!patient) {
+      console.log('Patient not found');
+      return;
+    }
+    const wallet = patient.wallet;
+    res.json(wallet);
+  }
+  catch (err) {
+    res.json(err.message);
+
+  }
+};
+
+
 const viewPatientAppointments = async (req, res) => {
   try {
     const patientID = req.query.id;
@@ -337,5 +394,8 @@ module.exports = {
   viewMyPrescriptions,
   selectPrescription,
   getDoctors,
-  viewPatientAppointments,   //new Req.45//
+  viewMySubscribedHealthPackage,
+  CancelSubscription,
+  ViewMyWallet,
+  viewPatientAppointments
 };

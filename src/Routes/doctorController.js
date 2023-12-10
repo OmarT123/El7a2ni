@@ -93,7 +93,7 @@ const addDoctor = async (req, res) => {
     hourlyRate,
     affiliation,
     educationalBackground,
-    speciality,
+    speciality
   } = req.body;
   try {
     const user = await userModel.findOne({username})
@@ -112,7 +112,7 @@ const addDoctor = async (req, res) => {
         hourlyRate,
         affiliation,
         educationalBackground,
-        speciality,
+        speciality
       });
       await userModel.create({
         username, 
@@ -198,6 +198,23 @@ const filterPatientsByAppointments = async (req, res) => {
     res.status(400).json(error.message);
   }
 };
+const ViewDoctorWallet = async (req, res) => {
+  try {
+    const DoctorId = req.query.id;
+    const Doctor = await doctorModel.findById(DoctorId).populate('wallet').exec();
+   
+    if (!Doctor) {
+      console.log('Doctor not found');
+      return;
+    }
+    const wallet = Doctor.wallet;
+    res.json(wallet);
+  }
+  catch (err) {
+    res.json(err.message);
+
+  }
+};
 
 //new Req.45//
 const viewDoctorAppointments = async (req, res) => {
@@ -243,5 +260,6 @@ module.exports = {
   viewPatient,
   createPrescription,
   exactPatients,
-  viewDoctorAppointments, //new Req.45//
+  ViewDoctorWallet
+  viewDoctorAppointments,
 };

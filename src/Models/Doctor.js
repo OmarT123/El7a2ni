@@ -44,6 +44,9 @@ const doctorSchema = new Schema(
       type: String,
       required: true,
     },
+    wallet:{
+      type:Number
+    }
   },
   { timestamps: true }
 );
