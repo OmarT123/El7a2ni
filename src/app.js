@@ -67,19 +67,19 @@ app.use(express.json());
 app.use(cookieParser());
 
 //Admin
-app.post("/addHealthPackage", addHealthPackage);
-app.put("/editHealthPackage", editHealthPackage);
-app.delete("/deleteHealthPackage", deleteHealthPackage);
-app.get("/viewDocInfo", viewDocInfo);
-app.delete("/deletePatient",deletePatient);
-app.delete("/deleteDoctor",deleteDoctor);
-app.delete("/deleteAdmin",deleteAdmin);
-app.post("/addAdmin",addAdmin);
-app.get("/getAllHealthPackages",getAllHealthPackages)
-app.get("/getHealthPackage",getHealthPackage)
-app.get("/getAllAdmins",getAllAdmins);
-app.get("/getAllDoctors",getAllDoctors);
-app.get("/getAllPatients",getAllPatients);
+app.post("/addHealthPackage", getUserFromTokenMiddleware,addHealthPackage);
+app.put("/editHealthPackage",getUserFromTokenMiddleware, editHealthPackage);
+app.delete("/deleteHealthPackage",getUserFromTokenMiddleware, deleteHealthPackage);
+app.get("/viewDocInfo", getUserFromTokenMiddleware,viewDocInfo);
+app.delete("/deletePatient",getUserFromTokenMiddleware,deletePatient);
+app.delete("/deleteDoctor",getUserFromTokenMiddleware,deleteDoctor);
+app.delete("/deleteAdmin",getUserFromTokenMiddleware,deleteAdmin);
+app.post("/addAdmin",getUserFromTokenMiddleware,addAdmin);
+app.get("/getAllHealthPackages",getUserFromTokenMiddleware,getAllHealthPackages)
+app.get("/getHealthPackage",getUserFromTokenMiddleware,getHealthPackage)
+app.get("/getAllAdmins",getUserFromTokenMiddleware,getAllAdmins);
+app.get("/getAllDoctors",getUserFromTokenMiddleware,getAllDoctors);
+app.get("/getAllPatients",getUserFromTokenMiddleware,getAllPatients);
 
 //Patient
 app.post("/addPatient", addPatient);

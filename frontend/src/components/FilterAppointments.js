@@ -17,7 +17,6 @@ const FilterAppointments  = ({apiLink}) => {
         if (date !== "")
         FilterData['date']=date;
 
-        // temporarily hard coded id until a user is logged in
         try {
             const response = await axios.get(apiLink, {params : FilterData});
             const apps = response.data;
