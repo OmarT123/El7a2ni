@@ -7,64 +7,48 @@ const prescriptionModel = require("../Models/Prescription.js");
 const userModel = require("../Models/User.js")
 const mongoose = require("mongoose");
 const bcrypt = require('bcrypt');
-const addPatient = async (req, res) => {
-  const {
-    username,
-    name,
-    email,
-    password,
-    birthDate,
-    gender,
-    mobileNumber,
-    emergencyContact,
-  } = req.body;
 
-  try {
+
+const addPatient = async(req,res) => {
+
+  const{username, name, email, password, birthDate, gender, mobileNumber,emergencyContact} = req.body;
+  try{
     if (!username || !password || !name || !birthDate || !gender || !mobileNumber || !emergencyContact || !email) {
       return res.status(400).json({ success: false, message: "All fields are required. Please provide valid information for each field!" });
     }
-
-  
-
-    const user = await userModel.findOne({ username });
-
-    if (user) {
-      return res.status(409).json({ success: false, message: "Username already exists." });
-    } else {
-      
-      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%^&*()?])[A-Za-z\d@$!%^&*()?]{10,}$/;
+    const user = await userModel.findOne({username})
+  if (user)
+  {
+    res.json("Username already exists")
+  }
+  else{
+    
+    const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%^&*()?[\]{}|<>])[A-Za-z\d@$!%^&*()?[\]{}|<>]{10,}$/;
     if (!passwordRegex.test(password)) {
-      return res.status(400).json({
+      return res.json({
         success: false,
         message: "Password must contain at least 1 lowercase letter, 1 uppercase letter, 1 number, 1 special character, and be at least 10 characters long.",
       });
     }
-      const salt = await bcrypt.genSalt();
-      const encryptedPassword = await bcrypt.hash(password, salt);
-      const patient = await patientModel.create({
-        username,
-        name,
-        email,
-        password: encryptedPassword,
-        birthDate,
-        gender,
-        mobileNumber,
-        emergencyContact,
-      });
+    const salt = await bcrypt.genSalt();
+    const encryptedPassword = await bcrypt.hash(password ,salt)
+    const patient = await patientModel.create({username,name,email, password :encryptedPassword,birthDate, gender, mobileNumber,emergencyContact});
+    await patient.save();
 
-      await patient.save();
+   const user = await userModel.create({
+      username, 
+      userId : patient._id,
+      type : "patient"
+    })
+    await user.save();
 
-      await userModel.create({
-        username,
-        userId: patient._id,
-      });
-
-      return res.json({ success: true, message: "Created Successfully" });
-    }
-  } catch (error) {
-    return res.status(500).json({ success: false, error: error.message });
+    res.json("Registered Successfully !!");
   }
-};
+  }catch(error){
+      res.json({error:error.message})
+  }
+}
+
 
 
 const createFamilyMember = async (req, res) => {

@@ -9,20 +9,19 @@ const bcrypt = require('bcrypt');
 const addAdmin = async (req, res) => {
   let username = req.body.username;
   let password = req.body.password;
-
   try {
     if (!username || !password) {
       return res.status(400).json({ success: false, message: "Username and password are required. Please enter valid credentials!" });
     }
 
-     
 
-    const user = await userModel.findOne({ username });
-
-    if (user) {
-      return res.status(409).json({ success: false, message: "Username already exists." });
-    } else {
-      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%^&*()?])[A-Za-z\d@$!%^&*()?]{10,}$/;
+    const user = await userModel.findOne({username})
+    if (user)
+    {
+      res.json("Username already exists.")
+    }
+    else{
+      const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%^&*()?[\]{}|<>])[A-Za-z\d@$!%^&*()?[\]{}|<>]{10,}$/;
       if (!passwordRegex.test(password)) {
         return res.status(400).json({
           success: false,
@@ -30,22 +29,21 @@ const addAdmin = async (req, res) => {
         });
       }
       const salt = await bcrypt.genSalt();
-      const encryptedPassword = await bcrypt.hash(password, salt);
-      const admin = await adminModel.create({ username, password: encryptedPassword });
+      const encryptedPassword = await bcrypt.hash(password ,salt )
+      const admin = await adminModel.create({ username, password :encryptedPassword });
       await admin.save();
-
-      await userModel.create({
-        username,
-        userId: admin._id,
-      });
-
-      return res.json({ success: true, message: "Admin Created Successfully !!" });
+     const user =  await userModel.create({
+        username, 
+        userId : admin._id,
+        type : "admin"
+      })
+      await user.save();
+      res.json("Admin Created Successfully.");
     }
   } catch (err) {
-    return res.status(500).json({ success: false, error: err.message });
+    res.send(err.message);
   }
 };
-
 
 const viewDocInfo = async (req, res) => {
   try {

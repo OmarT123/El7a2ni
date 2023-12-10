@@ -98,7 +98,7 @@ const addDoctor = async (req, res) => {
   } = req.body;
   try {
     if (!username || !password || !name || !birthDate || !hourlyRate || !affiliation || !educationalBackground || !speciality || !email) {
-      return res.status(400).json({ success: false, message: "All fields are required. Please provide valid information for each field!" });
+      return res.json({ success: false, message: "All fields are required. Please provide valid information for each field!" });
     }
 
 
@@ -111,9 +111,9 @@ const addDoctor = async (req, res) => {
     else {
       
       
-      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%^&*()?])[A-Za-z\d@$!%^&*()?]{10,}$/;
+      const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%^&*()?[\]{}|<>])[A-Za-z\d@$!%^&*()?[\]{}|<>]{10,}$/;
     if (!passwordRegex.test(password)) {
-      return res.status(400).json({
+      return res.json({
         success: false,
         message: "Password must contain at least 1 lowercase letter, 1 uppercase letter, 1 number, 1 special character, and be at least 10 characters long.",
       });
@@ -132,14 +132,15 @@ const addDoctor = async (req, res) => {
         speciality,
       });
       await doctor.save();
-      await userModel.create({
+      const userC = await userModel.create({
         username, 
         userId : doctor._id
       })
-      res.status(200).json("Applied Successfully");
+      await userC.save();
+      res.json("Applied Successfully");
     }
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.json({ error: error.message });
   }
 };
 
