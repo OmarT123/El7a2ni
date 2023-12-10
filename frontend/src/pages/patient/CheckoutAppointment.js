@@ -1,28 +1,28 @@
 import {useEffect, useState} from 'react';
 import axios from 'axios';
 
-const CheckoutHealthPackage = () => {
+const CheckoutAppointment = () => {
     const [familyMembers, setFamilyMembers] = useState([])
     const [selectedFamilyMember, setSelectedFamilyMember] = useState('')
-    const [healthPackage, setHealthPackage] = useState(0)
+    const [appointment, setAppointment] = useState(0)
     const patientId = "6575badad728c698d3d1d93d"
 
     useEffect(() => {
         const getFamilyMembers = async() => {
             await axios.get("/getFamilyMembers?id="+patientId).then(res => setFamilyMembers(res.data))
         }
-        const getHealthPackage = async() => {
-            const healthPackageId = localStorage.getItem('healthPackage')
-            await axios.get("/getHealthPackageForPatient?id="+healthPackageId).then(res => setHealthPackage(res.data))
+        const getAppointment = async() => {
+            const appointmentId = localStorage.getItem('appointment')
+            await axios.get("/getAnAppointment?id="+appointmentId).then(res => setAppointment(res.data))
         }
         getFamilyMembers()
-        getHealthPackage()
+        getAppointment()
     }, [])
 
     const payWithCard = async () => {
         const body = {}
-        body['url']='SuccessfulCheckoutHealthPackage'
-        body['item']={name:healthPackage.name, price:healthPackage.price}
+        body['url']='SuccessfulCheckoutAppointment'
+        body['item']={name:appointment.appointment.name, price:appointment.price}
         if (selectedFamilyMember === '')
             alert('Please Select a family member')
         else
@@ -31,8 +31,8 @@ const CheckoutHealthPackage = () => {
 
     const payWithWallet = async () => {
         const body = {}
-        body['url']='SuccessfulCheckoutHealthPackage'
-        body['price']=healthPackage.price
+        body['url']='SuccessfulCheckoutAppointment'
+        body['price']=appointment.price
         if (selectedFamilyMember === '')
             alert('Please Select a family member')
         else
@@ -46,7 +46,7 @@ const CheckoutHealthPackage = () => {
   return (
     <div className='checkout'>
         <h3>Total:</h3>
-        <p>{healthPackage.price} €</p>
+        <p>{appointment.price} €</p>
         <h3>Choose Family Member</h3>
         <select onChange={handleFamilyMemberSelect} value={selectedFamilyMember}>
             <option value="">Family Members...</option>
@@ -64,4 +64,4 @@ const CheckoutHealthPackage = () => {
   )
 }
 
-export default CheckoutHealthPackage
+export default CheckoutAppointment

@@ -377,6 +377,9 @@ const buyHealthPackage = async (req, res) => {
       endDate: curDate
     }
     const patient = await patientModel.findById(patientId)
+    // const subscribedTo = patient.healthPackages.filter(hp => hp.status === 'subscribed')
+    // if (subscribedTo && subscribedTo.length !== 0)
+    //   return res.json("Failed")
     patient.healthPackage.push(hPackage)
     await patient.save()
     res.json("Updated Successfully")
@@ -388,10 +391,9 @@ const buyHealthPackage = async (req, res) => {
 
 const reserveAppointment = async(req, res) => {
   const patientId = req.query.id
-  const appointmentId = req.query.appointmentId
+  const appointmentId = req.body.appointmentId
   try {
-    const appointment = await appointmentModel.findByIdAndUpdate(appointmentId, { patient: new mongoose.Types.ObjectId(patientId), status: "upcoming" })
-    await appointment.save()
+    const appointment = await appointmentModel.findByIdAndUpdate(appointmentId, { patient: new mongoose.Types.ObjectId(patientId), status: "upcoming" }, {new: true})
     res.json('updated Successfully')
   }catch (err) {
     res.json(err.message)
@@ -433,6 +435,31 @@ const getHealthPackageForPatient = async (req,res) => {
   {res.json(err.message)}
 }
 
+const viewFreeAppointments = async(req,res) => {
+  try {
+    const allAppointments = await appointmentModel.find({status:"free"}).populate({path:"doctor"})
+    const result = allAppointments.map(app => {return {appointment: app, price: app.doctor.hourlyRate}})
+    
+    res.json(result)
+  }
+  catch(err) {console.log(err)}
+}
+
+const getAnAppointment = async (req, res) => {
+  try {
+    const appointmentId = req.query.id
+    const appointment = await appointmentModel.findById(appointmentId).populate({path:'doctor'}).populate({path:'patient'})
+    const doctor = appointment.doctor
+    const price = doctor.hourlyRate
+
+    const response = {appointment: appointment, price: price}
+    res.json(response)
+  }
+  catch(err){
+    console.log(err.message)
+  }
+}
+
 module.exports = {
   createFamilyMember,
   createPatient,
@@ -451,5 +478,7 @@ module.exports = {
   buyHealthPackage,
   reserveAppointment,
   sendCheckoutMail,
-  getHealthPackageForPatient
+  getHealthPackageForPatient,
+  viewFreeAppointments,
+  getAnAppointment
 };

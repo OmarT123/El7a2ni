@@ -8,8 +8,8 @@ const SuccessfulCheckoutHealthPackage = () => {
         const verifyCheckout = async () => {
             const body = {}
             body['appointmentId'] = localStorage.getItem('healthPackageId')
-            await axios.put('/buyHealthPackage?id='+patientId,{params: body})
-            body['message'] = "bought health package"
+            await axios.put('/reserveAppointment?id='+patientId,{params: body})
+            body['message'] = "Appointment Booked"
             await axios.get('/sendCheckoutMail?id='+patientId, {params: body})
             window.location.href = '/'
         }

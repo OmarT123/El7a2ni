@@ -35,7 +35,9 @@ const {
   buyHealthPackage,
   reserveAppointment,
   sendCheckoutMail,
-  getHealthPackageForPatient
+  getHealthPackageForPatient,
+  viewFreeAppointments,
+  getAnAppointment
 } = require("./Routes/patientController");
 const {
   addAdmin,
@@ -99,10 +101,11 @@ app.get("/viewPatientAppointments", viewPatientAppointments); //new Req.45//
 app.get("/payWithCard", payWithCard)
 app.get("/payWithWallet", payWithWallet)
 app.put("/buyHealthPackage", buyHealthPackage)
-app.put("/reserveDocuments", reserveAppointment)
+app.put("/reserveAppointment", reserveAppointment)
 app.get("/sendCheckoutMail", sendCheckoutMail)
 app.get("/getHealthPackageForPatient", getHealthPackageForPatient)
-
+app.get("/viewFreeAppointments", viewFreeAppointments)
+app.get("/getAnAppointment", getAnAppointment)
 
 
 

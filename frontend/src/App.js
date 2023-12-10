@@ -27,6 +27,9 @@ import DeleteAdmin from './pages/admin/DeleteAdmin';
 import DeleteDoctor from './pages/admin/DeleteDoctor';
 import SuccessfulCheckoutHealthPackage from './pages/patient/SuccesfulCheckoutHealthPackage';
 import CheckoutHealthPackage from './pages/patient/CheckoutHealthPackage';
+import ViewFreeAppointments from './pages/patient/ViewFreeAppointments';
+import SuccessfulCheckoutAppointment from './pages/patient/SuccessfulCheckoutAppointment';
+import CheckoutAppointment from './pages/patient/CheckoutAppointment';
 
 function App() {
   return (
@@ -62,6 +65,9 @@ function App() {
             <Route path="/SelectedPrescription" element={<SelectedPrescription/>}/>
             <Route path="/CheckoutHealthPackage" element={<CheckoutHealthPackage />} />
             <Route path="/SuccessfulCheckoutHealthPackage" element={<SuccessfulCheckoutHealthPackage />} />
+            <Route path="/ViewFreeAppointments" element={<ViewFreeAppointments />} />
+            <Route path="/CheckoutAppointment" element={<CheckoutAppointment />} />
+            <Route path="/SuccessfulCheckoutAppointment" element={<SuccessfulCheckoutAppointment />} />
           </Routes>
         </div>
       </BrowserRouter>
