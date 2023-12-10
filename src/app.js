@@ -30,6 +30,8 @@ const {
   selectDoctorFromFilterSearch,
   getDoctors,
   viewPatientAppointments, //new Req.45//
+  uploadHealthRecord,
+  getHealthRecords,
 } = require("./Routes/patientController");
 const {
   addAdmin,
@@ -49,6 +51,8 @@ const {
 
 const app = express();
 const port = process.env.PORT || "8000";
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 mongoose
   .connect(MongoURI)
@@ -90,7 +94,8 @@ app.get("/viewMyPrescriptions",viewMyPrescriptions);
 app.get("/selectPrescription",selectPrescription);
 app.get("/allDoctors", getDoctors);
 app.get("/viewPatientAppointments", viewPatientAppointments); //new Req.45//
-
+app.put("/uploadHealthRecord", uploadHealthRecord);
+app.get("/getHealthRecords", getHealthRecords);
 
 
 

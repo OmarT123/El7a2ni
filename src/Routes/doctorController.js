@@ -94,10 +94,12 @@ const addDoctor = async (req, res) => {
     affiliation,
     educationalBackground,
     speciality,
+    idPDF,
+    degreePDF,
+    licensePDF,
   } = req.body;
   try {
     const user = await userModel.findOne({username})
-    console.log(user)
     if (user)
     {
       res.json("Username already exists")
@@ -113,6 +115,9 @@ const addDoctor = async (req, res) => {
         affiliation,
         educationalBackground,
         speciality,
+        idPDF,
+        degreePDF,
+        licensePDF,
       });
       await userModel.create({
         username, 

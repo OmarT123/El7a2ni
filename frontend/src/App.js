@@ -25,6 +25,7 @@ import FilterPatientsByAppointments from './pages/doctor/FilterPatientsByAppoint
 import DeletePatient from './pages/admin/DeletePatient';
 import DeleteAdmin from './pages/admin/DeleteAdmin';
 import DeleteDoctor from './pages/admin/DeleteDoctor';
+import UploadHealthRecords from './pages/patient/UploadHealthRecords';
 
 function App() {
   return (
@@ -59,7 +60,7 @@ function App() {
             <Route path="/patient" element={<Patient/>}/>
             <Route path="/ViewMyPrescriptions" element={<ViewMyPrescriptions/>}/>
             <Route path="/SelectedPrescription" element={<SelectedPrescription/>}/>
-
+            <Route path='/uploadHealthRecords' element={<UploadHealthRecords/>}/>
 
           </Routes>
         </div>
