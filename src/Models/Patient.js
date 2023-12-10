@@ -51,9 +51,21 @@ const patientSchema = new Schema(
         type: String,
       }
     ],
-    healthPackage: {
-      type: mongoose.Types.ObjectId,
-      ref: 'HealthPackage',
+    healthPackage: [
+      {
+      type: {
+        healthPackageID: {
+          type : mongoose.Schema.Types.ObjectId,
+          ref : 'HealthPackage',
+        },
+        status: String,
+        endDate: Date,
+      },
+    }
+    ],
+    wallet: {
+      type: Number,
+      default: 0
     }
   },
   { timestamps: true }

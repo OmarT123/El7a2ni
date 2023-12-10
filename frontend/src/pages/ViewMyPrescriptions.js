@@ -17,7 +17,6 @@ const ViewMyPrescriptions = () => {
           const id = "654965e73fe9729145b6ddbd";
           const response = await axios.get('/viewMyPrescriptions?id=' + id);
           const list = response.data;
-        //   console.log(list[0].medicines)
           setPrescriptionList(list);
           setSearchResults(false)
         } catch (error) {

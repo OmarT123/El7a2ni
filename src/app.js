@@ -29,7 +29,13 @@ const {
   selectPrescription,
   selectDoctorFromFilterSearch,
   getDoctors,
-  viewPatientAppointments, //new Req.45//
+  viewPatientAppointments,
+  payWithCard,
+  payWithWallet,
+  buyHealthPackage,
+  reserveAppointment,
+  sendCheckoutMail,
+  getHealthPackageForPatient
 } = require("./Routes/patientController");
 const {
   addAdmin,
@@ -90,6 +96,12 @@ app.get("/viewMyPrescriptions",viewMyPrescriptions);
 app.get("/selectPrescription",selectPrescription);
 app.get("/allDoctors", getDoctors);
 app.get("/viewPatientAppointments", viewPatientAppointments); //new Req.45//
+app.get("/payWithCard", payWithCard)
+app.get("/payWithWallet", payWithWallet)
+app.put("/buyHealthPackage", buyHealthPackage)
+app.put("/reserveDocuments", reserveAppointment)
+app.get("/sendCheckoutMail", sendCheckoutMail)
+app.get("/getHealthPackageForPatient", getHealthPackageForPatient)
 
 
 
@@ -105,4 +117,5 @@ app.get("/filterPatientsByAppointments", filterPatientsByAppointments);
 app.get("/viewPatient", viewPatient);
 app.get("/viewmypatientsbyname",exactPatients);
 app.post("/createPrescription",createPrescription);
-app.get("/viewDoctorAppointments", viewDoctorAppointments); //new Req.45//
+app.get("/viewDoctorAppointments", viewDoctorAppointments); 
+

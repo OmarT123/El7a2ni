@@ -25,6 +25,8 @@ import FilterPatientsByAppointments from './pages/doctor/FilterPatientsByAppoint
 import DeletePatient from './pages/admin/DeletePatient';
 import DeleteAdmin from './pages/admin/DeleteAdmin';
 import DeleteDoctor from './pages/admin/DeleteDoctor';
+import SuccessfulCheckoutHealthPackage from './pages/patient/SuccesfulCheckoutHealthPackage';
+import CheckoutHealthPackage from './pages/patient/CheckoutHealthPackage';
 
 function App() {
   return (
@@ -54,13 +56,12 @@ function App() {
             <Route path="/deleteDoctor" element={<DeleteDoctor/>}/>
             <Route path="/Prescription" element={<Prescription/>}/>
             <Route path="/FilterPatientsByAppointments" element={<FilterPatientsByAppointments/>}/>
-            <Route path='/SearchDoctor' element={<SearchDoctor/>}/>
             <Route path="/doctor" element={<Doctor/>}/>
             <Route path="/patient" element={<Patient/>}/>
             <Route path="/ViewMyPrescriptions" element={<ViewMyPrescriptions/>}/>
             <Route path="/SelectedPrescription" element={<SelectedPrescription/>}/>
-
-
+            <Route path="/CheckoutHealthPackage" element={<CheckoutHealthPackage />} />
+            <Route path="/SuccessfulCheckoutHealthPackage" element={<SuccessfulCheckoutHealthPackage />} />
           </Routes>
         </div>
       </BrowserRouter>
