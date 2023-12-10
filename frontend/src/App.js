@@ -4,19 +4,19 @@ import {BrowserRouter, Routes, Route} from 'react-router-dom'
 import Home from './pages/Home'
 import NavBar from './components/NavBar'
 import UnApprovedDoctors from './pages/admin/UnApprovedDoctors';
-import HealthPackage from './pages/HealthPackage';
-import HealthPackageInfo from './pages/HealthPackageInfo';
+import HealthPackage from './pages/admin/HealthPackage';
+import HealthPackageInfo from './pages/admin/HealthPackageInfo';
 import FamilyMembers from './pages/patient/FamilyMembers'
 import DoctoreditForm from './components/doctor/DoctoreditForm';
-import ViewMyPrescriptions from './pages/ViewMyPrescriptions';
-import SelectedPrescription from './pages/SelectedPrescription';
+import ViewMyPrescriptions from './pages/patient/ViewMyPrescriptions';
+import SelectedPrescription from './pages/patient/SelectedPrescription';
 import MyPatients from './pages/doctor/MyPatients';
 import SearchDoctor from './pages/patient/SearchDoctor'
 import Prescription from './pages/patient/Prescription'
 import RegisterPatient from './pages/patient/RegisterPatient'
 import RegisterDoctor from './pages/doctor/RegisterDoctor'
-import Patient from './pages/patient/Patient'
-import Doctor from './pages/doctor/Doctor'
+import Patient from './pages/doctor/Patient'
+import Doctor from './pages/patient/Doctor'
 import FilterAppointmentsForDoctor from './pages/doctor/FilterAppointmentsForDoctor';
 import FilterAppointmentsForPatient from './pages/patient/FilterAppointmentsForPatient';
 import AddAdmin from './pages/admin/AddAdmin'
@@ -49,7 +49,7 @@ function App() {
             <Route path="/UnapprovedDoctors" element={<UnApprovedDoctors />} />
             <Route path='/FamilyMembers' element={<FamilyMembers/>}/>
             <Route path="/editDoctor" element={<DoctoreditForm/>}/>
-            <Route path="/viewmypatients" element={<MyPatients/>}/>
+            <Route path="/viewMyPatients" element={<MyPatients/>}/>
             <Route path='/FilterAppointmentsForPatient' element={<FilterAppointmentsForPatient/>}/>
             <Route path='/FilterAppointmentsForDoctor' element={<FilterAppointmentsForDoctor/>}/>
             <Route path='/AddAdmin' element={<AddAdmin/>}/>

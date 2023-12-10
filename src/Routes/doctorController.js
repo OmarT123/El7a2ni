@@ -49,9 +49,9 @@ const filterAppointmentsForDoctor = async (req, res) => {
   if (statusToBeFiltered) {
     filterQuery["status"] = statusToBeFiltered;
   }
-  if (req.query.id) {
-    const id = req.query.id;
-    filterQuery["doctor"] = new mongoose.Types.ObjectId(id);
+  if (req.user._id) {
+    const id = req.user._id;
+    filterQuery["doctor"] = id;
     try {
       const filteredAppointments = await appointmentModel
         .find(filterQuery)
@@ -146,7 +146,7 @@ const addDoctor = async (req, res) => {
 };
 
 const editDoctor = async (req, res) => {
-  let id = req.query.id;
+  let id = req.user._id;
   let { email, hourlyRate, affiliation } = req.body;
   try {
     let updatedDoctor = await doctorModel.findByIdAndUpdate(
@@ -165,9 +165,9 @@ const editDoctor = async (req, res) => {
 };
 const myPatients = async (req, res) => {
   try {
-    let id = req.query.id;
+    let id = req.user._id;
     let AllmyAppointments = await appointmentModel
-      .find({ doctor: new mongoose.Types.ObjectId(id) })
+      .find({ doctor: id })
       .populate({ path: "patient" });
     let patients = AllmyAppointments.map((appointment) => appointment.patient);
     res.status(200).json(patients);
@@ -191,9 +191,9 @@ const viewPatient = async (req, res) => {
 
   const exactPatients = async (req, res) => {
     try{
-    let id=req.query.id;
+    let id=req.user._id;
     let name= req.query.name;
-    let AllmyAppointments= await appointmentModel.find({ doctor:new mongoose.Types.ObjectId(id)}).populate({path:'patient'});
+    let AllmyAppointments= await appointmentModel.find({ doctor:id}).populate({path:'patient'});
     let patients = AllmyAppointments.map(appointment => appointment.patient);
     let filteredPatients = patients.filter(patient => patient.name === name);
     res.status(200).json(filteredPatients);
@@ -205,7 +205,7 @@ const viewPatient = async (req, res) => {
 
 
 const filterPatientsByAppointments = async (req, res) => {
-  let doctorID = req.query.id;
+  let doctorID = req.user._id;
   try {
     const appointments = await appointmentModel
       .find({ doctor: doctorID})

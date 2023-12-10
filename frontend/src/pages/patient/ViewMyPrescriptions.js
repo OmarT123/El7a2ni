@@ -1,7 +1,7 @@
 import axios from 'axios'
 import {useState , useEffect} from 'react'
-import DisplayPrescription from '../components/DisplayPrescription';
-import PatientAuthorization from '../components/PatientAuthorization';
+import DisplayPrescription from '../../components/DisplayPrescription';
+import PatientAuthorization from '../../components/PatientAuthorization';
 
 const ViewMyPrescriptions = ({user}) => {
 
@@ -16,10 +16,11 @@ const ViewMyPrescriptions = ({user}) => {
     const FetchPrescriptions = async () => {
         try {
           const id = user._id
-          const response = await axios.get('/viewMyPrescriptions?id=' + id);
+          const response = await axios.get('/viewMyPrescriptions');
           const list = response.data;
           setPrescriptionList(list);
           setSearchResults(false)
+
         } catch (error) {
           console.error("Error fetching prescriptions: ", error);
         }
@@ -39,7 +40,7 @@ const ViewMyPrescriptions = ({user}) => {
                 body["filled"]= filled === "true"?true:false
             if (doctor)
                 body["doctor"]=doctor
-            await axios.get("/filterPrescriptionByDateDoctorStatus?id="+id,{params:body}).then(res=>setPrescriptionsFilter(res.data)).catch(err=>console.log(err.message))
+            await axios.get("/filterPrescriptionByDateDoctorStatus",{params:body}).then(res=>setPrescriptionsFilter(res.data)).catch(err=>console.log(err.message))
             setSearchResults(true)        
       }
 

@@ -1,9 +1,9 @@
 import axios from 'axios'
 import { useState,useEffect } from 'react'
+import PatientAuthorization from '../../components/PatientAuthorization'
 
-const SelectedPrescription= () => {
+const SelectedPrescription= ({user}) => {
     const [prescription, setPrescription] = useState(null)
-
     useEffect(() => {
         const getPrescription = async()=> {
         const queryParams = new URLSearchParams(window.location.search)
@@ -39,4 +39,4 @@ const SelectedPrescription= () => {
     )
 }
 
-export default SelectedPrescription
+export default PatientAuthorization(SelectedPrescription) 

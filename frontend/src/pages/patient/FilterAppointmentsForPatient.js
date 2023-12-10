@@ -8,7 +8,7 @@ const FilterAppointmentsForPatient = ({user}) => {
     return (
         <div className="Appointments-container">
             <div className="appointmentsForPatient">
-                <FilterAppointments apiLink={"/filterAppointmentsForPatient?id="+id} />
+                <FilterAppointments apiLink={"/filterAppointmentsForPatient"} />
                 
             </div>
         </div>

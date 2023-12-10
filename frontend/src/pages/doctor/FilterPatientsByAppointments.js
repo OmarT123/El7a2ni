@@ -8,8 +8,7 @@ const FilterPatientsByAppointments = ({user}) => {
     const [patients, setPatients] = useState([])
 
     const filter = async() => {
-        const id = user._id;
-        await axios.get("/filterPatientsByAppointments?id="+id).then(res=>setPatients(res.data)).catch(err => console.log(err.message))
+        await axios.get("/filterPatientsByAppointments").then(res=>setPatients(res.data)).catch(err => console.log(err.message))
     }
 
     useEffect(() => 

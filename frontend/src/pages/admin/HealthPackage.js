@@ -1,7 +1,7 @@
 import axios from 'axios'
 import {useEffect, useState} from 'react'
-import HealthPackageDetails from '../components/HealthPackageDetails'
-import AdminAuthorization from '../components/AdminAuthorization'
+import HealthPackageDetails from '../../components/HealthPackageDetails'
+import AdminAuthorization from '../../components/AdminAuthorization'
 
 const HealthPackage = () => {
     const [healthPackages, setHealthPackages] = useState(null)

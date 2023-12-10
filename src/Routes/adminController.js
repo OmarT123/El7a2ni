@@ -11,7 +11,7 @@ const addAdmin = async (req, res) => {
   let password = req.body.password;
   try {
     if (!username || !password) {
-      return res.status(400).json({ success: false, message: "Username and password are required. Please enter valid credentials!" });
+      return res.json({ success: false, message: "Username and password are required. Please enter valid credentials!" });
     }
 
 
@@ -23,7 +23,7 @@ const addAdmin = async (req, res) => {
     else{
       const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%^&*()?[\]{}|<>])[A-Za-z\d@$!%^&*()?[\]{}|<>]{10,}$/;
       if (!passwordRegex.test(password)) {
-        return res.status(400).json({
+        return res.json({
           success: false,
           message: "Password must contain at least 1 lowercase letter, 1 uppercase letter, 1 number, 1 special character, and be at least 10 characters long.",
         });
@@ -104,7 +104,7 @@ const deleteHealthPackage = async (req, res) => {
   }
 };
 const deletePatient = async (req, res) => {
-  const patientId = req.query.id; 
+  const patientId = req.query.id;
   try {
     await patientModel.findByIdAndDelete(patientId);
     res.status(200).json({ message: 'Patient deleted successfully from the Database' });
@@ -152,7 +152,7 @@ const getHealthPackage = async (req,res) => {
 const getAllPatients = async (req,res) => {
 
   try {
-    const allPatient = await patientModel.find({}).populate({path:'familyMembers'}).exec();
+    const allPatient = await patientModel.find({}).populate({path:'familyMembers'}).populate({path:'healthPackage'}).exec();
     res.json(allPatient);
   }
   catch(error){

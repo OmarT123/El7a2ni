@@ -12,7 +12,7 @@ const FamilyMembers = ({user}) => {
     const getFamilyMembers = async () => {
         const id = user._id
 
-        await axios.get('/getFamilyMembers?id='+id).then(
+        await axios.get('/getFamilyMembers').then(
        (res) => {
            const members = res.data
            setFamilyMembers(members)

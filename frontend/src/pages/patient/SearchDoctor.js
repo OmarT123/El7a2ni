@@ -28,7 +28,7 @@ const SearchDoctor = ({user}) => {
         e.preventDefault()
 
         const id = user._id
-        await axios.get("/allDoctors?id="+id)
+        await axios.get("/allDoctors")
         .then((res)=>{
             const docs = res.data
             setDoctors(docs)
@@ -43,12 +43,9 @@ const SearchDoctor = ({user}) => {
             body['date']=date
         if (speciality !== '')
             body['speciality']=speciality
-        console.log(date)
-        console.log(speciality)
             await axios.get("/filterDoctorsSpecialityDate",{params : body})
         .then((res)=>{
             const docs = res.data
-            console.log(docs)
             setDoctors(docs)
         }).catch((err)=>console.log(err))
     }

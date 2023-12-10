@@ -9,24 +9,20 @@ import DoctorAuthorization from '../../components/DoctorAuthorization';
 const MyPatients = ({user}) => { 
     const [Patients,setPatients] = useState([]);
     const[name,setName]=useState('');
-   //hardcoded id for a doctor
     const id = user._id;
-    
-    
     const search = async(e) => {
         e.preventDefault()
         const body = {}
         if (name !== "")
             body['name']=name
-        await axios.get("/viewmypatientsbyname?id="+id,{params : body})
+        await axios.get("/viewmypatientsbyname",{params : body})
         .then((res)=>{
-            console.log(res.data)
             setPatients(res.data)
         }).catch((err)=>console.log(err))
     }
 
     const getPatients =  async () => {
-         await axios.get('/viewmypatients?id='+id).then(
+         await axios.get('/viewmypatients').then(
         (res) => { 
             setPatients(res.data)
 
