@@ -134,7 +134,8 @@ const addDoctor = async (req, res) => {
       await doctor.save();
       const userC = await userModel.create({
         username, 
-        userId : doctor._id
+        userId : doctor._id,
+        type :'doctor'
       })
       await userC.save();
       res.json("Applied Successfully");

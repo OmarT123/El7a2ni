@@ -38,7 +38,7 @@ const addPatient = async(req,res) => {
    const user = await userModel.create({
       username, 
       userId : patient._id,
-      type : "patient"
+      type : 'patient'
     })
     await user.save();
 

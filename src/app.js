@@ -47,7 +47,7 @@ const {
 } = require("./Routes/adminController.js");
 
 
-const{ login, logout ,changePassword ,getUserFromTokenMiddleware} =require("./Routes/userController");
+const{ login, logout ,changePassword ,getUserFromTokenMiddleware ,resetPassword, resetPasswordWithOTP,loginAuthentication} =require("./Routes/userController");
 
 
 const app = express();
@@ -111,5 +111,9 @@ app.post("/createPrescription",createPrescription);
 //user 
 
 app.post('/login', login);
+app.get('/logout',getUserFromTokenMiddleware,logout);
+app.get('/getUserFromTokenMiddleware',getUserFromTokenMiddleware);
 app.put('/changePassword', getUserFromTokenMiddleware, changePassword);
-app.get('/logout', logout);
+app.put('/resetPassword', resetPassword);
+app.put('/resetPasswordWithOTP',resetPasswordWithOTP);
+app.get('/loginAuthentication',loginAuthentication);

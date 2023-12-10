@@ -1,19 +1,16 @@
 const doctorModel = require('../Models/Doctor.js');
 const adminModel = require('../Models/Admin.js');
 const userModel = require('../Models/User.js');
-
 const patientModel = require('../Models/Patient.js');
 const bcrypt = require('bcrypt');
 const nodemailer = require('nodemailer');
 const otpGenerator = require('otp-generator');
 const cookieParser = require('cookie-parser');
-
-
-
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
-const maxAge = parseInt(process.env.MAXAGE);
 
+
+const maxAge = parseInt(process.env.MAXAGE);
 
 
 const createToken = (name) => {
@@ -28,8 +25,7 @@ const createToken = (name) => {
     }
 };
 
-console.log(maxAge);
-console.log(maxAge);
+
 
 const login = async (req, res) => {
     const { username, password } = req.body;
@@ -58,18 +54,15 @@ const login = async (req, res) => {
                 const token = createToken(user.username);
                 if (user instanceof adminModel) {
                     res.cookie('userToken', token, { httpOnly: true, maxAge: maxAge });
-                    console.log(res);
-                    return res.status(200).json({ success: true, user: user, message: "Admin login successful" });
+                    return res.json({ success: true, user: user, message: "Admin login successful" });
                 } else if (user instanceof patientModel) {
                     res.cookie( 'userToken', token, { httpOnly: true, maxAge: maxAge });
-                    console.log(res);
 
-                    return res.status(200).json({ success: true, user: user, message: "Patient login successful" });
+                    return res.json({ success: true, user: user, message: "Patient login successful" });
                 } else if (user instanceof doctorModel) {
                     res.cookie('userToken', token, { httpOnly: true, maxAge: maxAge});
-                    console.log(res);
 
-                    return res.status(200).json({ success: true, user: user, message: "Doctor login successful" });
+                    return res.json({ success: true, user: user, message: "Doctor login successful" });
                 }
             } else {
                 return res.json({ success: false, message: "Invalid Password" });
@@ -209,7 +202,6 @@ const changePassword = async (req, res) => {
     try {
         
         let typeOfUser = await userModel.findOne({username:user.username});
-        console.log(typeOfUser.type);
 
         const passwordMatched = await bcrypt.compare(oldPassword, user.password);
 
@@ -268,7 +260,6 @@ const sendOTPByEmail = async (email, otp) => {
 
   try {
     await transporter.sendMail(mailOptions);
-    console.log('OTP sent successfully');
   } catch (error) {
     console.error('Error sending OTP:', error);
     throw error;
@@ -283,33 +274,29 @@ const saveOTPCookie = (res, otp) => {
 };
 
 const resetPassword = async (req, res) => {
+
   const   {username }= req.body;
 
   try {
     let userData = null ;
     const user = await userModel.findOne({ username: username });
-    console.log(user.type);
+
     if (!user) {
         return res.json({ success: false, message: 'User not found ' });
       }
-    else if(user.type==="admin"){
+    else if(user.type==='admin'){
          userData = await adminModel.findOne({username : username});
     }
-    else if (user.type==="patient"){
+    else if (user.type==='patient'){
+
         userData = await patientModel.findOne({username : username});
     }
-    else if (user.type==="doctor"){
+    else if (user.type==='doctor'){
         userData = await doctorModel.findOne({username : username});
     }
     if(userData){
-    console.log(userData.email);
-
-   
-
     const otp = otpGenerator.generate(6, { digits: true, alphabets: false, upperCase: false, specialChars: false });
-
     saveOTPCookie(res, otp);
-
     await sendOTPByEmail(userData.email, otp);
 
     return res.json({ success: true, message: 'OTP sent successfully. Check your email.' });
@@ -342,8 +329,6 @@ const resetPasswordWithOTP = async (req, res) => {
    else if (user.type==="doctorModel"){
        userData = await doctorModel.findOne({username : username});
    }
-
-
 
     const storedOTP = req.cookies.passwordResetOTP;
 

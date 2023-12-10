@@ -35,7 +35,7 @@ const addAdmin = async (req, res) => {
      const user =  await userModel.create({
         username, 
         userId : admin._id,
-        type : "admin"
+        type : 'admin'
       })
       await user.save();
       res.json("Admin Created Successfully.");

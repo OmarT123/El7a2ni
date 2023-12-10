@@ -24,6 +24,11 @@ import FilterPatientsByAppointments from './pages/doctor/FilterPatientsByAppoint
 import DeletePatient from './pages/admin/DeletePatient';
 import DeleteAdmin from './pages/admin/DeleteAdmin';
 import DeleteDoctor from './pages/admin/DeleteDoctor';
+import Login from './pages/user/Login'
+import ChangePassword from './pages/user/ChangePassword';
+import ResetPassword from './pages/user/ResetPassword';
+import ResetPasswordOTP from './pages/user/ResetPasswordOTP';
+// import NotAuthorized from './components/NotAuthorized';
 
 function App() {
   return (
@@ -33,6 +38,14 @@ function App() {
         <div className='pages'>
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/Home" element={<Home />} />
+
+            <Route path="/Login" element ={<Login />}/>
+            <Route path="/ChangePassword" element ={<ChangePassword />}/>
+
+            <Route path="/ResetPassword" element ={<ResetPassword />}/>
+            <Route path="/ResetPasswordOTP" element ={<ResetPasswordOTP />}/>
+            {/* <Route path="/NotAuthorized" element ={<NotAuthorized />}/> */}
             <Route path="/viewDocInfo" element={<UnapprovedDoctors />} />
             <Route path='/FamilyMembers' element={<FamilyMembers/>}/>
             <Route path="/editDoctor" element={<DoctoreditForm/>}/>
