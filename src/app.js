@@ -83,29 +83,29 @@ app.get("/getAllPatients",getAllPatients);
 
 //Patient
 app.post("/addPatient", addPatient);
-app.post("/addFamilyMember", createFamilyMember);
-app.get("/searchDoctor", searchForDoctorByNameSpeciality);
-app.get("/filterAppointmentsForPatient", filterAppointmentsForPatient);
-app.get("/selectDoctorFromFilterSearch",selectDoctorFromFilterSearch);
-app.get("/getFamilyMembers", getFamilyMembers);
-app.get("/filterPrescriptionByDateDoctorStatus",filterPrescriptionByDateDoctorStatus);
-app.get("/filterDoctorsSpecialityDate", filterDoctorsSpecialityDate);
-app.get("/viewMyPrescriptions",viewMyPrescriptions);
-app.get("/selectPrescription",selectPrescription);
-app.get("/allDoctors", getDoctors)
+app.post("/addFamilyMember",getUserFromTokenMiddleware, createFamilyMember);
+app.get("/searchDoctor",getUserFromTokenMiddleware, searchForDoctorByNameSpeciality);
+app.get("/filterAppointmentsForPatient",getUserFromTokenMiddleware, filterAppointmentsForPatient);
+app.get("/selectDoctorFromFilterSearch",getUserFromTokenMiddleware,selectDoctorFromFilterSearch);
+app.get("/getFamilyMembers",getUserFromTokenMiddleware, getFamilyMembers);
+app.get("/filterPrescriptionByDateDoctorStatus",getUserFromTokenMiddleware,filterPrescriptionByDateDoctorStatus);
+app.get("/filterDoctorsSpecialityDate", getUserFromTokenMiddleware,filterDoctorsSpecialityDate);
+app.get("/viewMyPrescriptions",getUserFromTokenMiddleware,viewMyPrescriptions);
+app.get("/selectPrescription",getUserFromTokenMiddleware,selectPrescription);
+app.get("/allDoctors",getUserFromTokenMiddleware, getDoctors)
 
 
 //Doctor
-app.get("/filterAppointmentsForDoctor", filterAppointmentsForDoctor);
-app.post("/addAppointment", createAppointment);
+app.get("/filterAppointmentsForDoctor",getUserFromTokenMiddleware ,filterAppointmentsForDoctor);
+app.post("/addAppointment",getUserFromTokenMiddleware,createAppointment);
 app.post("/addDoctor", addDoctor);
-app.put("/editDoctor", editDoctor);
-app.get("/viewmypatients", myPatients);
-app.get("/viewDocInfo", viewDocInfo);
-app.get("/filterPatientsByAppointments", filterPatientsByAppointments);
-app.get("/viewPatient", viewPatient);
-app.get("/viewmypatientsbyname",exactPatients);
-app.post("/createPrescription",createPrescription);
+app.put("/editDoctor",getUserFromTokenMiddleware, editDoctor);
+app.get("/viewmypatients",getUserFromTokenMiddleware, myPatients);
+app.get("/viewDocInfo", getUserFromTokenMiddleware,viewDocInfo);
+app.get("/filterPatientsByAppointments",getUserFromTokenMiddleware, filterPatientsByAppointments);
+app.get("/viewPatient", getUserFromTokenMiddleware,viewPatient);
+app.get("/viewmypatientsbyname",getUserFromTokenMiddleware,exactPatients);
+app.post("/createPrescription",getUserFromTokenMiddleware,createPrescription);
 
 
 //user 

@@ -1,8 +1,9 @@
 import axios from 'axios'
 import {useState,useEffect} from 'react'
 import DoctorDetails from '../../components/patient/DoctorDetails'
+import PatientAuthorization from '../../components/PatientAuthorization'
 
-const SearchDoctor = () => {
+const SearchDoctor = ({user}) => {
     const [name, setName] = useState('')
     const [speciality, setSpeciality] = useState('')
     const [doctors, setDoctors] = useState(null)
@@ -19,7 +20,6 @@ const SearchDoctor = () => {
         await axios.get("/searchDoctor",{params : body})
         .then((res)=>{
             const docs = res.data
-            //console.log(docs)
             setDoctors(docs)
         }).catch((err)=>console.log(err))
     }
@@ -27,8 +27,7 @@ const SearchDoctor = () => {
     const displayAll = async(e) => {
         e.preventDefault()
 
-        //temporary id
-        const id = "65496e4a5c31c981636dc271"
+        const id = user._id
         await axios.get("/allDoctors?id="+id)
         .then((res)=>{
             const docs = res.data
@@ -106,4 +105,4 @@ const SearchDoctor = () => {
     )
 }
 
-export default SearchDoctor
+export default PatientAuthorization(SearchDoctor) 

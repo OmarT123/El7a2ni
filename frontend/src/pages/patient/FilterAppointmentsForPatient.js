@@ -1,8 +1,9 @@
 
 import FilterAppointments from '../../components/FilterAppointments';
+import PatientAuthorization from '../../components/PatientAuthorization';
 
-const FilterAppointmentsForPatient = () => {
-    const id = "654965e73fe9729145b6ddbd";
+const FilterAppointmentsForPatient = ({user}) => {
+    const id = user._id;
 
     return (
         <div className="Appointments-container">
@@ -14,4 +15,4 @@ const FilterAppointmentsForPatient = () => {
     )
 }
 
-export default FilterAppointmentsForPatient ;
+export default PatientAuthorization(FilterAppointmentsForPatient)  ;

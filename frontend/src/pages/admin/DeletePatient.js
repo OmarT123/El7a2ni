@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import AdminAuthorization from '../../components/AdminAuthorization';
 
-const DeletePatient = () => {
+const DeletePatient = ({user}) => {
   const [message, setMessage] = useState(null);
   const [patientsList, setPatientsList] = useState([]);
 
@@ -65,4 +66,4 @@ const DeletePatient = () => {
   );
 };
 
-export default DeletePatient;
+export default AdminAuthorization(DeletePatient) ;

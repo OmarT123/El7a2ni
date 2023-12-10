@@ -3,7 +3,7 @@ import {BrowserRouter, Routes, Route} from 'react-router-dom'
 
 import Home from './pages/Home'
 import NavBar from './components/NavBar'
-import UnapprovedDoctors from './pages/admin/unApprovedDoctors';
+import UnApprovedDoctors from './pages/admin/UnApprovedDoctors';
 import HealthPackage from './pages/HealthPackage';
 import HealthPackageInfo from './pages/HealthPackageInfo';
 import FamilyMembers from './pages/patient/FamilyMembers'
@@ -46,7 +46,7 @@ function App() {
             <Route path="/ResetPassword" element ={<ResetPassword />}/>
             <Route path="/ResetPasswordOTP" element ={<ResetPasswordOTP />}/>
             {/* <Route path="/NotAuthorized" element ={<NotAuthorized />}/> */}
-            <Route path="/viewDocInfo" element={<UnapprovedDoctors />} />
+            <Route path="/UnapprovedDoctors" element={<UnApprovedDoctors />} />
             <Route path='/FamilyMembers' element={<FamilyMembers/>}/>
             <Route path="/editDoctor" element={<DoctoreditForm/>}/>
             <Route path="/viewmypatients" element={<MyPatients/>}/>

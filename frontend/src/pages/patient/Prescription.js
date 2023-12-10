@@ -1,6 +1,7 @@
 import axios from 'axios'
 import {useState} from 'react'
 import PrescriptionDetails from '../../components/doctor/PrescriptionDetails'
+import PatientAuthorization from '../../components/PatientAuthorization'
 
 
 /*
@@ -17,14 +18,14 @@ FIX MEDICINE NOT SHOWING NAME
 
 
 
-const Prescription = () => {
+const Prescription = ({user}) => {
     const [prescriptions, setPrescriptions] = useState(null)
 
 
     const viewAllPrescription = async (e) => {
         e.preventDefault()
         //temporary id
-        const id = "6546851fd349b37530412e8d"
+        const id = user._id;
         await axios.get("/viewMyPrescriptions?id="+id)
         .then((res)=>{
             setPrescriptions(res.data)
@@ -35,7 +36,7 @@ const Prescription = () => {
     const filterPrescriptionByDateDoctorStatus = async (e) => {
         e.preventDefault()
 
-        const id="6546851fd349b37530412e8d"
+        const id=user._id
         await axios.get("/filterPrescriptionByDateDoctorStatus")
     }
 
@@ -58,4 +59,4 @@ const Prescription = () => {
     )
 }
 
-export default Prescription
+export default PatientAuthorization(Prescription) 

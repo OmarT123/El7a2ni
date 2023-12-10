@@ -1,7 +1,8 @@
 import axios from 'axios'
 import { useState,useEffect } from 'react'
+import PatientAuthorization from '../../components/PatientAuthorization'
 
-const Patient = () => {
+const Patient = ({user}) => {
     const [patient, setPatient] = useState(null)
     const [showRecords, setShowRecords] = useState(false);
     
@@ -9,8 +10,8 @@ const Patient = () => {
 
     useEffect(() => {
             const getPatient = async()=> {
-            const queryParams = new URLSearchParams(window.location.search)
-            const id = queryParams.get('id')
+          
+            const id = user._id
             await axios.get('/viewpatient?id='+id).then(res => setPatient(res.data)).catch(err=>console.log(err.message))
             }
             getPatient()
@@ -43,4 +44,4 @@ const Patient = () => {
     )
 }
 
-export default Patient
+export default PatientAuthorization(Patient) 

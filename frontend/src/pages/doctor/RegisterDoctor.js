@@ -1,6 +1,7 @@
 import axios from 'axios'
 import {useState} from 'react'
 import RegisterPatient from '../patient/RegisterPatient'
+import DoctorAuthorization from '../../components/DoctorAuthorization'
 
 const RegisterDoctor = () => {
     const [name, setName] = useState('')
@@ -26,14 +27,12 @@ const RegisterDoctor = () => {
             educationalBackground.push(education2)
         if (education3 !== '')
             educationalBackground.push(education3)
-        // console.log(educationalBackground)
         if(!name || !username || !email || !password || !birthDate || !hourlyRate || !affiliation || !educationalBackground)
             alert('Please fill all the fields')
         else{
             const body = {name,username,email,password,birthDate,hourlyRate,affiliation,educationalBackground,speciality   }
             await axios.post("/addDoctor",body).then(res=>alert(res.data)).catch(err=>console.log(err))
         }
-        // setEducationalBackground([])
     }
 
     return (

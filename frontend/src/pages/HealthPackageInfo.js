@@ -1,7 +1,8 @@
 import axios from 'axios'
 import {useEffect, useState} from 'react'
+import AdminAuthorization from '../components/AdminAuthorization'
 
-const HealthPackageInfo = () => {
+const HealthPackageInfo = ({user}) => {
     const [healthPackage, setHealthPackage] = useState([])
     const [price, setPrice] = useState('')
     const [doctorDiscount, setDoctorDiscount] = useState('')
@@ -9,8 +10,7 @@ const HealthPackageInfo = () => {
     const [familyDiscount, setFamilyDiscount] = useState('')
 
     const getHealthPackage = async() => {
-        const queryParams = new URLSearchParams(window.location.search)
-        const id = queryParams.get('id')
+        const id = user._id
         await axios.get("/getHealthPackage?id="+id).then(res => setHealthPackage(res.data)).catch(err => console.log(err.message))
     }
     useEffect(()=>{
@@ -40,8 +40,7 @@ const HealthPackageInfo = () => {
     }
 
     const deleteHealthPackage = async() => {
-        const queryParams = new URLSearchParams(window.location.search)
-        const id = queryParams.get('id')
+        const id = user._id
         
         await axios.delete("/deleteHealthPackage?id="+id).then(res => alert(res.data)).catch(err=>console.log(err.message))
         window.location.href = "/HealthPackage"
@@ -97,4 +96,4 @@ const HealthPackageInfo = () => {
     )
 }
 
-export default HealthPackageInfo
+export default AdminAuthorization(HealthPackageInfo) 
