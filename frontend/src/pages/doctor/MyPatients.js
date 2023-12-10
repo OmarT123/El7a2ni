@@ -47,7 +47,6 @@ const MyPatients = () => {
         </div>
         <div className="patients-container">
             <div className="Patient">
-                {console.log(Patients)}
                 {Patients && Patients.map((patient) => (
                     <PatientDetail key={patient._id} patient={patient} />
                 ))}
