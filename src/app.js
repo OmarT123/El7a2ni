@@ -31,6 +31,7 @@ const {
   selectPrescription,
   selectDoctorFromFilterSearch,
   getDoctors,
+  linkFamilyMemberAccount,
   viewPatientAppointments,
   payWithCard,
   payWithWallet,
@@ -112,6 +113,8 @@ app.get("/filterDoctorsSpecialityDate", filterDoctorsSpecialityDate);
 app.get("/viewMyPrescriptions",viewMyPrescriptions);
 app.get("/selectPrescription",selectPrescription);
 app.get("/allDoctors", getDoctors);
+app.get("/viewPatientAppointments", viewPatientAppointments);
+app.post("/linkFamilyMember", linkFamilyMemberAccount);
 app.get("/viewMySubscribedHealthPackage",viewMySubscribedHealthPackage);
 app.put("/CancelSubscription",CancelSubscription);
 app.get("/ViewMyWallet",ViewMyWallet)
@@ -126,7 +129,6 @@ app.get("/viewFreeAppointments", viewFreeAppointments)
 app.get("/getAnAppointment", getAnAppointment)
 app.put("/uploadHealthRecord", uploadHealthRecord);
 app.get("/getHealthRecords", getHealthRecords);
-
 //Doctor
 app.get("/filterAppointmentsForDoctor", filterAppointmentsForDoctor);
 app.post("/addAppointment", createAppointment);
