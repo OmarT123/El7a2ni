@@ -31,7 +31,15 @@ const {
   selectPrescription,
   selectDoctorFromFilterSearch,
   getDoctors,
-  viewPatientAppointments, //new Req.45//
+  viewPatientAppointments,
+  payWithCard,
+  payWithWallet,
+  buyHealthPackage,
+  reserveAppointment,
+  sendCheckoutMail,
+  getHealthPackageForPatient,
+  viewFreeAppointments,
+  getAnAppointment,
   uploadHealthRecord,
   getHealthRecords,
   viewMySubscribedHealthPackage,
@@ -101,7 +109,15 @@ app.get("/allDoctors", getDoctors);
 app.get("/viewMySubscribedHealthPackage",viewMySubscribedHealthPackage);
 app.put("/CancelSubscription",CancelSubscription);
 app.get("/ViewMyWallet",ViewMyWallet)
-app.get("/viewPatientAppointments", viewPatientAppointments); //new Req.45//
+app.get("/viewPatientAppointments", viewPatientAppointments);
+app.get("/payWithCard", payWithCard)
+app.get("/payWithWallet", payWithWallet)
+app.put("/buyHealthPackage", buyHealthPackage)
+app.put("/reserveAppointment", reserveAppointment)
+app.get("/sendCheckoutMail", sendCheckoutMail)
+app.get("/getHealthPackageForPatient", getHealthPackageForPatient)
+app.get("/viewFreeAppointments", viewFreeAppointments)
+app.get("/getAnAppointment", getAnAppointment)
 app.put("/uploadHealthRecord", uploadHealthRecord);
 app.get("/getHealthRecords", getHealthRecords);
 
@@ -115,7 +131,6 @@ app.get("/viewDocInfo", viewDocInfo);
 app.get("/filterPatientsByAppointments", filterPatientsByAppointments);
 app.get("/viewPatient", viewPatient);
 app.get("/viewmypatientsbyname",exactPatients);
-app.post("/createPrescription",createPrescription);
+app.get("/viewDoctorAppointments", viewDoctorAppointments); 
 app.post("/addAppointmentSlots", addAppointmentSlots);
 app.get("/ViewDoctorWallet",ViewDoctorWallet)
-app.get("/viewDoctorAppointments", viewDoctorAppointments);

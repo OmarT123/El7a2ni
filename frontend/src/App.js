@@ -26,6 +26,11 @@ import FilterPatientsByAppointments from './pages/doctor/FilterPatientsByAppoint
 import DeletePatient from './pages/admin/DeletePatient';
 import DeleteAdmin from './pages/admin/DeleteAdmin';
 import DeleteDoctor from './pages/admin/DeleteDoctor';
+import SuccessfulCheckoutHealthPackage from './pages/patient/SuccesfulCheckoutHealthPackage';
+import CheckoutHealthPackage from './pages/patient/CheckoutHealthPackage';
+import ViewFreeAppointments from './pages/patient/ViewFreeAppointments';
+import SuccessfulCheckoutAppointment from './pages/patient/SuccessfulCheckoutAppointment';
+import CheckoutAppointment from './pages/patient/CheckoutAppointment';
 import UploadHealthRecords from './pages/patient/UploadHealthRecords';
 import ViewSubscribedHealthPackageAndCancel from './pages/patient/ViewSubscribedHealthPackageAndCancel';
 import ViewMyWallet from './pages/patient/ViewMyWallet';
@@ -59,11 +64,15 @@ function App() {
             <Route path="/deleteDoctor" element={<DeleteDoctor/>}/>
             <Route path="/Prescription" element={<Prescription/>}/>
             <Route path="/FilterPatientsByAppointments" element={<FilterPatientsByAppointments/>}/>
-            <Route path='/SearchDoctor' element={<SearchDoctor/>}/>
             <Route path="/doctor" element={<Doctor/>}/>
             <Route path="/patient" element={<Patient/>}/>
             <Route path="/ViewMyPrescriptions" element={<ViewMyPrescriptions/>}/>
             <Route path="/SelectedPrescription" element={<SelectedPrescription/>}/>
+            <Route path="/CheckoutHealthPackage" element={<CheckoutHealthPackage />} />
+            <Route path="/SuccessfulCheckoutHealthPackage" element={<SuccessfulCheckoutHealthPackage />} />
+            <Route path="/ViewFreeAppointments" element={<ViewFreeAppointments />} />
+            <Route path="/CheckoutAppointment" element={<CheckoutAppointment />} />
+            <Route path="/SuccessfulCheckoutAppointment" element={<SuccessfulCheckoutAppointment />} />
             <Route path="/AddAppointmentSlot" element={<AddAppointmentSlots/>}/>
             <Route path='/uploadHealthRecords' element={<UploadHealthRecords/>}/>
             <Route path="/ViewSubscribedHealthPackageAndCancel" element={<ViewSubscribedHealthPackageAndCancel/>}/>

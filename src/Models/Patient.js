@@ -61,8 +61,9 @@ const patientSchema = new Schema(
         endDate: Date,
       },
     },
-    wallet:{
-      type:Number
+    wallet: {
+      type: Number,
+      default: 0
     }
   },
   { timestamps: true }
