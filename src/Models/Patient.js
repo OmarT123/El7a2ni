@@ -46,14 +46,19 @@ const patientSchema = new Schema(
         ref: "FamilyMember",
       },
     ],
-    HealthRecords: [
-      { 
-        type: String,
-      }
-    ],
-    healthPackage: {
-      type: mongoose.Types.ObjectId,
-      ref: 'HealthPackage',
+    HealthRecords: {
+      type: [String],
+      default: [],
+    },
+    healthPackage:{
+      type: {
+        healthPackageID: {
+          type : mongoose.Schema.Types.ObjectId,
+          ref : 'HealthPackage',
+        },
+        status: String,
+        endDate: Date,
+      },
     },
     wallet:{
       type:Number

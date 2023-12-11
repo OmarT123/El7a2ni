@@ -25,7 +25,7 @@ import FilterPatientsByAppointments from './pages/doctor/FilterPatientsByAppoint
 import DeletePatient from './pages/admin/DeletePatient';
 import DeleteAdmin from './pages/admin/DeleteAdmin';
 import DeleteDoctor from './pages/admin/DeleteDoctor';
-import UploadHealthRecords from './pages/patient/UploadHealthRecords';
+import UploadHealthRecords from './pages/UploadHealthRecords';
 import ViewSubscribedHealthPackageAndCancel from './pages/patient/ViewSubscribedHealthPackageAndCancel';
 import ViewMyWallet from './pages/patient/ViewMyWallet';
 import ViewDoctorWallet from './pages/doctor/ViewDoctorWallet';

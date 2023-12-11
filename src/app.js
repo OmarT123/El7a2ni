@@ -36,7 +36,6 @@ const {
   viewMySubscribedHealthPackage,
   CancelSubscription,
   ViewMyWallet,
-  viewPatientAppointments,
 } = require("./Routes/patientController");
 const {
   addAdmin,
