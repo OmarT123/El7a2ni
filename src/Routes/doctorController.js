@@ -322,5 +322,5 @@ module.exports = {
   addAppointmentSlots,
   ViewDoctorWallet,
   viewDoctorAppointments,
-  addHealthRecord,
+  addHealthRecord
 };

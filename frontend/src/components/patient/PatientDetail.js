@@ -1,9 +1,9 @@
 import {Link} from 'react-router-dom'
+
 const PatientDetail = ({patient}) => 
 {
-    // console.log(patient)
     const link="/patient?id="+patient._id
-    // console.log(link)
+    
     return (
         <Link to={link}>
         <div className="details">
@@ -21,12 +21,12 @@ const PatientDetail = ({patient}) =>
             <p>Family Member Relation: {familyMember.relationToPatient}</p>
             </div>
                 ))}
-    
-          {patient.healthPackage && patient.healthPackage.map((healthPack) => (
-             <div key={healthPack._id} className="healthPack-card">
-              <p> Health Package Name: {healthPack.name}</p>
-            </div>
-         ))}
+
+             {/* Add the button here */}
+            <Link to={`/uploadHealthRecords?id=${patient._id}`}>
+                <button>Upload Health Records</button>
+            </Link>
+            
         </div>
     </Link>
      

@@ -1,9 +1,9 @@
 import {useEffect, useState} from 'react';
 import axios from 'axios';
 
-const UploadHealthRecords = () => {
+const UploadHealthRecords = (passedID) => {
     const [documents, setDocuments] = useState([]);
-    const id = "6574ab69984f0ed788bb680c"; //hard coded ID for a patient in our DB
+    let id = "6575badad728c698d3d1d93d"; //hard coded ID for a patient in our DB
     var base64;
 
     function convertToBase64(e) {
@@ -32,7 +32,7 @@ const UploadHealthRecords = () => {
     else{
       const body = {id: id,base64}
        await axios.put("/uploadHealthRecord",body).then(res=> {
-        alert("Document uploaded successfully.");
+        alert(res.data);
         window.location.reload();
         }).catch(err=>console.log(err))
     }
@@ -56,7 +56,7 @@ const UploadHealthRecords = () => {
         <div className='home'>
       <h2>Health Records</h2>
       <div>
-          {documents.map((document, index) => (
+          {documents && documents.map((document, index) => (
             <div key={index}>
               <h3>Document {index + 1}</h3>
               <iframe title='PDF Viewer' src={document} width="100%" height="600px"/>
