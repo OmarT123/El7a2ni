@@ -5,6 +5,7 @@ import Home from './pages/Home'
 import NavBar from './components/NavBar'
 import UnapprovedDoctors from './pages/admin/unApprovedDoctors';
 import HealthPackage from './pages/HealthPackage';
+import ViewHealthPackages from './pages/patient/ViewHealthPackages';
 import HealthPackageInfo from './pages/HealthPackageInfo';
 import FamilyMembers from './pages/patient/FamilyMembers'
 import DoctoreditForm from './components/doctor/DoctoreditForm';
@@ -25,6 +26,10 @@ import FilterPatientsByAppointments from './pages/doctor/FilterPatientsByAppoint
 import DeletePatient from './pages/admin/DeletePatient';
 import DeleteAdmin from './pages/admin/DeleteAdmin';
 import DeleteDoctor from './pages/admin/DeleteDoctor';
+import UploadHealthRecords from './pages/patient/UploadHealthRecords';
+import ViewSubscribedHealthPackageAndCancel from './pages/patient/ViewSubscribedHealthPackageAndCancel';
+import ViewMyWallet from './pages/patient/ViewMyWallet';
+import ViewDoctorWallet from './pages/doctor/ViewDoctorWallet';
 
 function App() {
   return (
@@ -43,6 +48,7 @@ function App() {
             <Route path='/AddAdmin' element={<AddAdmin/>}/>
             <Route path="/HealthPackage" element={<HealthPackage />} />
             <Route path="/HealthPackageInfo" element={<HealthPackageInfo />} />
+            <Route path="/ViewHealthPackages" element={<ViewHealthPackages />} />
             <Route path="/SearchDoctor" element={<SearchDoctor />} />
             <Route path="/registerPatient" element={<RegisterPatient />} />
             <Route path="/registerDoctor" element={<RegisterDoctor />} />
@@ -59,7 +65,10 @@ function App() {
             <Route path="/ViewMyPrescriptions" element={<ViewMyPrescriptions/>}/>
             <Route path="/SelectedPrescription" element={<SelectedPrescription/>}/>
             <Route path="/AddAppointmentSlot" element={<AddAppointmentSlots/>}/>
-
+            <Route path='/uploadHealthRecords' element={<UploadHealthRecords/>}/>
+            <Route path="/ViewSubscribedHealthPackageAndCancel" element={<ViewSubscribedHealthPackageAndCancel/>}/>
+            <Route path="/ViewMyWallet" element={<ViewMyWallet/>}/>
+            <Route path="/ViewDoctorWallet" element={<ViewDoctorWallet/>}/>
           </Routes>
         </div>
       </BrowserRouter>

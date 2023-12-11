@@ -14,7 +14,40 @@ const RegisterDoctor = () => {
     const [education1, setEducation1] = useState('')
     const [education2, setEducation2] = useState('')
     const [education3, setEducation3] = useState('')
-    
+    const [idPDF, setidPDF] = useState('')
+    const [degreePDF, setDegreePDF] = useState('')
+    const [licensePDF, setLicensePDF] = useState('')
+
+    function convertToBase64(type, c) {
+        //Read File
+        var selectedFile = document.getElementById("inputFile"+c).files;
+        //Check File is not Empty
+        if (selectedFile.length > 0) {
+            // Select the very first file from list
+            var fileToLoad = selectedFile[0];
+            // FileReader function for read the file.
+            var fileReader = new FileReader();
+            var base64;
+            // Onload of file read the file content
+            fileReader.onload = function(fileLoadedEvent) {
+                base64 = fileLoadedEvent.target.result;
+                if(type === "id")
+                {
+                    setidPDF(base64);
+                }
+                else if(type === "degree")
+                {
+                    setDegreePDF(base64);
+                }
+                else
+                {
+                    setLicensePDF(base64);
+                }
+            };
+            // Convert data to base64
+            fileReader.readAsDataURL(fileToLoad);
+        }
+    }
     
     const register = async(e) => {
         e.preventDefault()
@@ -29,8 +62,11 @@ const RegisterDoctor = () => {
         // console.log(educationalBackground)
         if(!name || !username || !email || !password || !birthDate || !hourlyRate || !affiliation || !educationalBackground)
             alert('Please fill all the fields')
+        else if(idPDF.substring(0,20) != "data:application/pdf" || degreePDF.substring(0,20) != "data:application/pdf" || licensePDF.substring(0,20) != "data:application/pdf"){
+            alert('Please upload your documents in the PDF format only.')
+        }
         else{
-            const body = {name,username,email,password,birthDate,hourlyRate,affiliation,educationalBackground,speciality   }
+            const body = {name,username,email,password,birthDate,hourlyRate,affiliation,educationalBackground,speciality, idPDF, degreePDF, licensePDF}
             await axios.post("/addDoctor",body).then(res=>alert(res.data)).catch(err=>console.log(err))
         }
         // setEducationalBackground([])
@@ -117,8 +153,41 @@ const RegisterDoctor = () => {
                 onChange={(e)=>setEducation3(e.target.value)}
                 style={{marginBottom:"10px"}}
                 />
-                
 
+                <label>Upload Identification (ID):</label>
+                <input
+                id = "inputFile1"
+                type="file"
+                className="form-control"
+                accept='application/pdf'
+                required
+                onChange={(e) => convertToBase64("id",1)}
+                style={{marginTop:"7px"}}
+                />
+                <br/>
+                <label>Upload Pharmacy Degree:</label>
+                <input
+                id = "inputFile2"
+                type="file"
+                className="form-control"
+                accept='application/pdf'
+                required
+                onChange={(e) => convertToBase64("degree",2)}
+                style={{marginTop:"7px"}}
+                />
+                <br/>
+                <label>Upload Working License:</label>
+                <input
+                id = "inputFile3"
+                type="file"
+                className="form-control"
+                accept='application/pdf'
+                required
+                onChange={(e) => convertToBase64("license",3)}
+                style={{marginTop:"7px"}}
+                />
+                <br/>
+                
 
                 <button onClick={register}>Register</button>
             </form>

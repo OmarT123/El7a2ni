@@ -43,6 +43,18 @@ const doctorSchema = new Schema(
     speciality: {
       type: String,
       required: true,
+    },
+    idPDF: {
+      type: String,
+    },
+    degreePDF: {
+      type: String,
+    },
+    licensePDF: {
+      type: String,
+    },
+    wallet:{
+      type:Number
     }
   },
   { timestamps: true }

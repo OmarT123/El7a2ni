@@ -6,6 +6,8 @@ const medicineModel = require("../Models/Medicine.js")
 const prescriptionModel = require("../Models/Prescription.js");
 const userModel = require("../Models/User.js")
 const mongoose = require("mongoose");
+const HealthPackageModel = require("../Models/HealthPackage.js");
+
 
 const createPatient = async (req, res) => {
   const {
@@ -16,7 +18,7 @@ const createPatient = async (req, res) => {
     birthDate,
     gender,
     mobileNumber,
-    emergencyContact,
+    emergencyContact
   } = req.body;
   try {
     const user = await userModel.findOne({username})
@@ -33,7 +35,7 @@ const createPatient = async (req, res) => {
         birthDate,
         gender,
         mobileNumber,
-        emergencyContact,
+        emergencyContact
       });
       await userModel.create({
         username, 
@@ -292,6 +294,121 @@ catch(error){
 }
 }
 
+
+const viewMySubscribedHealthPackage = async (req, res) => {
+  try {
+    const patientId = req.query.id;
+    const patient = await patientModel.findById(patientId).populate('healthPackage').exec();
+   
+    if (!patient) {
+      console.log('Patient not found');
+      return;
+    }
+    const healthPackage = patient.healthPackage;
+    res.json(healthPackage);
+  }
+  catch (err) {
+    res.json(err.message);
+
+  }
+};
+
+
+const CancelSubscription= async (req, res) => {
+
+try{
+  const patientId = req.query.id;
+  const patient = await patientModel.findById(patientId);
+  if (!patient) {
+    return res.status(404).json({ message: 'Patient not found' });
+  }
+  patient.healthPackage = null;
+  await patient.save();
+
+  res.json({ message: 'Subscription canceled successfully' });
+} catch (error) {
+  console.error('Error canceling subscription:', error.message);
+  res.status(500).json({ message: 'Internal Server Error' });
+}
+};
+
+const ViewMyWallet = async (req, res) => {
+  try {
+    const patientId = req.query.id;
+    const patient = await patientModel.findById(patientId).populate('wallet').exec();
+   
+    if (!patient) {
+      console.log('Patient not found');
+      return;
+    }
+    const wallet = patient.wallet;
+    res.json(wallet);
+  }
+  catch (err) {
+    res.json(err.message);
+
+  }
+};
+
+
+const viewPatientAppointments = async (req, res) => {
+  try {
+    const patientID = req.query.id;
+    const currentDate = new Date();
+
+    const upcomingAppointments = await appointmentModel
+      .find({
+        patient: patientID,
+        date: { $gte: currentDate },
+      })
+      .populate({ path: "doctor" });
+
+    const pastAppointments = await appointmentModel
+      .find({
+        patient: patientID,
+        date: { $lt: currentDate },
+      })
+      .populate({ path: "doctor" });
+
+    const appointmentData = {
+      upcomingAppointments,
+      pastAppointments,
+    };
+
+    res.status(200).json(appointmentData);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+const uploadHealthRecord = async (req, res) =>{
+  try{
+  let id = req.body.id;
+  let healthRecord = req.body.base64;
+
+  const patient = await patientModel.findById(id);
+  patient.HealthRecords.push(healthRecord);
+  await patient.save();
+  res.status(200).json({ message: 'Health record added successfully'});
+  }catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+const getHealthRecords = async (req, res) =>{
+  try{
+  let id = req.query.id;
+  const patient = await patientModel.findById(id);
+  const healthRecords = patient.HealthRecords;
+  res.status(200).json( healthRecords );
+} catch (error) {
+  console.error(error);
+  res.status(500).json({ error: 'Internal server error' });
+}
+}
+
+
 module.exports = {
   createFamilyMember,
   createPatient,
@@ -303,5 +420,12 @@ module.exports = {
   selectDoctorFromFilterSearch,
   viewMyPrescriptions,
   selectPrescription,
-  getDoctors
+  getDoctors,
+  viewPatientAppointments,   //new Req.45//
+  uploadHealthRecord,
+  getHealthRecords,
+  viewMySubscribedHealthPackage,
+  CancelSubscription,
+  ViewMyWallet,
+  viewPatientAppointments
 };

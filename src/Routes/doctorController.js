@@ -80,10 +80,12 @@ const addDoctor = async (req, res) => {
     affiliation,
     educationalBackground,
     speciality,
+    idPDF,
+    degreePDF,
+    licensePDF
   } = req.body;
   try {
     const user = await userModel.findOne({username})
-    console.log(user)
     if (user)
     {
       res.json("Username already exists")
@@ -99,6 +101,9 @@ const addDoctor = async (req, res) => {
         affiliation,
         educationalBackground,
         speciality,
+        idPDF,
+        degreePDF,
+        licensePDF
       });
       await userModel.create({
         username, 
@@ -189,6 +194,57 @@ const filterPatientsByAppointments = async (req, res) => {
     res.status(400).json(error.message);
   }
 };
+const ViewDoctorWallet = async (req, res) => {
+  try {
+    const DoctorId = req.query.id;
+    const Doctor = await doctorModel.findById(DoctorId).populate('wallet').exec();
+   
+    if (!Doctor) {
+      console.log('Doctor not found');
+      return;
+    }
+    const wallet = Doctor.wallet;
+    res.json(wallet);
+  }
+  catch (err) {
+    res.json(err.message);
+
+  }
+};
+
+//new Req.45//
+const viewDoctorAppointments = async (req, res) => {
+  try {
+    const doctorID = req.query.id;
+    const currentDate = new Date();
+
+    const upcomingAppointments = await appointmentModel
+      .find({
+        doctor: doctorID,
+        date: { $gte: currentDate },
+      })
+      .populate({ path: "patient" });
+
+    const pastAppointments = await appointmentModel
+      .find({
+        doctor: doctorID,
+        date: { $lt: currentDate },
+      })
+      .populate({ path: "patient" });
+
+    const appointmentData = {
+      upcomingAppointments,
+      pastAppointments,
+    };
+
+    res.status(200).json(appointmentData);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+
+
 
 const addAppointmentSlots = async (req,res) => {
   const doctorID = req.query.id;
@@ -249,5 +305,7 @@ module.exports = {
   viewPatient,
   createPrescription,
   exactPatients,
-  addAppointmentSlots
+  addAppointmentSlots,
+  ViewDoctorWallet,
+  viewDoctorAppointments,
 };
