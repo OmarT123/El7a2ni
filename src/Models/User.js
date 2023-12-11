@@ -12,6 +12,10 @@ const userSchema = new Schema(
       type: mongoose.Types.ObjectId,
       required: true,
     },
+    type : {
+      type : String
+      
+    }
   }
 );
 

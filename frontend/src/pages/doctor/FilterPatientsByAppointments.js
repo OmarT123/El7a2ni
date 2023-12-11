@@ -2,16 +2,15 @@ import axios from 'axios'
 import {useEffect, useState} from 'react'
 
 import PatientDetail from '../../components/patient/PatientDetail'
+import DoctorAuthorization from '../../components/DoctorAuthorization'
 
-const FilterPatientsByAppointments = () => {
+const FilterPatientsByAppointments = ({user}) => {
     const [patients, setPatients] = useState([])
 
     const filter = async() => {
-        const id = "65496e4a5c31c981636dc271"
-        await axios.get("/filterPatientsByAppointments?id="+id).then(res=>setPatients(res.data)).catch(err => console.log(err.message))
+        await axios.get("/filterPatientsByAppointments").then(res=>setPatients(res.data)).catch(err => console.log(err.message))
     }
 
-    // useEffect(()=> filter(),[])
     useEffect(() => 
     {
           filter();
@@ -24,4 +23,4 @@ const FilterPatientsByAppointments = () => {
     )
 }
 
-export default FilterPatientsByAppointments
+export default DoctorAuthorization(FilterPatientsByAppointments) 

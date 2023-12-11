@@ -1,7 +1,8 @@
 import axios from 'axios'
 import {useEffect, useState} from 'react'
+import AdminAuthorization from '../../components/AdminAuthorization'
 
-const HealthPackageInfo = () => {
+const HealthPackageInfo = ({user}) => {
     const [healthPackage, setHealthPackage] = useState([])
     const [price, setPrice] = useState('')
     const [doctorDiscount, setDoctorDiscount] = useState('')
@@ -97,4 +98,4 @@ const HealthPackageInfo = () => {
     )
 }
 
-export default HealthPackageInfo
+export default AdminAuthorization(HealthPackageInfo) 

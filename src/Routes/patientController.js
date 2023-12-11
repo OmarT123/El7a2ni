@@ -10,50 +10,54 @@ const mongoose = require("mongoose");
 const stripe = require("stripe")(process.env.STRIPE_PRIVATE_KEY)
 const nodemailer = require('nodemailer');
 const HealthPackageModel = require("../Models/HealthPackage.js");
+const bcrypt = require('bcrypt');
 
 
-const createPatient = async (req, res) => {
-  const {
-    username,
-    name,
-    email,
-    password,
-    birthDate,
-    gender,
-    mobileNumber,
-    emergencyContact
-  } = req.body;
-  try {
+const addPatient = async(req,res) => {
+
+  const{username, name, email, password, birthDate, gender, mobileNumber,emergencyContact} = req.body;
+  try{
+    if (!username || !password || !name || !birthDate || !gender || !mobileNumber || !emergencyContact || !email) {
+      return res.status(400).json({ success: false, message: "All fields are required. Please provide valid information for each field!" });
+    }
     const user = await userModel.findOne({username})
-    if (user)
-    {
-      res.status(409).json("Username already exists")
-    }
-    else {
-      const patient = await patientModel.create({
-        username,
-        name,
-        email,
-        password,
-        birthDate,
-        gender,
-        mobileNumber,
-        emergencyContact
-      });
-      await userModel.create({
-        username, 
-        userId : patient._id
-      })
-      res.json("Created Successfully");
-    }
-  } catch (error) {
-    res.status(404).json({ error: error.message });
+  if (user)
+  {
+    res.json("Username already exists")
   }
-};
+  else{
+    
+    const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%^&*()?[\]{}|<>])[A-Za-z\d@$!%^&*()?[\]{}|<>]{10,}$/;
+    if (!passwordRegex.test(password)) {
+      return res.json({
+        success: false,
+        message: "Password must contain at least 1 lowercase letter, 1 uppercase letter, 1 number, 1 special character, and be at least 10 characters long.",
+      });
+    }
+    const salt = await bcrypt.genSalt();
+    const encryptedPassword = await bcrypt.hash(password ,salt)
+    const patient = await patientModel.create({username,name,email, password :encryptedPassword,birthDate, gender, mobileNumber,emergencyContact});
+    await patient.save();
+
+   const user = await userModel.create({
+      username, 
+      userId : patient._id,
+      type : 'patient'
+    })
+    await user.save();
+
+    res.json("Registered Successfully !!");
+  }
+  }catch(error){
+      res.json({error:error.message})
+  }
+}
+
+
 
 const createFamilyMember = async (req, res) => {
   try {
-    let patientId = req.query.id;
+    let patientId = req.user._id;
     let name = req.body.name;
     let nationalId = req.body.nationalId;
     let age = req.body.age;
@@ -76,7 +80,7 @@ const createFamilyMember = async (req, res) => {
     });
     const patient = await patientModel.findById(patientId);
     if (!patient)
-      return res.status(404).send("No such patient found in the database.");
+      return res.send("No such patient found in the database.");
     await familyMember.save();
     patient.familyMembers.push(familyMember.id);
     await patient.save();
@@ -103,13 +107,22 @@ const searchForDoctorByNameSpeciality = async (req, res) => {
 
 const filterPrescriptionByDateDoctorStatus = async (req, res) => {
   const baseQuery = {};
-  baseQuery["patient"] =  new mongoose.Types.ObjectId(req.query.id)
+  baseQuery["patient"] =  req.user._id;
   if (req.query.doctor) {
-    //baseQuery["doctor"] = new RegExp(req.body.doctor, "i");
-    baseQuery["doctor"] = new mongoose.Types.ObjectId(req.query.doctor);
+    const searchName = req.query.doctor;
+    const searchQuery = new RegExp(searchName, "i"); // 'i' flag makes it case-insensitive
+    try {
+  
+      const doctor = await doctorModel.find({ name: searchQuery });
+      if(results.length == 0){
+        res.json("Doctor is not Found !!" );
+      }
+    } catch (error) {
+      res.status(500).json(error.message);
+  }
+    baseQuery["doctor"] = doctor._id;
   }
   if (req.query.filled || req.query.filled == false) {
-    //baseQuery["filled"] = new RegExp(req.body.filled, "i");
     baseQuery["filled"] = req.query.filled;
   }
   if (req.query.date) {
@@ -121,13 +134,10 @@ const filterPrescriptionByDateDoctorStatus = async (req, res) => {
   }
   try {
     const prescriptions = await prescriptionModel.find(baseQuery).populate({path:"medicines.medId"});
-    // console.log(baseQuery)
-    // console.log(prescriptions)
-    // const filtered = prescriptions.filter(pres => toString(pres._id) === req.query.id)
+
     res.json(prescriptions);
   } catch (err) {
-    //res.status(500).send({ message: "No prescriptions found!" });
-    res.status(404).send({ message: "No prescriptions found!" });
+        res.status(404).send({ message: "No prescriptions found!" });
   }
 }
 
@@ -148,8 +158,8 @@ const filterAppointmentsForPatient = async (req, res) => {
   if (statusToBeFiltered) {
     filterQuery["status"] = statusToBeFiltered;
   }
-  if (req.query.id) {
-    const id = req.query.id;
+  if (req.user._id) {
+    const id = req.user._id;
     filterQuery["patient"] = new mongoose.Types.ObjectId(id);
     try {
       const filteredAppointments = await appointmentModel
@@ -197,7 +207,7 @@ const selectDoctorFromFilterSearch = async (req, res) => {
   
 const getFamilyMembers = async (req, res) => {
   try {
-    const patientId = req.query.id;
+    const patientId = req.user._id;
     const patient = await patientModel.findById(patientId).populate({path:"familyMembers"})
     const familyMember = patient.familyMembers;
     res.json(familyMember);
@@ -208,8 +218,8 @@ const getFamilyMembers = async (req, res) => {
   
  const viewMyPrescriptions = async (req, res) => {
   try {
-    const patientId = req.query.id;
-    const prescriptions = await prescriptionModel.find({ patient: new mongoose.Types.ObjectId(patientId) }).populate({path:'medicines.medId'}).populate({path :'doctor'}).exec();
+    const patientId = req.user._id;
+    const prescriptions = await prescriptionModel.find({ patient: patientId }).populate({path:'medicines.medId'}).populate({path :'doctor'}).exec();
     res.json(prescriptions);
   }
   catch (err) {
@@ -221,7 +231,6 @@ const getFamilyMembers = async (req, res) => {
   try {
     const prescriptionId = req.query.id;
     const prescription = await prescriptionModel.findById(prescriptionId).populate({path :'medicines.medId'}).exec();
-    //console.log(prescription)
     res.status(200).json(prescription);
   } catch (error) {
     res.status(404).json({ error: error.message });
@@ -239,12 +248,10 @@ const filterDoctorsSpecialityDate = async(req,res)=>{
 
       let busyDoctors = await appointmentModel.find({createdAt:{ $gte: startDate, $lt: endDate }}).populate({path:"doctor"});
       const busyDoctorsMapped = busyDoctors.map(appointment=>appointment.doctor);
-      //console.log(busyDoctorsMapped);
       let query = {};
       if (req.query.speciality)
         query["speciality"]=req.query.speciality
       let doctors = await doctorModel.find(query);
-      //console.log(doctors)
       let availableDoctors = [];
       for (let i = 0; i < doctors.length; i++){
         let found = false;
@@ -277,7 +284,7 @@ const getDoctors = async (req, res) => {
   try{
     const doctors = await doctorModel.find({})
     const clinicMarkUp= 10;
-    const patientId = req.query.id;
+    const patientId = req.user._id;
     const patient = await patientModel.findById(patientId).populate({path:"healthPackage"});
     const discount = 0
     let data=[]
@@ -681,7 +688,7 @@ const linkFamilyMemberAccount = async (req, res) => {
 
 module.exports = {
   createFamilyMember,
-  createPatient,
+  addPatient,
   searchForDoctorByNameSpeciality,
   filterAppointmentsForPatient,
   getFamilyMembers,
