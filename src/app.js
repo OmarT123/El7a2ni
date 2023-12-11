@@ -17,6 +17,7 @@ const {
   exactPatients,
   addAppointmentSlots,
   ViewDoctorWallet,
+  viewDoctorAppointments,
 } = require("./Routes/doctorController");
 const {
   createPatient,
@@ -36,7 +37,6 @@ const {
   viewMySubscribedHealthPackage,
   CancelSubscription,
   ViewMyWallet,
-  viewPatientAppointments,
 } = require("./Routes/patientController");
 const {
   addAdmin,
