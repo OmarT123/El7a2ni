@@ -30,6 +30,7 @@ const {
   selectDoctorFromFilterSearch,
   getDoctors,
   viewPatientAppointments, //new Req.45//
+  linkFamilyMemberAccount  //new Req.19//
 } = require("./Routes/patientController");
 const {
   addAdmin,
@@ -90,6 +91,7 @@ app.get("/viewMyPrescriptions",viewMyPrescriptions);
 app.get("/selectPrescription",selectPrescription);
 app.get("/allDoctors", getDoctors);
 app.get("/viewPatientAppointments", viewPatientAppointments); //new Req.45//
+app.post("/linkFamilyMember", linkFamilyMemberAccount); //new Req.19//
 
 
 

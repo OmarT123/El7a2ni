@@ -325,6 +325,72 @@ const viewPatientAppointments = async (req, res) => {
 };
 
 
+//New Req.19//
+const linkFamilyMemberAccount = async (req, res) => {
+  try {
+    const patientId = new mongoose.Types.ObjectId(req.query.id);
+    const { email, phone, relationToPatient } = req.body;
+
+    // Validate that the relation is restricted to wife/husband/children
+    const allowedRelations = ["wife", "husband", "children"];
+    if (!allowedRelations.includes(relationToPatient)) {
+      return res.status(400).json({
+        error: "Invalid relation. Relation must be wife, husband, or children.",
+      });
+    }
+
+    // Find the primary patient
+    const primaryPatient = await patientModel.findById(patientId);
+    if (!primaryPatient) {
+      return res.status(404).json({ error: "Primary patient not found." });
+    }
+
+    // Find the patient to link
+    const familyMemberToLink = await patientModel.findOne({
+      $or: [{ email }, { mobileNumber: phone }],
+    });
+
+    if (!familyMemberToLink) {
+      return res.status(404).json({ error: "Family member not found." });
+    }
+
+    // Check if the patient to link is not the same as the primary patient
+    if (familyMemberToLink._id.equals(primaryPatient._id)) {
+      return res.status(400).json({
+        error: "Cannot link the primary patient's account as a family member.",
+      });
+    }
+
+    // Check if the patient is not already linked
+    const existingFamilyMember = await familyModel.findOne({
+      patient: primaryPatient._id,
+      familyMember: familyMemberToLink._id,
+    });
+
+    if (existingFamilyMember) {
+      return res
+        .status(400)
+        .json({ error: "Family member is already linked to the patient." });
+    }
+
+    // Create a family member entry
+    const familyMember = await familyModel.create({
+      patient: primaryPatient._id,
+      familyMember: familyMemberToLink._id,
+      relationToPatient,
+    });
+
+    // Update the primary patient's family members
+    primaryPatient.familyMembers.push(familyMember._id);
+    await primaryPatient.save();
+
+    res.json("Family member linked successfully.");
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
 module.exports = {
   createFamilyMember,
   createPatient,
@@ -338,4 +404,5 @@ module.exports = {
   selectPrescription,
   getDoctors,
   viewPatientAppointments,   //new Req.45//
+  linkFamilyMemberAccount
 };
