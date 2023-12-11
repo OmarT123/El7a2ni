@@ -323,8 +323,18 @@ const viewPatientAppointments = async (req, res) => {
 };
 
 const payWithCard = async (req, res) => {
+  const patientId = "65763bc6b8ee85160043f31a";
+  const patient = await patientModel.findById(patientId).populate({path: "healthPackage.healthPackageId"})
   const url = req.query.url
   const item = req.query.item;
+  const type = req.query.type
+  const price = item.price
+  if (patient.healthPackage && type === 'appointment')
+  {
+      const healthPackageId = patient.healthPackage.healthPackageID
+      const healthPackage = await healthPackageModel.findById(healthPackageId)
+      price *= (1 - (healthPackage.doctorDiscount)/100)
+  }
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ['card'],
     mode: 'payment',
@@ -349,9 +359,17 @@ const payWithWallet = async(req, res) => {
   const patientId = req.query.id
   const price = req.query.price
   const url = req.query.url
+  const type = req.query.type
   try {
     const patient = await patientModel.findById(patientId)
-    if (patient.wallet < price)
+    // if (patient.healthPackage && type === 'appointment')
+    // {
+    //   const healthPackageId = patient.healthPackage.healthPackageID
+    //   console.log(healthPackageId)
+    //   const healthPackage = await healthPackageModel.findById(healthPackageId)
+    //   price *= (1 - (healthPackage.doctorDiscount)/100)
+    // }
+  if (patient.wallet < price)
     {
       return res.json({success: false, message:"Insufficient funds!"})
     }
@@ -367,7 +385,7 @@ const payWithWallet = async(req, res) => {
 const buyHealthPackage = async (req, res) => {
   const patientId = req.query.id
 
-  const healthPackageId = req.query.healthPackageId
+  const healthPackageId = req.body.healthPackageId
   try {
     const curDate = new Date()
     curDate.setMonth(curDate.getMonth() + 1);
@@ -379,8 +397,8 @@ const buyHealthPackage = async (req, res) => {
     const patient = await patientModel.findById(patientId)
     // const subscribedTo = patient.healthPackages.filter(hp => hp.status === 'subscribed')
     // if (subscribedTo && subscribedTo.length !== 0)
-    //   return res.json("Failed")
-    patient.healthPackage.push(hPackage)
+    //   return res.jsذon("Failed")
+    patient['healthPackage'] = hPackage
     await patient.save()
     res.json("Updated Successfully")
   }
@@ -448,9 +466,19 @@ const viewFreeAppointments = async(req,res) => {
 const getAnAppointment = async (req, res) => {
   try {
     const appointmentId = req.query.id
-    const appointment = await appointmentModel.findById(appointmentId).populate({path:'doctor'}).populate({path:'patient'})
+    const appointment = await appointmentModel.findById(appointmentId).populate({path:'doctor'})
     const doctor = appointment.doctor
-    const price = doctor.hourlyRate
+    const patientId = req.query.patientId
+    const patient = await patientModel.findById(patientId)
+    let price = doctor.hourlyRate
+    
+    if (patient.healthPackage)
+    {
+      const healthPackageId = patient.healthPackage.healthPackageID
+      const healthPackage = await healthPackageModel.findById(healthPackageId)
+      console.log(healthPackage)
+      price *= (1 - (healthPackage.doctorDiscount)/100)
+    }
 
     const response = {appointment: appointment, price: price}
     res.json(response)

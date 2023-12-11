@@ -51,8 +51,7 @@ const patientSchema = new Schema(
         type: String,
       }
     ],
-    healthPackage: [
-      {
+    healthPackage:{
       type: {
         healthPackageID: {
           type : mongoose.Schema.Types.ObjectId,
@@ -61,8 +60,7 @@ const patientSchema = new Schema(
         status: String,
         endDate: Date,
       },
-    }
-    ],
+    },
     wallet: {
       type: Number,
       default: 0

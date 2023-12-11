@@ -11,7 +11,7 @@ const SuccessfulCheckoutAppointment = () => {
             await axios.put('/reserveAppointment?id='+patientId,body).then(res=>console.log(res.data))
             body['message'] = "Booked Appointment"
             await axios.get('/sendCheckoutMail?id='+patientId, {params: body}).then(res=>console.log(res.data))
-            // window.location.href = '/'
+            window.location.href = '/'
         }
         verifyCheckout()
     }, [])

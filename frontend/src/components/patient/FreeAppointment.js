@@ -4,7 +4,6 @@ const FreeAppointment = ({ appointment }) => {
     const reserveAppointment = () => {
         // console.log('here')
         localStorage.setItem('appointment', appointment.appointment._id)
-        // console.log(appointment.appointment._id)
         window.location.href = '/CheckoutAppointment'
     }
 

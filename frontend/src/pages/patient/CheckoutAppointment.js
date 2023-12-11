@@ -13,7 +13,7 @@ const CheckoutAppointment = () => {
         }
         const getAppointment = async() => {
             const appointmentId = localStorage.getItem('appointment')
-            await axios.get("/getAnAppointment?id="+appointmentId).then(res => setAppointment(res.data))
+            await axios.get("/getAnAppointment?id="+appointmentId,{params:{patientId}}).then(res => setAppointment(res.data))
         }
         getFamilyMembers()
         getAppointment()
@@ -23,6 +23,8 @@ const CheckoutAppointment = () => {
         const body = {}
         body['url']='SuccessfulCheckoutAppointment'
         body['item']={name:appointment.appointment.name, price:appointment.price}
+        body['type'] = 'appointment'
+
         if (selectedFamilyMember === '')
             alert('Please Select a family member')
         else
@@ -33,6 +35,7 @@ const CheckoutAppointment = () => {
         const body = {}
         body['url']='SuccessfulCheckoutAppointment'
         body['price']=appointment.price
+        body['type'] = 'appointment'
         if (selectedFamilyMember === '')
             alert('Please Select a family member')
         else
