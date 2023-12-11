@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { useState,useEffect } from 'react'
-import PatientAuthorization from '../../components/DoctorAuthorization'
+import PatientAuthorization from '../../components/PatientAuthorization'
 
 const Doctor = ({user}) => {
     const [doctor, setDoctor] = useState(null)

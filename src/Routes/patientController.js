@@ -53,7 +53,7 @@ const addPatient = async(req,res) => {
 
 const createFamilyMember = async (req, res) => {
   try {
-    let patientId = req.query.id;
+    let patientId = req.user._id;
     let name = req.body.name;
     let nationalId = req.body.nationalId;
     let age = req.body.age;
@@ -76,7 +76,7 @@ const createFamilyMember = async (req, res) => {
     });
     const patient = await patientModel.findById(patientId);
     if (!patient)
-      return res.status(404).send("No such patient found in the database.");
+      return res.send("No such patient found in the database.");
     await familyMember.save();
     patient.familyMembers.push(familyMember.id);
     await patient.save();

@@ -5,7 +5,7 @@ const Login = () => {
   const [username, setName] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState(null);
-  const [showContent, setShowContent] = useState(false);
+  const [showContent, setShowContent] = useState(true);
 
   useEffect(() => {
     const userToken = localStorage.getItem('userToken');

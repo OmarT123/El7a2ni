@@ -58,7 +58,7 @@ const FilterAppointments  = ({apiLink}) => {
             <li key={appointment._id}>
               <div>Status: {appointment.status}</div>
               <div>Date: {appointment.date}</div>
-              <div>Doctor: {appointment.doctor && appointment.doctor.name}</div>
+              <div>Paitent: {appointment.patient && appointment.patient.name}</div>
             </li>
           ))}
         </ul>

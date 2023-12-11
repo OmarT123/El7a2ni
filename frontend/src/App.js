@@ -12,10 +12,9 @@ import ViewMyPrescriptions from './pages/patient/ViewMyPrescriptions';
 import SelectedPrescription from './pages/patient/SelectedPrescription';
 import MyPatients from './pages/doctor/MyPatients';
 import SearchDoctor from './pages/patient/SearchDoctor'
-import Prescription from './pages/patient/Prescription'
 import RegisterPatient from './pages/patient/RegisterPatient'
 import RegisterDoctor from './pages/doctor/RegisterDoctor'
-import Patient from './pages/doctor/Patient'
+import Patient from './components/Patient'
 import Doctor from './pages/patient/Doctor'
 import FilterAppointmentsForDoctor from './pages/doctor/FilterAppointmentsForDoctor';
 import FilterAppointmentsForPatient from './pages/patient/FilterAppointmentsForPatient';
@@ -28,7 +27,6 @@ import Login from './pages/user/Login'
 import ChangePassword from './pages/user/ChangePassword';
 import ResetPassword from './pages/user/ResetPassword';
 import ResetPasswordOTP from './pages/user/ResetPasswordOTP';
-// import NotAuthorized from './components/NotAuthorized';
 
 function App() {
   return (
@@ -63,7 +61,6 @@ function App() {
             <Route path="/deletePatient" element={<DeletePatient/>}/>
             <Route path="/deleteAdmin" element={<DeleteAdmin/>}/>
             <Route path="/deleteDoctor" element={<DeleteDoctor/>}/>
-            <Route path="/Prescription" element={<Prescription/>}/>
             <Route path="/FilterPatientsByAppointments" element={<FilterPatientsByAppointments/>}/>
             <Route path='/SearchDoctor' element={<SearchDoctor/>}/>
             <Route path="/doctor" element={<Doctor/>}/>

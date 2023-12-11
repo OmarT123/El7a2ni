@@ -36,6 +36,9 @@ const filterAppointmentsForDoctor = async (req, res) => {
   // Need login
   const dateToBeFiltered = req.query.date;
   const statusToBeFiltered = req.query.status;
+  const searchQuery = new RegExp(statusToBeFiltered, "i"); // 'i' flag makes it case-insensitive
+
+  
   const filterQuery = {};
 
   if (dateToBeFiltered) {
@@ -46,8 +49,8 @@ const filterAppointmentsForDoctor = async (req, res) => {
     filterQuery["date"] = { $gte: startDate, $lt: endDate };
   }
 
-  if (statusToBeFiltered) {
-    filterQuery["status"] = statusToBeFiltered;
+  if (searchQuery) {
+    filterQuery["status"] = searchQuery;
   }
   if (req.user._id) {
     const id = req.user._id;
@@ -192,7 +195,9 @@ const viewPatient = async (req, res) => {
   const exactPatients = async (req, res) => {
     try{
     let id=req.user._id;
-    let name= req.query.name;
+    const { name } = req.query;
+    // const searchQuery = new RegExp(name, "i"); // 'i' flag makes it case-insensitive
+
     let AllmyAppointments= await appointmentModel.find({ doctor:id}).populate({path:'patient'});
     let patients = AllmyAppointments.map(appointment => appointment.patient);
     let filteredPatients = patients.filter(patient => patient.name === name);

@@ -1,12 +1,10 @@
 import axios from 'axios'
 import { useState,useEffect } from 'react'
-import DoctorAuthorization from '../../components/PatientAuthorization'
+// import DoctorAuthorization from '../../components/PatientAuthorization'
 
 const Patient = ({user}) => {
     const [patient, setPatient] = useState(null)
     const [showRecords, setShowRecords] = useState(false);
-    
-   
 
     useEffect(() => {
             const getPatient = async()=> {
@@ -44,4 +42,4 @@ const Patient = ({user}) => {
     )
 }
 
-export default DoctorAuthorization(Patient) 
+export default Patient

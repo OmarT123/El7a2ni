@@ -1,9 +1,20 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const ResetPassword = () => {
   const [username, setName] = useState('');
   const [message, setMessage] = useState(null);
+  const [showContent, setShowContent] = useState(false);
+
+  useEffect(() => {
+    const userToken = localStorage.getItem('userToken');
+
+    if (userToken) {
+      window.location.href = '/home';
+    } else {
+      setShowContent(true);
+    }
+  }, []);
 
   const handleResetPassword = async (e) => {
     e.preventDefault();
@@ -15,22 +26,29 @@ const ResetPassword = () => {
       setMessage(response.data);
       console.log(response.data);
 
+
       if (response.data.success) {
-         window.location.href = '/ResetPasswordOTP';
+        localStorage.setItem('resetPasswordDone', userData);
+
+        window.location.href = '/ResetPasswordOTP';
       }
     } catch (error) {
       console.error('Username error:', error);
     }
   };
- 
+
   return (
     <form className='edit'>
-      <h3>Reset Password</h3>
-      <h4>Please enter your Username in order to get OTP by email :</h4>
-      <label>Username :</label>
-      <input type='text' value={username} onChange={(e) => setName(e.target.value)} />
-      <button onClick={handleResetPassword}>Send OTP</button>
-      {message && <div style={{ color: message.success ? 'green' : 'red' }}>{message.message}</div>}
+      {showContent && (
+        <>
+          <h3>Reset Password</h3>
+          <h4>Please enter your Username in order to get OTP by email :</h4>
+          <label>Username :</label>
+          <input type='text' value={username} onChange={(e) => setName(e.target.value)} />
+          <button onClick={handleResetPassword}>Send OTP</button>
+          {message && <div style={{ color: message.success ? 'green' : 'red' }}>{message.message}</div>}
+        </>
+      )}
     </form>
   );
 };

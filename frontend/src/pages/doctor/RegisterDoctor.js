@@ -1,7 +1,5 @@
 import axios from 'axios'
-import {useState} from 'react'
-import RegisterPatient from '../patient/RegisterPatient'
-import DoctorAuthorization from '../../components/DoctorAuthorization'
+import {useState,useEffect} from 'react'
 
 const RegisterDoctor = () => {
     const [name, setName] = useState('')
@@ -15,7 +13,18 @@ const RegisterDoctor = () => {
     const [education1, setEducation1] = useState('')
     const [education2, setEducation2] = useState('')
     const [education3, setEducation3] = useState('')
-    
+    const [showContent, setShowContent] = useState(false)
+    const [responseMessage, setResponseMessage] = useState('');
+
+     useEffect(() => {
+    const userToken = localStorage.getItem('userToken');
+
+    if (userToken) {
+      window.location.href = '/Home';
+    } else {
+      setShowContent(true);
+    }
+  }, []);
     
     const register = async(e) => {
         e.preventDefault()
@@ -37,6 +46,7 @@ const RegisterDoctor = () => {
 
     return (
         <div className="search-container">
+            {showContent && (
             <form className='create'>
                 <h3>Create new Account</h3>
 
@@ -121,6 +131,7 @@ const RegisterDoctor = () => {
 
                 <button onClick={register}>Register</button>
             </form>
+            )}
             <div className='search-results'></div>
         </div>
     )
