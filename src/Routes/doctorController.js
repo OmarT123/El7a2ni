@@ -260,6 +260,6 @@ module.exports = {
   viewPatient,
   createPrescription,
   exactPatients,
-  ViewDoctorWallet
-  viewDoctorAppointments,
+  ViewDoctorWallet,
+  viewDoctorAppointments
 };
