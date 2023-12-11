@@ -7,7 +7,7 @@ const FilterPatientsByAppointments = () => {
     const [patients, setPatients] = useState([])
 
     const filter = async() => {
-        const id = "65481b16137be867953a0c9e"
+        const id = "65496e4a5c31c981636dc271"
         await axios.get("/filterPatientsByAppointments?id="+id).then(res=>setPatients(res.data)).catch(err => console.log(err.message))
     }
 

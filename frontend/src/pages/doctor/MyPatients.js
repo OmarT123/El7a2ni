@@ -57,4 +57,4 @@ const MyPatients = () => {
 );
 
         }
-export default MyPatients
+export default MyPatients

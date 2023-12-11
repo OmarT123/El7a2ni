@@ -388,6 +388,57 @@ strong {
   font-weight: bold;
   color: #999;
 }
+.application {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+
+/* Add this style to set the overall layout of the application */
+.application {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+
+/* Add this style for the doctor information section */
+.doctor-info {
+  margin-bottom: 20px;
+}
+
+/* Style for horizontal layout */
+.horizontal {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+/* Style for iframes and buttons in horizontal layout */
+.horizontal > iframe,
+.horizontal > button {
+  flex: 1;
+  margin-right: 10px;
+}
+
+/* Adjust the width of the first button in the horizontal layout */
+.horizontal:first-child > button {
+  width: 30%;
+}
+
+/* Style for buttons in the second horizontal layout */
+.horizontal:nth-child(2) > button {
+  width: 48%; /* Adjust as needed */
+}
+
+/* Add media query for responsiveness */
+@media (max-width: 768px) {
+  .horizontal {
+    flex-direction: column;
+  }
+}
 
 .checkout {
   display: flex;

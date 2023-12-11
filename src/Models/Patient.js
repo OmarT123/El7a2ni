@@ -46,11 +46,10 @@ const patientSchema = new Schema(
         ref: "FamilyMember",
       },
     ],
-    HealthRecords: [
-      { 
-        type: String,
-      }
-    ],
+    HealthRecords: {
+      type: [String],
+      default: [],
+    },
     healthPackage:{
       type: {
         healthPackageID: {
@@ -61,13 +60,23 @@ const patientSchema = new Schema(
         endDate: Date,
       },
     },
+    idPDF:{
+      type:String,
+    },
+    degreePDF: {
+      type: String,
+    },
+    licensePDF: {
+      type: String,
+    }
     wallet: {
       type: Number,
       default: 0
-    }
+ }
+
   },
   { timestamps: true }
 );
 
 const Patient = mongoose.model("Patient", patientSchema);
-module.exports = Patient;
+module.exports = Patient;

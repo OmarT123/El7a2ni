@@ -60,6 +60,9 @@ const {
   getAllAdmins,
   getAllDoctors,
   getAllPatients,
+  acceptDoctor,
+  rejectDoctor,
+  getADoctor,
 } = require("./Routes/adminController.js");
 
 const app = express();
@@ -93,6 +96,9 @@ app.get("/getHealthPackage",getHealthPackage)
 app.get("/getAllAdmins",getAllAdmins);
 app.get("/getAllDoctors",getAllDoctors);
 app.get("/getAllPatients",getAllPatients);
+app.put("/acceptDoctor",acceptDoctor);
+app.put("/rejectDoctor",rejectDoctor);
+app.get("/getADoctor", getADoctor);
 
 //Patient
 app.post("/addPatient", createPatient);
@@ -131,6 +137,7 @@ app.get("/viewDocInfo", viewDocInfo);
 app.get("/filterPatientsByAppointments", filterPatientsByAppointments);
 app.get("/viewPatient", viewPatient);
 app.get("/viewmypatientsbyname",exactPatients);
+app.post("/createPrescription",createPrescription);
 app.get("/viewDoctorAppointments", viewDoctorAppointments); 
 app.post("/addAppointmentSlots", addAppointmentSlots);
 app.get("/ViewDoctorWallet",ViewDoctorWallet)
