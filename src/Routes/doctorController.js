@@ -265,6 +265,6 @@ module.exports = {
   viewPatient,
   createPrescription,
   exactPatients,
-  ViewDoctorWallet
+  ViewDoctorWallet,
   viewDoctorAppointments,
 };
