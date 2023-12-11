@@ -3,21 +3,24 @@ import axios from 'axios'
 import DoctorAuthorization from '../../components/DoctorAuthorization'
 
 const DoctorContract = ({ user }) => {
-    
 
     const acceptContract = async() => {
-        await axios.put('/acceptContract')
+        await axios.put('/acceptContract').then(res => alert(res.data))
+        window.location.href = '/home'
+
     }
 
     const rejectContract = async() => {
-        await axios.put("/rejectContract")
+        await axios.put("/rejectContract").then(res => alert(res.data))
+        window.location.href = '/home'
+        
     }
 
     return (
-        <div>
+        <div className='contract'>
             <h3>Employment Contract</h3>
             <hr></hr>
-            <iframe title="PDF Viewer" src={user.contract} width="90%" height="600px" />            
+            <div dangerouslySetInnerHTML={{ __html: user.contract }} className='contract'/>         
             <button onClick={acceptContract}>Accept</button>
             <button onClick={rejectContract}>Reject</button>
         </div>

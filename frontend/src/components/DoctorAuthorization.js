@@ -22,9 +22,11 @@ const DoctorAuthorization = (WrappedComponent) => {
             const { success, type , user } = response.data;
 
             if (success) {
-              if (type === 'doctor' && user.status === 'accepted') {
-                setShowContent(true);
-                setUser(user); 
+              const curPath = window.location.pathname
+              if (type === 'doctor' && (user.status === 'accepted' || (user.status=== 'approved' && curPath === '/doctorContract'))) {
+                  setShowContent(true);
+                  setUser(user); 
+              
               } else {
                 setShowContent(false);
               }

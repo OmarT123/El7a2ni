@@ -479,3 +479,19 @@ strong {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+.contract {
+  padding: 10px;
+  background-color: #fff;
+  padding-left: 40px;
+  margin-bottom: 15px;
+  border-radius: 7px
+}
+
+header {
+  padding: 10px
+}
+
+.contract > button {
+  margin: 20px
+}
