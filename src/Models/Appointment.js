@@ -12,11 +12,10 @@ const appointmentSchema = new Schema(
         type: mongoose.Types.ObjectId,
         ref: "Patient",
     },    date : { 
-      type: Date,
-      required : true
+      type: Date
   },
-    status : {
-        type: String , 
+    status : { // status could be 1. free, 2. upcoming, 3. cancelled, 4. completed
+        type: String ,
         default : "upcoming"
     }
 

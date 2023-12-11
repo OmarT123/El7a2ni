@@ -15,7 +15,9 @@ const {
   viewPatient,
   createPrescription,
   exactPatients,
-  viewDoctorAppointments,  //new Req.45//
+  addAppointmentSlots,
+  ViewDoctorWallet,
+  viewDoctorAppointments,
 } = require("./Routes/doctorController");
 const {
   createPatient,
@@ -37,7 +39,12 @@ const {
   sendCheckoutMail,
   getHealthPackageForPatient,
   viewFreeAppointments,
-  getAnAppointment
+  getAnAppointment,
+  uploadHealthRecord,
+  getHealthRecords,
+  viewMySubscribedHealthPackage,
+  CancelSubscription,
+  ViewMyWallet,
 } = require("./Routes/patientController");
 const {
   addAdmin,
@@ -52,11 +59,13 @@ const {
   getHealthPackage ,
   getAllAdmins,
   getAllDoctors,
-  getAllPatients
+  getAllPatients,
 } = require("./Routes/adminController.js");
 
 const app = express();
 const port = process.env.PORT || "8000";
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 mongoose
   .connect(MongoURI)
@@ -97,7 +106,10 @@ app.get("/filterDoctorsSpecialityDate", filterDoctorsSpecialityDate);
 app.get("/viewMyPrescriptions",viewMyPrescriptions);
 app.get("/selectPrescription",selectPrescription);
 app.get("/allDoctors", getDoctors);
-app.get("/viewPatientAppointments", viewPatientAppointments); //new Req.45//
+app.get("/viewMySubscribedHealthPackage",viewMySubscribedHealthPackage);
+app.put("/CancelSubscription",CancelSubscription);
+app.get("/ViewMyWallet",ViewMyWallet)
+app.get("/viewPatientAppointments", viewPatientAppointments);
 app.get("/payWithCard", payWithCard)
 app.get("/payWithWallet", payWithWallet)
 app.put("/buyHealthPackage", buyHealthPackage)
@@ -106,8 +118,8 @@ app.get("/sendCheckoutMail", sendCheckoutMail)
 app.get("/getHealthPackageForPatient", getHealthPackageForPatient)
 app.get("/viewFreeAppointments", viewFreeAppointments)
 app.get("/getAnAppointment", getAnAppointment)
-
-
+app.put("/uploadHealthRecord", uploadHealthRecord);
+app.get("/getHealthRecords", getHealthRecords);
 
 //Doctor
 app.get("/filterAppointmentsForDoctor", filterAppointmentsForDoctor);
@@ -119,6 +131,6 @@ app.get("/viewDocInfo", viewDocInfo);
 app.get("/filterPatientsByAppointments", filterPatientsByAppointments);
 app.get("/viewPatient", viewPatient);
 app.get("/viewmypatientsbyname",exactPatients);
-app.post("/createPrescription",createPrescription);
 app.get("/viewDoctorAppointments", viewDoctorAppointments); 
-
+app.post("/addAppointmentSlots", addAppointmentSlots);
+app.get("/ViewDoctorWallet",ViewDoctorWallet)

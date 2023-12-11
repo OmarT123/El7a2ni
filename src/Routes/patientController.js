@@ -9,6 +9,8 @@ const userModel = require("../Models/User.js")
 const mongoose = require("mongoose");
 const stripe = require("stripe")(process.env.STRIPE_PRIVATE_KEY)
 const nodemailer = require('nodemailer');
+const HealthPackageModel = require("../Models/HealthPackage.js");
+
 
 const createPatient = async (req, res) => {
   const {
@@ -19,7 +21,7 @@ const createPatient = async (req, res) => {
     birthDate,
     gender,
     mobileNumber,
-    emergencyContact,
+    emergencyContact
   } = req.body;
   try {
     const user = await userModel.findOne({username})
@@ -36,7 +38,7 @@ const createPatient = async (req, res) => {
         birthDate,
         gender,
         mobileNumber,
-        emergencyContact,
+        emergencyContact
       });
       await userModel.create({
         username, 
@@ -292,6 +294,76 @@ const getDoctors = async (req, res) => {
   }
 }
 
+
+const viewMySubscribedHealthPackage = async (req, res) => {
+  try {
+    const patientId = req.query.id;
+    const patient = await patientModel.findById(patientId).populate('healthPackage').exec();
+    
+    if (!patient) {
+      console.log('Patient not found');
+      return;
+    }
+    const healthPackagePatient = patient.healthPackage;
+    if(healthPackagePatient== undefined)
+      res.json();
+    else{
+    const status = healthPackagePatient.status;
+    const endDate = healthPackagePatient.endDate;
+    const healthPackage = await HealthPackageModel.findById(healthPackagePatient.healthPackageID);
+    const extendedHealthPackage = {
+    ...healthPackage.toObject(),        // Spread properties from healthPackage
+    status: status,
+    endDate: endDate,
+    };
+    //console.log(extendedHealthPackage);
+    res.json(extendedHealthPackage);
+  }
+  }
+  catch (err) {
+    res.json(err.message);
+
+  }
+};
+
+
+const CancelSubscription= async (req, res) => {
+
+try{
+  const patientId = req.query.id;
+  const patient = await patientModel.findById(patientId);
+  if (!patient) {
+    return res.status(404).json({ message: 'Patient not found' });
+  }
+  patient.healthPackage.status = "cancelled";
+  await patient.save();
+
+  res.json({ message: 'Subscription canceled successfully' });
+} catch (error) {
+  console.error('Error canceling subscription:', error.message);
+  res.status(500).json({ message: 'Internal Server Error' });
+}
+};
+
+const ViewMyWallet = async (req, res) => {
+  try {
+    const patientId = req.query.id;
+    const patient = await patientModel.findById(patientId).populate('wallet').exec();
+   
+    if (!patient) {
+      console.log('Patient not found');
+      return;
+    }
+    const wallet = patient.wallet;
+    res.json(wallet);
+  }
+  catch (err) {
+    res.json(err.message);
+
+  }
+};
+
+
 const viewPatientAppointments = async (req, res) => {
   try {
     const patientID = req.query.id;
@@ -489,6 +561,34 @@ const getAnAppointment = async (req, res) => {
   }
 }
 
+const uploadHealthRecord = async (req, res) =>{
+  try{
+  let id = req.body.id;
+  let healthRecord = req.body.base64;
+
+  const patient = await patientModel.findById(id);
+  patient.HealthRecords.push(healthRecord);
+  await patient.save();
+  res.status(200).json({ message: 'Health record added successfully'});
+  }catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+const getHealthRecords = async (req, res) =>{
+  try{
+  let id = req.query.id;
+  const patient = await patientModel.findById(id);
+  const healthRecords = patient.HealthRecords;
+  res.status(200).json( healthRecords );
+} catch (error) {
+  console.error(error);
+  res.status(500).json({ error: 'Internal server error' });
+}
+}
+
+
 module.exports = {
   createFamilyMember,
   createPatient,
@@ -509,5 +609,11 @@ module.exports = {
   sendCheckoutMail,
   getHealthPackageForPatient,
   viewFreeAppointments,
-  getAnAppointment
+  getAnAppointment,
+  uploadHealthRecord,
+  getHealthRecords,
+  viewMySubscribedHealthPackage,
+  CancelSubscription,
+  ViewMyWallet,
+  viewPatientAppointments
 };
