@@ -5,6 +5,7 @@ const adminModel = require("../Models/Admin.js");
 const prescriptionModel = require("../Models/Prescription.js");
 const userModel = require("../Models/User.js")
 const { default: mongoose } = require("mongoose");
+const bcrypt = require('bcrypt');
 
 const createPrescription = async(req,res)=>{
   try {
@@ -21,6 +22,9 @@ const filterAppointmentsForDoctor = async (req, res) => {
   // Need login
   const dateToBeFiltered = req.query.date;
   const statusToBeFiltered = req.query.status;
+  const searchQuery = new RegExp(statusToBeFiltered, "i"); // 'i' flag makes it case-insensitive
+
+  
   const filterQuery = {};
 
   if (dateToBeFiltered) {
@@ -31,12 +35,12 @@ const filterAppointmentsForDoctor = async (req, res) => {
     filterQuery["date"] = { $gte: startDate, $lt: endDate };
   }
 
-  if (statusToBeFiltered) {
-    filterQuery["status"] = statusToBeFiltered;
+  if (searchQuery) {
+    filterQuery["status"] = searchQuery;
   }
-  if (req.query.id) {
-    const id = req.query.id;
-    filterQuery["doctor"] = new mongoose.Types.ObjectId(id);
+  if (req.user._id) {
+    const id = req.user._id;
+    filterQuery["doctor"] = id;
     try {
       const filteredAppointments = await appointmentModel
         .find(filterQuery)
@@ -85,17 +89,33 @@ const addDoctor = async (req, res) => {
     licensePDF
   } = req.body;
   try {
+    if (!username || !password || !name || !birthDate || !hourlyRate || !affiliation || !educationalBackground || !speciality || !email) {
+      return res.json({ success: false, message: "All fields are required. Please provide valid information for each field!" });
+    }
+
+
     const user = await userModel.findOne({username})
     if (user)
     {
       res.json("Username already exists")
     }
     else {
+      
+      
+      const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%^&*()?[\]{}|<>])[A-Za-z\d@$!%^&*()?[\]{}|<>]{10,}$/;
+    if (!passwordRegex.test(password)) {
+      return res.json({
+        success: false,
+        message: "Password must contain at least 1 lowercase letter, 1 uppercase letter, 1 number, 1 special character, and be at least 10 characters long.",
+      });
+    }
+      const salt = await bcrypt.genSalt();
+      const encryptedPassword = await bcrypt.hash(password ,salt );
       const doctor = await doctorModel.create({
         username,
         name,
         email,
-        password,
+        password :encryptedPassword,
         birthDate,
         hourlyRate,
         affiliation,
@@ -105,19 +125,22 @@ const addDoctor = async (req, res) => {
         degreePDF,
         licensePDF
       });
-      await userModel.create({
+      await doctor.save();
+      const userC = await userModel.create({
         username, 
-        userId : doctor._id
+        userId : doctor._id,
+        type :'doctor'
       })
-      res.status(200).json("Applied Successfully");
+      await userC.save();
+      res.json("Applied Successfully");
     }
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.json({ error: error.message });
   }
 };
 
 const editDoctor = async (req, res) => {
-  let id = req.query.id;
+  let id = req.user._id;
   let { email, hourlyRate, affiliation } = req.body;
   try {
     let updatedDoctor = await doctorModel.findByIdAndUpdate(
@@ -136,10 +159,9 @@ const editDoctor = async (req, res) => {
 };
 const myPatients = async (req, res) => {
   try {
-    let id = req.query.id;
-    
+    let id = req.user._id;
     let AllmyAppointments = await appointmentModel
-      .find({ doctor: new mongoose.Types.ObjectId(id) })
+      .find({ doctor: id })
       .populate({ path: "patient" });
     
     let patients = AllmyAppointments
@@ -167,9 +189,11 @@ const viewPatient = async (req, res) => {
 
   const exactPatients = async (req, res) => {
     try{
-    let id=req.query.id;
-    let name= req.query.name;
-    let AllmyAppointments= await appointmentModel.find({ doctor:new mongoose.Types.ObjectId(id)}).populate({path:'patient'});
+    let id=req.user._id;
+    const { name } = req.query;
+    // const searchQuery = new RegExp(name, "i"); // 'i' flag makes it case-insensitive
+
+    let AllmyAppointments= await appointmentModel.find({ doctor:id}).populate({path:'patient'});
     let patients = AllmyAppointments.map(appointment => appointment.patient);
     let filteredPatients = patients.filter(patient => patient.name === name);
     res.status(200).json(filteredPatients);
@@ -181,7 +205,7 @@ const viewPatient = async (req, res) => {
 
 
 const filterPatientsByAppointments = async (req, res) => {
-  let doctorID = req.query.id;
+  let doctorID = req.user._id;
   try {
     const appointments = await appointmentModel
       .find({ doctor: doctorID})

@@ -3,21 +3,19 @@ import {useState,useEffect} from 'react'
 
 import FamilyMemberForm from '../../components/patient/FamilyMemberForm'
 import FamilyMemberDetails from '../../components/patient/FamilyMemberDetails'
+import PatientAuthorization from '../../components/PatientAuthorization'
 
-const FamilyMembers = () => {
+const FamilyMembers = ({user}) => {
     const [familyMembers, setFamilyMembers] = useState(null)
 
 
     const getFamilyMembers = async () => {
-        // temporarily hard coded id until a user is logged in
-        const id = "654814b4801a1dd510bd5b98"
+        const id = user._id
 
-        await axios.get('/getFamilyMembers?id='+id).then(
+        await axios.get('/getFamilyMembers').then(
        (res) => {
            const members = res.data
-           //console.log(members)
            setFamilyMembers(members)
-           //console.log(familyMembers)
         }
         )
     }
@@ -40,4 +38,4 @@ const FamilyMembers = () => {
     )
 }
 
-export default FamilyMembers
+export default PatientAuthorization(FamilyMembers) 

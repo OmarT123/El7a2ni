@@ -1,7 +1,8 @@
 import {useState} from 'react'
 import axios from 'axios'
+import AdminAuthorization from '../../components/AdminAuthorization';
 
-const AddAdmin  = () => {
+const AddAdmin  = ({user}) => {
 
 
     const [username , setName] = useState('');
@@ -46,4 +47,4 @@ const AddAdmin  = () => {
     )
 }
 
-export default AddAdmin ;
+export default AdminAuthorization(AddAdmin)  ;

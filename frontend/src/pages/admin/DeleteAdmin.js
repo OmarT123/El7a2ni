@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import AdminAuthorization from '../../components/AdminAuthorization';
 
-const DeleteAdmin = () => {
+const DeleteAdmin = ({user}) => {
   const [message, setMessage] = useState(null);
   const [adminList, setAdminList] = useState([]);
 
@@ -45,4 +46,4 @@ const DeleteAdmin = () => {
  );
 };
 
-export default DeleteAdmin;
+export default AdminAuthorization(DeleteAdmin) ;

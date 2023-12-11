@@ -1,8 +1,9 @@
 import axios from 'axios'
 import {useState , useEffect} from 'react'
-import DisplayPrescription from '../components/DisplayPrescription';
+import DisplayPrescription from '../../components/DisplayPrescription';
+import PatientAuthorization from '../../components/PatientAuthorization';
 
-const ViewMyPrescriptions = () => {
+const ViewMyPrescriptions = ({user}) => {
 
     const [message , setMessage] = useState(null);
     const [prescriptionList, setPrescriptionList] = useState([]);
@@ -14,11 +15,12 @@ const ViewMyPrescriptions = () => {
 
     const FetchPrescriptions = async () => {
         try {
-          const id = "654965e73fe9729145b6ddbd";
-          const response = await axios.get('/viewMyPrescriptions?id=' + id);
+          const id = user._id
+          const response = await axios.get('/viewMyPrescriptions');
           const list = response.data;
           setPrescriptionList(list);
           setSearchResults(false)
+
         } catch (error) {
           console.error("Error fetching prescriptions: ", error);
         }
@@ -30,7 +32,7 @@ const ViewMyPrescriptions = () => {
       const search = async(e) => {
         e.preventDefault()
 
-        const id = "654965e73fe9729145b6ddbd"
+        const id = user._id
             const body = {}
             if (createdAt)
                 body["date"] = createdAt
@@ -38,8 +40,7 @@ const ViewMyPrescriptions = () => {
                 body["filled"]= filled === "true"?true:false
             if (doctor)
                 body["doctor"]=doctor
-            // console.log(body)
-            await axios.get("/filterPrescriptionByDateDoctorStatus?id="+id,{params:body}).then(res=>setPrescriptionsFilter(res.data)).catch(err=>console.log(err.message))
+            await axios.get("/filterPrescriptionByDateDoctorStatus",{params:body}).then(res=>setPrescriptionsFilter(res.data)).catch(err=>console.log(err.message))
             setSearchResults(true)        
       }
 
@@ -89,7 +90,6 @@ const ViewMyPrescriptions = () => {
                      </li>
                      ))}
         </ul>
-        {/* Add more prescription details here */}
       </div>
     ))}
                 {message && <h3>{message}</h3>}</div>}
@@ -110,4 +110,4 @@ const ViewMyPrescriptions = () => {
 }
 
 
-export default ViewMyPrescriptions
+export default PatientAuthorization(ViewMyPrescriptions) 

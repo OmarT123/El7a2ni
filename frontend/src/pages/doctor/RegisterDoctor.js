@@ -1,6 +1,5 @@
 import axios from 'axios'
-import {useState} from 'react'
-import RegisterPatient from '../patient/RegisterPatient'
+import {useState,useEffect} from 'react'
 
 const RegisterDoctor = () => {
     const [name, setName] = useState('')
@@ -17,6 +16,19 @@ const RegisterDoctor = () => {
     const [idPDF, setidPDF] = useState('')
     const [degreePDF, setDegreePDF] = useState('')
     const [licensePDF, setLicensePDF] = useState('')
+    const [showContent, setShowContent] = useState(false)
+    const [responseMessage, setResponseMessage] = useState('');
+
+     useEffect(() => {
+    const userToken = localStorage.getItem('userToken');
+
+    if (userToken) {
+      window.location.href = '/Home';
+    } else {
+      setShowContent(true);
+    }
+  }, []);
+
 
     function convertToBase64(type, c) {
         //Read File
@@ -59,7 +71,6 @@ const RegisterDoctor = () => {
             educationalBackground.push(education2)
         if (education3 !== '')
             educationalBackground.push(education3)
-        // console.log(educationalBackground)
         if(!name || !username || !email || !password || !birthDate || !hourlyRate || !affiliation || !educationalBackground)
             alert('Please fill all the fields')
         else if(idPDF.substring(0,20) != "data:application/pdf" || degreePDF.substring(0,20) != "data:application/pdf" || licensePDF.substring(0,20) != "data:application/pdf"){
@@ -69,11 +80,11 @@ const RegisterDoctor = () => {
             const body = {name,username,email,password,birthDate,hourlyRate,affiliation,educationalBackground,speciality, idPDF, degreePDF, licensePDF}
             await axios.post("/addDoctor",body).then(res=>alert(res.data)).catch(err=>console.log(err))
         }
-        // setEducationalBackground([])
     }
 
     return (
         <div className="search-container">
+            {showContent && (
             <form className='create'>
                 <h3>Create new Account</h3>
 
@@ -191,6 +202,7 @@ const RegisterDoctor = () => {
 
                 <button onClick={register}>Register</button>
             </form>
+            )}
             <div className='search-results'></div>
         </div>
     )

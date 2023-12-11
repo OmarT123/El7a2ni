@@ -1,10 +1,11 @@
 import {useEffect, useState} from 'react';
 import axios from 'axios';
+import AdminAuthorization from '../../components/AdminAuthorization';
 
 //components
 import DoctorDetails from '../../components/patient/DoctorDetails'
 
-const UnapprovedDoctors = () => {
+const UnapprovedDoctors = ({user}) => {
   const [doctors, setDoctors] = useState(null)
 
   useEffect(() => 
@@ -32,4 +33,4 @@ const UnapprovedDoctors = () => {
   )
 }
 
-export default UnapprovedDoctors
+export default AdminAuthorization(UnapprovedDoctors) ;
