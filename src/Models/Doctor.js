@@ -36,13 +36,22 @@ const doctorSchema = new Schema(
       type: [String],
       required: true,
     },
-    pendingApproval: {
-      type: Boolean,
-      default: true,
+    status: { //status can be: 1. pending (admin approval), 2. contract (to be accepted by the doctor), 3. approved (registered & contract approved)
+      type: String,
+      default: "pending",
     },
     speciality: {
       type: String,
       required: true,
+    },
+    idPDF: {
+      type: String,
+    },
+    degreePDF: {
+      type: String,
+    },
+    licensePDF: {
+      type: String,
     },
     wallet:{
       type:Number

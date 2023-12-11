@@ -1,46 +1,60 @@
-import axios from 'axios'
-import { useState,useEffect } from 'react'
+import axios from 'axios';
+import {useState,useEffect} from 'react'
 
-const Patient = () => {
-    const [patient, setPatient] = useState(null)
-    const [showRecords, setShowRecords] = useState(false);
+import PatientDetail from '../../components/patient/PatientDetail'
+
+
+
+const MyPatients = () => { 
+    const [Patients,setPatients] = useState([]);
+    const[name,setName]=useState('');
+   //hardcoded id for a doctor
+    const id = "65496e4a5c31c981636dc271"
     
-   
+    
+    const search = async(e) => {
+        e.preventDefault()
+        const body = {}
+        if (name !== "")
+            body['name']=name
+        await axios.get("/viewmypatientsbyname?id="+id,{params : body})
+        .then((res)=>{
+            console.log(res.data)
+            //console.log(docs)
+            setPatients(res.data)
+        }).catch((err)=>console.log(err))
+    }
 
-    useEffect(() => {
-            const getPatient = async()=> {
-            const queryParams = new URLSearchParams(window.location.search)
-            const id = queryParams.get('id')
-            await axios.get('/viewpatient?id='+id).then(res => setPatient(res.data)).catch(err=>console.log(err.message))
-            }
-            getPatient()
-        },[])
-        const toggleRecords = async(e) => {
-            e.preventDefault()
-            setShowRecords(!showRecords);
-            };
-    return (
-        <div>
-        {patient && <div className='user-info'>
-            <p><strong>name: </strong>{patient.name}</p>
-            <p><strong>email: </strong>{patient.email}</p>
-            <p><strong>birthDate: </strong>{patient.birthDate}</p>
-            <button onClick={toggleRecords}>Health Records</button>
-        
-        </div>}
-        {showRecords && (
-                <div className='health-records'>
-                    <h3>Health Records:</h3>
-                    <br></br>
-                    <ul>
-                        {patient.HealthRecords.map((record, index) => (
-                            <li key={index}> {record}</li>
-                        ))}
-                    </ul>
-                </div>
-            )}
+    const getPatients =  async () => {
+         await axios.get('/viewmypatients?id='+id).then(
+        (res) => { 
+            setPatients(res.data);
+        }
+         );
+    }
+    useEffect(() => 
+    {
+          getPatients();
+  },[])
+
+  return (
+    <div>
+         <div>
+            <form className="create">
+                <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Search by Patient name" />
+                <button onClick={search}>Submit</button>
+            </form>
         </div>
-    )
-}
+        <div className="patients-container">
+            <div className="Patient">
+                {Patients && Patients.map((patient) => (
+                    <PatientDetail key={patient._id} patient={patient} />
+                ))}
+            </div>
+        </div>
+       
+    </div>
+);
 
-export default Patient
+        }
+export default MyPatients

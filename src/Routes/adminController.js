@@ -34,7 +34,7 @@ const addAdmin = async (req, res) => {
 const viewDocInfo = async (req, res) => {
   try {
     const doctors = doctorModel
-      .find({ pendingApproval: true })
+      .find({ status: "pending" })
       .populate()
       .then((doctors) => res.json(doctors));
   } catch (err) {

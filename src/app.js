@@ -15,6 +15,7 @@ const {
   viewPatient,
   createPrescription,
   exactPatients,
+  addAppointmentSlots,
   ViewDoctorWallet,
   viewDoctorAppointments,
 } = require("./Routes/doctorController");
@@ -30,10 +31,20 @@ const {
   selectPrescription,
   selectDoctorFromFilterSearch,
   getDoctors,
+  viewPatientAppointments,
+  payWithCard,
+  payWithWallet,
+  buyHealthPackage,
+  reserveAppointment,
+  sendCheckoutMail,
+  getHealthPackageForPatient,
+  viewFreeAppointments,
+  getAnAppointment,
+  uploadHealthRecord,
+  getHealthRecords,
   viewMySubscribedHealthPackage,
   CancelSubscription,
   ViewMyWallet,
-  viewPatientAppointments,
 } = require("./Routes/patientController");
 const {
   addAdmin,
@@ -56,6 +67,8 @@ const {
 
 const app = express();
 const port = process.env.PORT || "8000";
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 mongoose
   .connect(MongoURI)
@@ -101,8 +114,18 @@ app.get("/selectPrescription",selectPrescription);
 app.get("/allDoctors", getDoctors);
 app.get("/viewMySubscribedHealthPackage",viewMySubscribedHealthPackage);
 app.put("/CancelSubscription",CancelSubscription);
-app.get("/ViewMyWallet",ViewMyWallet);
-app.get("/viewPatientAppointments", viewPatientAppointments); //new Req.45//
+app.get("/ViewMyWallet",ViewMyWallet)
+app.get("/viewPatientAppointments", viewPatientAppointments);
+app.get("/payWithCard", payWithCard)
+app.get("/payWithWallet", payWithWallet)
+app.put("/buyHealthPackage", buyHealthPackage)
+app.put("/reserveAppointment", reserveAppointment)
+app.get("/sendCheckoutMail", sendCheckoutMail)
+app.get("/getHealthPackageForPatient", getHealthPackageForPatient)
+app.get("/viewFreeAppointments", viewFreeAppointments)
+app.get("/getAnAppointment", getAnAppointment)
+app.put("/uploadHealthRecord", uploadHealthRecord);
+app.get("/getHealthRecords", getHealthRecords);
 
 //Doctor
 app.get("/filterAppointmentsForDoctor", filterAppointmentsForDoctor);
@@ -115,5 +138,6 @@ app.get("/filterPatientsByAppointments", filterPatientsByAppointments);
 app.get("/viewPatient", viewPatient);
 app.get("/viewmypatientsbyname",exactPatients);
 app.post("/createPrescription",createPrescription);
-app.get("/ViewDoctorWallet",ViewDoctorWallet);
-app.get("/viewDoctorAppointments", viewDoctorAppointments);
+app.get("/viewDoctorAppointments", viewDoctorAppointments); 
+app.post("/addAppointmentSlots", addAppointmentSlots);
+app.get("/ViewDoctorWallet",ViewDoctorWallet)

@@ -23,6 +23,7 @@ const FilterAppointments  = ({apiLink}) => {
             const apps = response.data;
             if (typeof apps == 'string') {
               setMessage(apps);
+              setAppointments('');
             } else {
               setAppointments(apps);
               setMessage("Filtered Appointments Results:");
