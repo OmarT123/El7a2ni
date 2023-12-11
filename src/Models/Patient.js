@@ -60,15 +60,15 @@ const patientSchema = new Schema(
         endDate: Date,
       },
     },
-    idPDF:{
-      type:String,
+    healthPackageDiscount:{
+      type: {
+        healthPackageID: {
+          type : mongoose.Schema.Types.ObjectId,
+          ref : 'HealthPackage',
+        },
+        discount: Number,
+      },
     },
-    degreePDF: {
-      type: String,
-    },
-    licensePDF: {
-      type: String,
-    }
     wallet: {
       type: Number,
       default: 0

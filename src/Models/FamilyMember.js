@@ -24,6 +24,25 @@ const familyMemberSchema = new Schema(
       type: String,
       required: true,
     },
+    healthPackage:{
+      type: {
+        healthPackageID: {
+          type : mongoose.Schema.Types.ObjectId,
+          ref : 'HealthPackage',
+        },
+        status: String,
+        endDate: Date,
+      },
+    },
+    healthPackageDiscount:{
+      type: {
+        healthPackageID: {
+          type : mongoose.Schema.Types.ObjectId,
+          ref : 'HealthPackage',
+        },
+        discount: Number,
+      },
+    },
   },
   { timestamps: true }
 );

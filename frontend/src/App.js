@@ -31,7 +31,7 @@ import CheckoutHealthPackage from './pages/patient/CheckoutHealthPackage';
 import ViewFreeAppointments from './pages/patient/ViewFreeAppointments';
 import SuccessfulCheckoutAppointment from './pages/patient/SuccessfulCheckoutAppointment';
 import CheckoutAppointment from './pages/patient/CheckoutAppointment';
-import UploadHealthRecords from './pages/patient/UploadHealthRecords';
+import UploadHealthRecords from './pages/UploadHealthRecords';
 import ViewSubscribedHealthPackageAndCancel from './pages/patient/ViewSubscribedHealthPackageAndCancel';
 import ViewMyWallet from './pages/patient/ViewMyWallet';
 import ViewDoctorWallet from './pages/doctor/ViewDoctorWallet';
