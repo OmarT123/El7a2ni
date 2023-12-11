@@ -394,6 +394,33 @@ const viewPatientAppointments = async (req, res) => {
   }
 };
 
+const uploadHealthRecord = async (req, res) =>{
+  try{
+  let id = req.body.id;
+  let healthRecord = req.body.base64;
+
+  const patient = await patientModel.findById(id);
+  patient.HealthRecords.push(healthRecord);
+  await patient.save();
+  res.status(200).json({ message: 'Health record added successfully'});
+  }catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+const getHealthRecords = async (req, res) =>{
+  try{
+  let id = req.query.id;
+  const patient = await patientModel.findById(id);
+  const healthRecords = patient.HealthRecords;
+  res.status(200).json( healthRecords );
+} catch (error) {
+  console.error(error);
+  res.status(500).json({ error: 'Internal server error' });
+}
+}
+
 
 module.exports = {
   createFamilyMember,
@@ -407,6 +434,9 @@ module.exports = {
   viewMyPrescriptions,
   selectPrescription,
   getDoctors,
+  viewPatientAppointments,   //new Req.45//
+  uploadHealthRecord,
+  getHealthRecords,
   viewMySubscribedHealthPackage,
   CancelSubscription,
   ViewMyWallet,
