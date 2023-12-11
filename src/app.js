@@ -15,7 +15,8 @@ const {
   viewPatient,
   createPrescription,
   exactPatients,
-  viewDoctorAppointments,  //new Req.45//
+  ViewDoctorWallet,
+  viewDoctorAppointments,
 } = require("./Routes/doctorController");
 const {
   createPatient,
@@ -32,6 +33,10 @@ const {
   viewPatientAppointments, //new Req.45//
   uploadHealthRecord,
   getHealthRecords,
+  viewMySubscribedHealthPackage,
+  CancelSubscription,
+  ViewMyWallet,
+  viewPatientAppointments,
 } = require("./Routes/patientController");
 const {
   addAdmin,
@@ -46,7 +51,7 @@ const {
   getHealthPackage ,
   getAllAdmins,
   getAllDoctors,
-  getAllPatients
+  getAllPatients,
 } = require("./Routes/adminController.js");
 
 const app = express();
@@ -93,11 +98,12 @@ app.get("/filterDoctorsSpecialityDate", filterDoctorsSpecialityDate);
 app.get("/viewMyPrescriptions",viewMyPrescriptions);
 app.get("/selectPrescription",selectPrescription);
 app.get("/allDoctors", getDoctors);
+app.get("/viewMySubscribedHealthPackage",viewMySubscribedHealthPackage);
+app.put("/CancelSubscription",CancelSubscription);
+app.get("/ViewMyWallet",ViewMyWallet)
 app.get("/viewPatientAppointments", viewPatientAppointments); //new Req.45//
 app.put("/uploadHealthRecord", uploadHealthRecord);
 app.get("/getHealthRecords", getHealthRecords);
-
-
 
 //Doctor
 app.get("/filterAppointmentsForDoctor", filterAppointmentsForDoctor);
@@ -110,4 +116,5 @@ app.get("/filterPatientsByAppointments", filterPatientsByAppointments);
 app.get("/viewPatient", viewPatient);
 app.get("/viewmypatientsbyname",exactPatients);
 app.post("/createPrescription",createPrescription);
-app.get("/viewDoctorAppointments", viewDoctorAppointments); //new Req.45//
+app.get("/ViewDoctorWallet",ViewDoctorWallet)
+app.get("/viewDoctorAppointments", viewDoctorAppointments);

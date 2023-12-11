@@ -53,6 +53,9 @@ const doctorSchema = new Schema(
     licensePDF: {
       type: String,
     },
+    wallet:{
+      type:Number
+    }
   },
   { timestamps: true }
 );

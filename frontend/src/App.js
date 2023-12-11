@@ -26,6 +26,9 @@ import DeletePatient from './pages/admin/DeletePatient';
 import DeleteAdmin from './pages/admin/DeleteAdmin';
 import DeleteDoctor from './pages/admin/DeleteDoctor';
 import UploadHealthRecords from './pages/patient/UploadHealthRecords';
+import ViewSubscribedHealthPackageAndCancel from './pages/patient/ViewSubscribedHealthPackageAndCancel';
+import ViewMyWallet from './pages/patient/ViewMyWallet';
+import ViewDoctorWallet from './pages/doctor/ViewDoctorWallet';
 
 function App() {
   return (
@@ -61,7 +64,9 @@ function App() {
             <Route path="/ViewMyPrescriptions" element={<ViewMyPrescriptions/>}/>
             <Route path="/SelectedPrescription" element={<SelectedPrescription/>}/>
             <Route path='/uploadHealthRecords' element={<UploadHealthRecords/>}/>
-
+            <Route path="/ViewSubscribedHealthPackageAndCancel" element={<ViewSubscribedHealthPackageAndCancel/>}/>
+            <Route path="/ViewMyWallet" element={<ViewMyWallet/>}/>
+            <Route path="/ViewDoctorWallet" element={<ViewDoctorWallet/>}/>
           </Routes>
         </div>
       </BrowserRouter>
