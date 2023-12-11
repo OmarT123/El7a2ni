@@ -51,7 +51,7 @@ const {
   getAllPatients,
   acceptDoctor,
   rejectDoctor,
-  getADoctor
+  getADoctor,
 } = require("./Routes/adminController.js");
 
 const app = express();

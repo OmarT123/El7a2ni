@@ -6,7 +6,7 @@ const DoctorApplication = () => {
     const [degree, setDegree] = useState(false);
     const [license, setLicense] = useState(false);
     const [Doctor, setDoctor] = useState(null);
-    const doctorId = "6575058298efaaa8a7ca6576";
+    const doctorId = "6574ba9399c7ac25ed46c98f";
 
     useEffect(() => {
         const getDoctor = async () => {

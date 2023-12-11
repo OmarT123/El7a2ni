@@ -46,21 +46,36 @@ const patientSchema = new Schema(
         ref: "FamilyMember",
       },
     ],
-    HealthRecords: [
-      { 
-        type: String,
-      }
-    ],
-    healthPackage: {
-      type: mongoose.Types.ObjectId,
-      ref: 'HealthPackage',
+    HealthRecords: {
+      type: [String],
+      default: [],
+    },
+    healthPackage:{
+      type: {
+        healthPackageID: {
+          type : mongoose.Schema.Types.ObjectId,
+          ref : 'HealthPackage',
+        },
+        status: String,
+        endDate: Date,
+      },
     },
     wallet:{
       type:Number
+    },
+    idPDF:{
+      type:String,
+    },
+    degreePDF: {
+      type: String,
+    },
+    licensePDF: {
+      type: String,
     }
+
   },
   { timestamps: true }
 );
 
 const Patient = mongoose.model("Patient", patientSchema);
-module.exports = Patient;
+module.exports = Patient;
