@@ -16,20 +16,6 @@ const createPrescription = async(req,res)=>{
   }
 }
 
-const createAppointment = async (req, res) => {
-  try {
-    let appointment = await appointmentModel.create({
-      patient: req.body.patient,
-      doctor: req.body.doctor,
-      date: req.body.date,
-      status: req.body.status,
-    });
-    await appointment.save();
-    res.send(appointment);
-  } catch (err) {
-    res.send(err.message);
-  }
-};
 
 const filterAppointmentsForDoctor = async (req, res) => {
   // Need login
@@ -94,10 +80,12 @@ const addDoctor = async (req, res) => {
     affiliation,
     educationalBackground,
     speciality,
+    idPDF,
+    degreePDF,
+    licensePDF
   } = req.body;
   try {
     const user = await userModel.findOne({username})
-    console.log(user)
     if (user)
     {
       res.json("Username already exists")
@@ -113,6 +101,9 @@ const addDoctor = async (req, res) => {
         affiliation,
         educationalBackground,
         speciality,
+        idPDF,
+        degreePDF,
+        licensePDF
       });
       await userModel.create({
         username, 
@@ -146,10 +137,15 @@ const editDoctor = async (req, res) => {
 const myPatients = async (req, res) => {
   try {
     let id = req.query.id;
+    
     let AllmyAppointments = await appointmentModel
       .find({ doctor: new mongoose.Types.ObjectId(id) })
       .populate({ path: "patient" });
-    let patients = AllmyAppointments.map((appointment) => appointment.patient);
+    
+    let patients = AllmyAppointments
+    .map((appointment) => appointment.patient !== null ? appointment.patient : undefined)
+    .filter(patient => patient !== undefined);
+    
     res.status(200).json(patients);
   } catch (err) {
     res.send(err.message);
@@ -191,11 +187,28 @@ const filterPatientsByAppointments = async (req, res) => {
       .find({ doctor: doctorID})
       .populate({path:"patient"}).exec();
     const patients = appointments
-      .filter((appointment) => appointment.status !== "canceled")
+      .filter((appointment) => appointment.status !== "canceled" && appointment.patient !== null)
       .map((appointment) => appointment.patient);
     res.json(patients);
   } catch (error) {
     res.status(400).json(error.message);
+  }
+};
+const ViewDoctorWallet = async (req, res) => {
+  try {
+    const DoctorId = req.query.id;
+    const Doctor = await doctorModel.findById(DoctorId).populate('wallet').exec();
+   
+    if (!Doctor) {
+      console.log('Doctor not found');
+      return;
+    }
+    const wallet = Doctor.wallet;
+    res.json(wallet);
+  }
+  catch (err) {
+    res.json(err.message);
+
   }
 };
 
@@ -230,6 +243,69 @@ const viewDoctorAppointments = async (req, res) => {
   }
 };
 
+const addHealthRecord = async (req, res) =>{
+  try{
+  let id = req.body.id;
+  let healthRecord = req.body.base64;
+
+  const patient = await patientModel.findById(id);
+  patient.HealthRecords.push(healthRecord);
+  await patient.save();
+  res.status(200).json({ message: 'Health record added successfully'});
+  }catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+
+
+const addAppointmentSlots = async (req,res) => {
+  const doctorID = req.query.id;
+  const doctor = await doctorModel.findById(doctorID);
+  
+  if(doctor.status === "approved")
+  {
+    const date = new Date(req.body.date);
+    const minTime = new Date(date.getTime()- 60 * 60 * 1000)
+    const maxTime = new Date(date.getTime() + 60 * 60 * 1000)
+    const existingAppointment = await appointmentModel.findOne({
+      doctor:doctor._id,
+      date: { $gt: minTime, $lt: maxTime },
+    });
+    if (existingAppointment)
+    {
+      res.json("There is already an appointment at this time")
+    }
+    else {
+      await appointmentModel.create({
+        doctor: doctor._id,
+        date,
+        status: 'free'
+      })
+      res.send("Appointment created successfully")
+    }
+  }
+  else
+    res.status(400).json("Please review your employment contract.")
+
+}
+
+
+const createAppointment = async (req, res) => {
+  try {
+    let appointment = await appointmentModel.create({
+      patient: req.body.patient,
+      doctor: req.body.doctor,
+      date: req.body.date,
+      status: req.body.status,
+    });
+    await appointment.save();
+    res.send(appointment);
+  } catch (err) {
+    res.send(err.message);
+  }
+};
 
 
 
@@ -243,5 +319,8 @@ module.exports = {
   viewPatient,
   createPrescription,
   exactPatients,
-  viewDoctorAppointments, //new Req.45//
+  addAppointmentSlots,
+  ViewDoctorWallet,
+  viewDoctorAppointments,
+  addHealthRecord
 };

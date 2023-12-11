@@ -15,7 +15,9 @@ const {
   viewPatient,
   createPrescription,
   exactPatients,
-  viewDoctorAppointments,  //new Req.45//
+  addAppointmentSlots,
+  ViewDoctorWallet,
+  viewDoctorAppointments,
 } = require("./Routes/doctorController");
 const {
   createPatient,
@@ -29,8 +31,21 @@ const {
   selectPrescription,
   selectDoctorFromFilterSearch,
   getDoctors,
-  viewPatientAppointments, //new Req.45//
-  linkFamilyMemberAccount  //new Req.19//
+  linkFamilyMemberAccount,
+  viewPatientAppointments,
+  payWithCard,
+  payWithWallet,
+  buyHealthPackage,
+  reserveAppointment,
+  sendCheckoutMail,
+  getHealthPackageForPatient,
+  viewFreeAppointments,
+  getAnAppointment,
+  uploadHealthRecord,
+  getHealthRecords,
+  viewMySubscribedHealthPackage,
+  CancelSubscription,
+  ViewMyWallet,
 } = require("./Routes/patientController");
 const {
   addAdmin,
@@ -45,11 +60,16 @@ const {
   getHealthPackage ,
   getAllAdmins,
   getAllDoctors,
-  getAllPatients
+  getAllPatients,
+  acceptDoctor,
+  rejectDoctor,
+  getADoctor,
 } = require("./Routes/adminController.js");
 
 const app = express();
 const port = process.env.PORT || "8000";
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 mongoose
   .connect(MongoURI)
@@ -77,6 +97,9 @@ app.get("/getHealthPackage",getHealthPackage)
 app.get("/getAllAdmins",getAllAdmins);
 app.get("/getAllDoctors",getAllDoctors);
 app.get("/getAllPatients",getAllPatients);
+app.put("/acceptDoctor",acceptDoctor);
+app.put("/rejectDoctor",rejectDoctor);
+app.get("/getADoctor", getADoctor);
 
 //Patient
 app.post("/addPatient", createPatient);
@@ -90,12 +113,22 @@ app.get("/filterDoctorsSpecialityDate", filterDoctorsSpecialityDate);
 app.get("/viewMyPrescriptions",viewMyPrescriptions);
 app.get("/selectPrescription",selectPrescription);
 app.get("/allDoctors", getDoctors);
-app.get("/viewPatientAppointments", viewPatientAppointments); //new Req.45//
-app.post("/linkFamilyMember", linkFamilyMemberAccount); //new Req.19//
-
-
-
-
+app.get("/viewPatientAppointments", viewPatientAppointments);
+app.post("/linkFamilyMember", linkFamilyMemberAccount);
+app.get("/viewMySubscribedHealthPackage",viewMySubscribedHealthPackage);
+app.put("/CancelSubscription",CancelSubscription);
+app.get("/ViewMyWallet",ViewMyWallet)
+app.get("/viewPatientAppointments", viewPatientAppointments);
+app.get("/payWithCard", payWithCard)
+app.get("/payWithWallet", payWithWallet)
+app.put("/buyHealthPackage", buyHealthPackage)
+app.put("/reserveAppointment", reserveAppointment)
+app.get("/sendCheckoutMail", sendCheckoutMail)
+app.get("/getHealthPackageForPatient", getHealthPackageForPatient)
+app.get("/viewFreeAppointments", viewFreeAppointments)
+app.get("/getAnAppointment", getAnAppointment)
+app.put("/uploadHealthRecord", uploadHealthRecord);
+app.get("/getHealthRecords", getHealthRecords);
 //Doctor
 app.get("/filterAppointmentsForDoctor", filterAppointmentsForDoctor);
 app.post("/addAppointment", createAppointment);
@@ -107,4 +140,6 @@ app.get("/filterPatientsByAppointments", filterPatientsByAppointments);
 app.get("/viewPatient", viewPatient);
 app.get("/viewmypatientsbyname",exactPatients);
 app.post("/createPrescription",createPrescription);
-app.get("/viewDoctorAppointments", viewDoctorAppointments); //new Req.45//
+app.get("/viewDoctorAppointments", viewDoctorAppointments); 
+app.post("/addAppointmentSlots", addAppointmentSlots);
+app.get("/ViewDoctorWallet",ViewDoctorWallet)
