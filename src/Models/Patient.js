@@ -60,12 +60,23 @@ const patientSchema = new Schema(
         endDate: Date,
       },
     },
-    wallet:{
-      type:Number
+    idPDF:{
+      type:String,
+    },
+    degreePDF: {
+      type: String,
+    },
+    licensePDF: {
+      type: String,
     }
+    wallet: {
+      type: Number,
+      default: 0
+ }
+
   },
   { timestamps: true }
 );
 
 const Patient = mongoose.model("Patient", patientSchema);
-module.exports = Patient;
+module.exports = Patient;

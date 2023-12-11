@@ -3,6 +3,7 @@ const patientModel = require("../Models/Patient.js");
 const adminModel = require("../Models/Admin.js");
 const healthPackageModel = require("../Models/HealthPackage.js");
 const userModel = require("../Models/User.js")
+const nodemailer = require("nodemailer")
 
 
 const addAdmin = async (req, res) => {
@@ -33,13 +34,23 @@ const addAdmin = async (req, res) => {
 const viewDocInfo = async (req, res) => {
   try {
     const doctors = doctorModel
-      .find({ pendingApproval: true })
+      .find({ status: "pending" })
       .populate()
       .then((doctors) => res.json(doctors));
   } catch (err) {
     res.json({ message: err.message });
   }
 };
+
+const getADoctor = async (req,res) => {
+  const doctorId = req.query.id
+  try {
+    const doctor = await doctorModel.findById(doctorId)
+    // console.log(doctor)
+    res.json(doctor)
+  }catch(err)
+    {res.json(err.message)}
+}
 
 const addHealthPackage = async (req, res) => {
   let { name, price, doctorDiscount, medicineDiscount, familyDiscount } =
@@ -169,6 +180,88 @@ const getAllAdmins = async (req,res) => {
   }
 }
 
+const acceptDoctor = async (req, res) => {
+  const { doctorId } = req.query;
+
+  try {
+    const doctor = await doctorModel.findByIdAndUpdate(doctorId,{status: "approved"});
+
+    if (!doctor) {
+      return res.json({ message: 'doctor not found' });
+    }
+
+    // console.log(doctor)
+    // doctor.status = "approved";
+
+    sendMail(doctor, "Application Accepted, please log in to view your contract")
+
+    // await doctor.save();
+
+    return res.status(200).json({
+      message: 'doctor request accepted successfully',
+      doctor,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+
+const rejectDoctor = async (req, res) => {
+  const { doctorId } = req.query;
+
+  try {
+    const doctor = await doctorModel.findById(doctorId);
+
+    if (!doctor) {
+      return res.json({ message: 'doctor not found' });
+    }
+
+
+    doctor.status = "rejected";
+
+    sendMail(doctor, "Application Rejected")
+
+    await doctor.save();
+
+    return res.status(200).json({
+      message: 'doctor request rejected successfully',
+      doctor,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+
+
+const sendMail = async (doctor, message) => {
+
+  const transporter = nodemailer.createTransport({
+    service: process.env.NODEMAILER_SERVICE,
+    auth: {
+      user: process.env.NODEMAILER_EMAIL,
+      pass: process.env.NODEMAILER_PASSWORD,
+    },
+  });
+  const mailOptions = {
+    from: process.env.NODEMAILER_EMAIL,
+    to: doctor.email,
+    subject: 'Appliation',
+    text: message,
+  };
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    // console.log('done')
+  } catch (error) {
+    console.log(error.message)
+  }
+}
+
+
+
 
 
 module.exports = {
@@ -184,5 +277,8 @@ module.exports = {
   getHealthPackage,
   getAllPatients,
   getAllAdmins,
-  getAllDoctors
+  getAllDoctors,
+  acceptDoctor,
+  rejectDoctor,
+  getADoctor,
 };

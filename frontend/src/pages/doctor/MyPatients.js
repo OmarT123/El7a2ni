@@ -28,8 +28,7 @@ const MyPatients = () => {
     const getPatients =  async () => {
          await axios.get('/viewmypatients?id='+id).then(
         (res) => { 
-            setPatients(res.data)
-
+            setPatients(res.data);
         }
          );
     }
@@ -58,4 +57,4 @@ const MyPatients = () => {
 );
 
         }
-export default MyPatients
+export default MyPatients
