@@ -17,20 +17,6 @@ const createPrescription = async(req,res)=>{
   }
 }
 
-const createAppointment = async (req, res) => {
-  try {
-    let appointment = await appointmentModel.create({
-      patient: req.body.patient,
-      doctor: req.body.doctor,
-      date: req.body.date,
-      status: req.body.status,
-    });
-    await appointment.save();
-    res.send(appointment);
-  } catch (err) {
-    res.send(err.message);
-  }
-};
 
 const filterAppointmentsForDoctor = async (req, res) => {
   // Need login
@@ -97,7 +83,10 @@ const addDoctor = async (req, res) => {
     hourlyRate,
     affiliation,
     educationalBackground,
-    speciality
+    speciality,
+    idPDF,
+    degreePDF,
+    licensePDF
   } = req.body;
   try {
     if (!username || !password || !name || !birthDate || !hourlyRate || !affiliation || !educationalBackground || !speciality || !email) {
@@ -106,7 +95,6 @@ const addDoctor = async (req, res) => {
 
 
     const user = await userModel.findOne({username})
-    console.log(user)
     if (user)
     {
       res.json("Username already exists")
@@ -133,6 +121,9 @@ const addDoctor = async (req, res) => {
         affiliation,
         educationalBackground,
         speciality,
+        idPDF,
+        degreePDF,
+        licensePDF
       });
       await doctor.save();
       const userC = await userModel.create({
@@ -172,7 +163,11 @@ const myPatients = async (req, res) => {
     let AllmyAppointments = await appointmentModel
       .find({ doctor: id })
       .populate({ path: "patient" });
-    let patients = AllmyAppointments.map((appointment) => appointment.patient);
+    
+    let patients = AllmyAppointments
+    .map((appointment) => appointment.patient !== null ? appointment.patient : undefined)
+    .filter(patient => patient !== undefined);
+    
     res.status(200).json(patients);
   } catch (err) {
     res.send(err.message);
@@ -216,13 +211,127 @@ const filterPatientsByAppointments = async (req, res) => {
       .find({ doctor: doctorID})
       .populate({path:"patient"}).exec();
     const patients = appointments
-      .filter((appointment) => appointment.status !== "canceled")
+      .filter((appointment) => appointment.status !== "canceled" && appointment.patient !== null)
       .map((appointment) => appointment.patient);
     res.json(patients);
   } catch (error) {
     res.status(400).json(error.message);
   }
 };
+const ViewDoctorWallet = async (req, res) => {
+  try {
+    const DoctorId = req.query.id;
+    const Doctor = await doctorModel.findById(DoctorId).populate('wallet').exec();
+   
+    if (!Doctor) {
+      console.log('Doctor not found');
+      return;
+    }
+    const wallet = Doctor.wallet;
+    res.json(wallet);
+  }
+  catch (err) {
+    res.json(err.message);
+
+  }
+};
+
+//new Req.45//
+const viewDoctorAppointments = async (req, res) => {
+  try {
+    const doctorID = req.query.id;
+    const currentDate = new Date();
+
+    const upcomingAppointments = await appointmentModel
+      .find({
+        doctor: doctorID,
+        date: { $gte: currentDate },
+      })
+      .populate({ path: "patient" });
+
+    const pastAppointments = await appointmentModel
+      .find({
+        doctor: doctorID,
+        date: { $lt: currentDate },
+      })
+      .populate({ path: "patient" });
+
+    const appointmentData = {
+      upcomingAppointments,
+      pastAppointments,
+    };
+
+    res.status(200).json(appointmentData);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+const addHealthRecord = async (req, res) =>{
+  try{
+  let id = req.body.id;
+  let healthRecord = req.body.base64;
+
+  const patient = await patientModel.findById(id);
+  patient.HealthRecords.push(healthRecord);
+  await patient.save();
+  res.status(200).json({ message: 'Health record added successfully'});
+  }catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+
+
+const addAppointmentSlots = async (req,res) => {
+  const doctorID = req.query.id;
+  const doctor = await doctorModel.findById(doctorID);
+  
+  if(doctor.status === "approved")
+  {
+    const date = new Date(req.body.date);
+    const minTime = new Date(date.getTime()- 60 * 60 * 1000)
+    const maxTime = new Date(date.getTime() + 60 * 60 * 1000)
+    const existingAppointment = await appointmentModel.findOne({
+      doctor:doctor._id,
+      date: { $gt: minTime, $lt: maxTime },
+    });
+    if (existingAppointment)
+    {
+      res.json("There is already an appointment at this time")
+    }
+    else {
+      await appointmentModel.create({
+        doctor: doctor._id,
+        date,
+        status: 'free'
+      })
+      res.send("Appointment created successfully")
+    }
+  }
+  else
+    res.status(400).json("Please review your employment contract.")
+
+}
+
+
+const createAppointment = async (req, res) => {
+  try {
+    let appointment = await appointmentModel.create({
+      patient: req.body.patient,
+      doctor: req.body.doctor,
+      date: req.body.date,
+      status: req.body.status,
+    });
+    await appointment.save();
+    res.send(appointment);
+  } catch (err) {
+    res.send(err.message);
+  }
+};
+
+
 
 module.exports = {
   addDoctor,
@@ -233,5 +342,9 @@ module.exports = {
   filterPatientsByAppointments,
   viewPatient,
   createPrescription,
-  exactPatients
+  exactPatients,
+  addAppointmentSlots,
+  ViewDoctorWallet,
+  viewDoctorAppointments,
+  addHealthRecord
 };

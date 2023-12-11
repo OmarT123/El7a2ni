@@ -24,8 +24,7 @@ const MyPatients = ({user}) => {
     const getPatients =  async () => {
          await axios.get('/viewmypatients').then(
         (res) => { 
-            setPatients(res.data)
-
+            setPatients(res.data);
         }
          );
     }

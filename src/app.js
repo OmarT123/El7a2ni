@@ -16,6 +16,9 @@ const {
   viewPatient,
   createPrescription,
   exactPatients,
+  addAppointmentSlots,
+  ViewDoctorWallet,
+  viewDoctorAppointments,
 } = require("./Routes/doctorController");
 const {
   addPatient,
@@ -28,7 +31,22 @@ const {
   viewMyPrescriptions,
   selectPrescription,
   selectDoctorFromFilterSearch,
-  getDoctors
+  getDoctors,
+  linkFamilyMemberAccount,
+  viewPatientAppointments,
+  payWithCard,
+  payWithWallet,
+  buyHealthPackage,
+  reserveAppointment,
+  sendCheckoutMail,
+  getHealthPackageForPatient,
+  viewFreeAppointments,
+  getAnAppointment,
+  uploadHealthRecord,
+  getHealthRecords,
+  viewMySubscribedHealthPackage,
+  CancelSubscription,
+  ViewMyWallet,
 } = require("./Routes/patientController");
 const {
   addAdmin,
@@ -43,7 +61,10 @@ const {
   getHealthPackage ,
   getAllAdmins,
   getAllDoctors,
-  getAllPatients
+  getAllPatients,
+  acceptDoctor,
+  rejectDoctor,
+  getADoctor,
 } = require("./Routes/adminController.js");
 
 
@@ -52,6 +73,8 @@ const{ login, logout ,changePassword ,getUserFromTokenMiddleware ,resetPassword,
 
 const app = express();
 const port = process.env.PORT || "8000";
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 mongoose
   .connect(MongoURI)
@@ -80,6 +103,9 @@ app.get("/getHealthPackage",getUserFromTokenMiddleware,getHealthPackage)
 app.get("/getAllAdmins",getUserFromTokenMiddleware,getAllAdmins);
 app.get("/getAllDoctors",getUserFromTokenMiddleware,getAllDoctors);
 app.get("/getAllPatients",getUserFromTokenMiddleware,getAllPatients);
+app.put("/acceptDoctor",acceptDoctor);
+app.put("/rejectDoctor",rejectDoctor);
+app.get("/getADoctor", getADoctor);
 
 //Patient
 app.post("/addPatient", addPatient);
@@ -92,9 +118,23 @@ app.get("/filterPrescriptionByDateDoctorStatus",getUserFromTokenMiddleware,filte
 app.get("/filterDoctorsSpecialityDate", getUserFromTokenMiddleware,filterDoctorsSpecialityDate);
 app.get("/viewMyPrescriptions",getUserFromTokenMiddleware,viewMyPrescriptions);
 app.get("/selectPrescription",getUserFromTokenMiddleware,selectPrescription);
-app.get("/allDoctors",getUserFromTokenMiddleware, getDoctors)
-
-
+app.get("/allDoctors",getUserFromTokenMiddleware, getDoctors);
+app.get("/viewPatientAppointments", viewPatientAppointments);
+app.post("/linkFamilyMember", linkFamilyMemberAccount);
+app.get("/viewMySubscribedHealthPackage",viewMySubscribedHealthPackage);
+app.put("/CancelSubscription",CancelSubscription);
+app.get("/ViewMyWallet",ViewMyWallet)
+app.get("/viewPatientAppointments", viewPatientAppointments);
+app.get("/payWithCard", payWithCard)
+app.get("/payWithWallet", payWithWallet)
+app.put("/buyHealthPackage", buyHealthPackage)
+app.put("/reserveAppointment", reserveAppointment)
+app.get("/sendCheckoutMail", sendCheckoutMail)
+app.get("/getHealthPackageForPatient", getHealthPackageForPatient)
+app.get("/viewFreeAppointments", viewFreeAppointments)
+app.get("/getAnAppointment", getAnAppointment)
+app.put("/uploadHealthRecord", uploadHealthRecord);
+app.get("/getHealthRecords", getHealthRecords);
 //Doctor
 app.get("/filterAppointmentsForDoctor",getUserFromTokenMiddleware ,filterAppointmentsForDoctor);
 app.post("/addAppointment",getUserFromTokenMiddleware,createAppointment);
@@ -106,7 +146,9 @@ app.get("/filterPatientsByAppointments",getUserFromTokenMiddleware, filterPatien
 app.get("/viewPatient", getUserFromTokenMiddleware,viewPatient);
 app.get("/viewmypatientsbyname",getUserFromTokenMiddleware,exactPatients);
 app.post("/createPrescription",getUserFromTokenMiddleware,createPrescription);
-
+app.get("/viewDoctorAppointments", viewDoctorAppointments); 
+app.post("/addAppointmentSlots", addAppointmentSlots);
+app.get("/ViewDoctorWallet",ViewDoctorWallet)
 
 //user 
 
