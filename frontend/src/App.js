@@ -3,10 +3,10 @@ import {BrowserRouter, Routes, Route} from 'react-router-dom'
 
 import Home from './pages/Home'
 import NavBar from './components/NavBar'
-import UnapprovedDoctors from './pages/admin/unApprovedDoctors';
-import HealthPackage from './pages/HealthPackage';
+import UnApprovedDoctors from './pages/admin/unApprovedDoctors';
+import HealthPackage from './pages/admin/HealthPackage';
 import ViewHealthPackages from './pages/patient/ViewHealthPackages';
-import HealthPackageInfo from './pages/HealthPackageInfo';
+import HealthPackageInfo from './pages/admin/HealthPackageInfo';
 import FamilyMembers from './pages/patient/FamilyMembers'
 import DoctoreditForm from './components/doctor/DoctoreditForm';
 import ViewMyPrescriptions from './pages/patient/ViewMyPrescriptions';
@@ -15,8 +15,8 @@ import MyPatients from './pages/doctor/MyPatients';
 import SearchDoctor from './pages/patient/SearchDoctor'
 import RegisterPatient from './pages/patient/RegisterPatient'
 import RegisterDoctor from './pages/doctor/RegisterDoctor'
-import Patient from './pages/patient/Patient'
-import Doctor from './pages/doctor/Doctor'
+import Patient from './components/Patient'
+import Doctor from './pages/patient/Doctor'
 import AddAppointmentSlots from './pages/doctor/AddAppointmentSlots'
 import FilterAppointmentsForDoctor from './pages/doctor/FilterAppointmentsForDoctor';
 import FilterAppointmentsForPatient from './pages/patient/FilterAppointmentsForPatient';

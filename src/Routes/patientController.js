@@ -10,20 +10,6 @@ const mongoose = require("mongoose");
 const stripe = require("stripe")(process.env.STRIPE_PRIVATE_KEY)
 const nodemailer = require('nodemailer');
 const HealthPackageModel = require("../Models/HealthPackage.js");
-
-
-const createPatient = async (req, res) => {
-  const {
-    username,
-    name,
-    email,
-    password,
-    birthDate,
-    gender,
-    mobileNumber,
-    emergencyContact
-  } = req.body;
-  try {
 const bcrypt = require('bcrypt');
 
 
@@ -686,8 +672,7 @@ module.exports = {
   viewMyPrescriptions,
   selectPrescription,
   getDoctors,
-  linkFamilyMemberAccount
-  viewPatientAppointments,
+  linkFamilyMemberAccount,
   payWithCard,
   payWithWallet,
   buyHealthPackage,
