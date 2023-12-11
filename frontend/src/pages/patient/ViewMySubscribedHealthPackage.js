@@ -1,11 +1,13 @@
 import axios from 'axios'
 import {useState , useEffect} from 'react'
+import { Navigate, useNavigate  } from 'react-router-dom';
 
 
 const ViewMySubscribedHealthPackage = () => {
 
     const [HealthPackage, setHealthPackage] = useState(null);
-    const id = "657497dcb59b327adbc4229b"
+    const id = "6575badad728c698d3d1d93d"
+    const navigate = useNavigate ();
 
   useEffect(() => {
     const fetchHealthPackage= async () => {
@@ -13,7 +15,6 @@ const ViewMySubscribedHealthPackage = () => {
         await axios.get("/viewMySubscribedHealthPackage?id="+id)
         .then((res)=>{
             setHealthPackage(res.data)
-            console.log(res.data)
         }).catch((err)=>console.log(err))
     
 
@@ -36,10 +37,17 @@ const ViewMySubscribedHealthPackage = () => {
           <p>Family Discount: {HealthPackage.familyDiscount}</p>
           <p>Doctor Discount: {HealthPackage.doctorDiscount}</p>
           <p>Medicine Discount: {HealthPackage.medicineDiscount}</p>
+          <p>Status: {HealthPackage.status}</p>
+          <p>End Date: {new Date(HealthPackage.endDate).toLocaleString().substring(0, 9)}</p>
           {/* Add more details as needed */}
         </div>
       ) : (
-        <p>not subscribed to any health package</p>
+        <div>
+          <p>Not subscribed to any health package</p>
+          <button onClick={() => navigate('/ViewHealthPackages')}>
+            View Available Health Packages
+          </button>
+        </div>
       )}
     </div>
   );

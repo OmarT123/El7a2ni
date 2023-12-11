@@ -299,13 +299,26 @@ const viewMySubscribedHealthPackage = async (req, res) => {
   try {
     const patientId = req.query.id;
     const patient = await patientModel.findById(patientId).populate('healthPackage').exec();
-   
+    
     if (!patient) {
       console.log('Patient not found');
       return;
     }
-    const healthPackage = patient.healthPackage;
-    res.json(healthPackage);
+    const healthPackagePatient = patient.healthPackage;
+    if(healthPackagePatient== undefined)
+      res.json();
+    else{
+    const status = healthPackagePatient.status;
+    const endDate = healthPackagePatient.endDate;
+    const healthPackage = await HealthPackageModel.findById(healthPackagePatient.healthPackageID);
+    const extendedHealthPackage = {
+    ...healthPackage.toObject(),        // Spread properties from healthPackage
+    status: status,
+    endDate: endDate,
+    };
+    //console.log(extendedHealthPackage);
+    res.json(extendedHealthPackage);
+  }
   }
   catch (err) {
     res.json(err.message);
@@ -322,7 +335,7 @@ try{
   if (!patient) {
     return res.status(404).json({ message: 'Patient not found' });
   }
-  patient.healthPackage = null;
+  patient.healthPackage.status = "cancelled";
   await patient.save();
 
   res.json({ message: 'Subscription canceled successfully' });
