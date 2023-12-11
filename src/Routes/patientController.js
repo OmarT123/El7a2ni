@@ -291,6 +291,26 @@ catch(error){
   res.status(400).json({error:error.message})
 }
 }
+const rescheduleAppointment = async (req, res) => {
+  const { patientId, rescheduleDate } = req.body;
+
+  try {
+    // Create a new appointment with the given date
+    const newAppointment = new appointmentModel({
+      patient: patientId,
+      date: new Date(rescheduleDate),
+      status: 'upcoming',
+    });
+
+    await newAppointment.save();
+
+    res.status(201).json({ message: 'New appointment created successfully.' });
+  } catch (error) {
+    console.error('Error creating new appointment:', error.message);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
 
 module.exports = {
   createFamilyMember,
@@ -303,5 +323,6 @@ module.exports = {
   selectDoctorFromFilterSearch,
   viewMyPrescriptions,
   selectPrescription,
-  getDoctors
+  getDoctors,
+  rescheduleAppointment
 };

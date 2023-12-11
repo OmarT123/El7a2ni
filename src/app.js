@@ -27,7 +27,8 @@ const {
   viewMyPrescriptions,
   selectPrescription,
   selectDoctorFromFilterSearch,
-  getDoctors
+  getDoctors,
+  rescheduleAppointment
 } = require("./Routes/patientController");
 const {
   addAdmin,
@@ -86,7 +87,9 @@ app.get("/filterPrescriptionByDateDoctorStatus",filterPrescriptionByDateDoctorSt
 app.get("/filterDoctorsSpecialityDate", filterDoctorsSpecialityDate);
 app.get("/viewMyPrescriptions",viewMyPrescriptions);
 app.get("/selectPrescription",selectPrescription);
-app.get("/allDoctors", getDoctors)
+app.get("/allDoctors", getDoctors),
+app.get('/rescheduleAppointment',rescheduleAppointment );
+
 
 
 //Doctor

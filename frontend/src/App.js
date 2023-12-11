@@ -36,7 +36,7 @@ function App() {
             <Route path="/viewDocInfo" element={<UnapprovedDoctors />} />
             <Route path='/FamilyMembers' element={<FamilyMembers/>}/>
             <Route path="/editDoctor" element={<DoctoreditForm/>}/>
-            <Route path="/viewmypatients" element={<MyPatients/>}/>
+            <Route path="/ViewMyPatients" element={<MyPatients/>}/>
             <Route path='/FilterAppointmentsForPatient' element={<FilterAppointmentsForPatient/>}/>
             <Route path='/FilterAppointmentsForDoctor' element={<FilterAppointmentsForDoctor/>}/>
             <Route path='/AddAdmin' element={<AddAdmin/>}/>
