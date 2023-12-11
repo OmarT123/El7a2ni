@@ -22,7 +22,8 @@ const CheckoutAppointment = () => {
     const payWithCard = async () => {
         const body = {}
         body['url']='SuccessfulCheckoutAppointment'
-        body['item']={name:appointment.appointment.name, price:appointment.price}
+        // console.log(appointment)
+        body['item']={name:"Appointment", price:appointment.price}
         body['type'] = 'appointment'
 
         if (selectedFamilyMember === '')

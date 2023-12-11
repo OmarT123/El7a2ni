@@ -248,8 +248,8 @@ const filterDoctorsSpecialityDate = async(req,res)=>{
         let found = false;
         for (let j = 0; j < busyDoctorsMapped.length;j++)
         {
-          console.log(doctors[i].username)
-          console.log(busyDoctorsMapped[j].username)
+          // console.log(doctors[i].username)
+          // console.log(busyDoctorsMapped[j].username)
           if (doctors[i].username === busyDoctorsMapped[j].username)
           { 
             found = true;
@@ -324,17 +324,18 @@ const viewPatientAppointments = async (req, res) => {
 
 const payWithCard = async (req, res) => {
   const patientId = "65763bc6b8ee85160043f31a";
-  const patient = await patientModel.findById(patientId).populate({path: "healthPackage.healthPackageId"})
+  const patient = await patientModel.findById(patientId)
   const url = req.query.url
   const item = req.query.item;
+  // console.log(req.query)
   const type = req.query.type
   const price = item.price
-  if (patient.healthPackage && type === 'appointment')
-  {
-      const healthPackageId = patient.healthPackage.healthPackageID
-      const healthPackage = await healthPackageModel.findById(healthPackageId)
-      price *= (1 - (healthPackage.doctorDiscount)/100)
-  }
+  // if (patient.healthPackage && type === 'appointment')
+  // {
+  //     const healthPackageId = patient.healthPackage.healthPackageID
+  //     const healthPackage = await healthPackageModel.findById(healthPackageId)
+  //     price *= (1 - (healthPackage.doctorDiscount)/100)
+  // }
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ['card'],
     mode: 'payment',
@@ -476,7 +477,7 @@ const getAnAppointment = async (req, res) => {
     {
       const healthPackageId = patient.healthPackage.healthPackageID
       const healthPackage = await healthPackageModel.findById(healthPackageId)
-      console.log(healthPackage)
+      // console.log(healthPackage)
       price *= (1 - (healthPackage.doctorDiscount)/100)
     }
 
