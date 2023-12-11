@@ -304,6 +304,9 @@ const viewMySubscribedHealthPackage = async (req, res) => {
       console.log('Patient not found');
       return;
     }
+
+    const extendedHealthPackages = [];
+
     const healthPackagePatient = patient.healthPackage;
     if(healthPackagePatient== undefined)
       res.json();
@@ -312,13 +315,36 @@ const viewMySubscribedHealthPackage = async (req, res) => {
     const endDate = healthPackagePatient.endDate;
     const healthPackage = await HealthPackageModel.findById(healthPackagePatient.healthPackageID);
     const extendedHealthPackage = {
-    ...healthPackage.toObject(),        // Spread properties from healthPackage
+    ...healthPackage.toObject(),
+    patientName: patient.name,
     status: status,
     endDate: endDate,
     };
-    //console.log(extendedHealthPackage);
-    res.json(extendedHealthPackage);
-  }
+    extendedHealthPackages.push(extendedHealthPackage);
+    }
+
+    // Process family members' health packages
+    for (const familyMemberId of patient.familyMembers) {
+      const familyMember = await familyModel.findById(familyMemberId).populate('healthPackage').exec();
+
+      if (familyMember) {
+        const healthPackageFamilyMember = familyMember.healthPackage;
+        if (healthPackageFamilyMember != undefined) {
+          const status = healthPackageFamilyMember.status;
+          const endDate = healthPackageFamilyMember.endDate;
+          const healthPackage = await HealthPackageModel.findById(healthPackageFamilyMember.healthPackageID);
+          const extendedHealthPackage = {
+            ...healthPackage.toObject(),
+            patientName: familyMember.name,
+            status: status,
+            endDate: endDate,
+          };
+          extendedHealthPackages.push(extendedHealthPackage);
+        }
+      }
+    }
+
+    res.json(extendedHealthPackages);
   }
   catch (err) {
     res.json(err.message);
@@ -665,7 +691,7 @@ module.exports = {
   viewMyPrescriptions,
   selectPrescription,
   getDoctors,
-  linkFamilyMemberAccount
+  linkFamilyMemberAccount,
   viewPatientAppointments,
   payWithCard,
   payWithWallet,
@@ -680,5 +706,4 @@ module.exports = {
   viewMySubscribedHealthPackage,
   CancelSubscription,
   ViewMyWallet,
-  viewPatientAppointments
 };
