@@ -131,3 +131,5 @@ dist
 
 .package.json
 .package-lock.js
+frontend/package-lock.json
+frontend/package.json
