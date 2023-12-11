@@ -30,6 +30,9 @@ const {
   selectPrescription,
   selectDoctorFromFilterSearch,
   getDoctors,
+  viewPatientAppointments, //new Req.45//
+  uploadHealthRecord,
+  getHealthRecords,
   viewMySubscribedHealthPackage,
   CancelSubscription,
   ViewMyWallet,
@@ -53,6 +56,8 @@ const {
 
 const app = express();
 const port = process.env.PORT || "8000";
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 mongoose
   .connect(MongoURI)
@@ -97,7 +102,8 @@ app.get("/viewMySubscribedHealthPackage",viewMySubscribedHealthPackage);
 app.put("/CancelSubscription",CancelSubscription);
 app.get("/ViewMyWallet",ViewMyWallet)
 app.get("/viewPatientAppointments", viewPatientAppointments); //new Req.45//
-
+app.put("/uploadHealthRecord", uploadHealthRecord);
+app.get("/getHealthRecords", getHealthRecords);
 
 //Doctor
 app.get("/filterAppointmentsForDoctor", filterAppointmentsForDoctor);
