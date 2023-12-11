@@ -191,7 +191,7 @@ const filterPatientsByAppointments = async (req, res) => {
       .find({ doctor: doctorID})
       .populate({path:"patient"}).exec();
     const patients = appointments
-      .filter((appointment) => appointment.status !== "canceled")
+      .filter((appointment) => appointment.status !== "canceled" && appointment.patient !== null)
       .map((appointment) => appointment.patient);
     res.json(patients);
   } catch (error) {
@@ -247,6 +247,20 @@ const viewDoctorAppointments = async (req, res) => {
   }
 };
 
+const addHealthRecord = async (req, res) =>{
+  try{
+  let id = req.body.id;
+  let healthRecord = req.body.base64;
+
+  const patient = await patientModel.findById(id);
+  patient.HealthRecords.push(healthRecord);
+  await patient.save();
+  res.status(200).json({ message: 'Health record added successfully'});
+  }catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
 
 
 
@@ -260,6 +274,7 @@ module.exports = {
   viewPatient,
   createPrescription,
   exactPatients,
-  ViewDoctorWallet
+  ViewDoctorWallet,
   viewDoctorAppointments,
+  addHealthRecord,
 };

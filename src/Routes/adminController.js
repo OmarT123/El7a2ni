@@ -41,6 +41,16 @@ const viewDocInfo = async (req, res) => {
   }
 };
 
+const getADoctor = async (req,res) => {
+  const doctorId = req.query.id
+  try {
+    const doctor = await doctorModel.findById(doctorId)
+    // console.log(doctor)
+    res.json(doctor)
+  }catch(err)
+    {res.json(err.message)}
+}
+
 const addHealthPackage = async (req, res) => {
   let { name, price, doctorDiscount, medicineDiscount, familyDiscount } =
     req.body;
@@ -169,6 +179,65 @@ const getAllAdmins = async (req,res) => {
   }
 }
 
+const acceptDoctor = async (req, res) => {
+  const { doctorId } = req.query;
+
+  try {
+    const doctor = await doctorModel.findById(doctorId);
+
+    if (!doctor) {
+      return res.json({ message: 'doctor not found' });
+    }
+
+
+    doctor.status = "approved";
+
+
+    await doctor.save();
+
+    return res.status(200).json({
+      message: 'doctor request accepted successfully',
+      doctor,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+
+const rejectDoctor = async (req, res) => {
+  const { doctorId } = req.query;
+
+  try {
+    const doctor = await doctorModel.findById(doctorId);
+
+    if (!doctor) {
+      return res.json({ message: 'doctor not found' });
+    }
+
+
+    doctor.status = "rejected";
+
+
+    await doctor.save();
+
+    return res.status(200).json({
+      message: 'doctor request rejected successfully',
+      doctor,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+
+
+
+
+
+
 
 
 module.exports = {
@@ -184,5 +253,8 @@ module.exports = {
   getHealthPackage,
   getAllPatients,
   getAllAdmins,
-  getAllDoctors
+  getAllDoctors,
+  acceptDoctor,
+  rejectDoctor,
+  getADoctor
 };

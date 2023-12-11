@@ -46,6 +46,22 @@ const doctorSchema = new Schema(
     },
     wallet:{
       type:Number
+    },
+    status:{
+      type: String,
+      default:"pending"
+    },
+    idPDF: {
+      type: String,
+      required: true,
+    },
+    licensePDF: {
+      type: String,
+      required: true,
+    },
+    degreePDF: {
+      type: String,
+      required: true,
     }
   },
   { timestamps: true }

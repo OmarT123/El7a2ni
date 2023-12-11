@@ -49,6 +49,9 @@ const {
   getAllAdmins,
   getAllDoctors,
   getAllPatients,
+  acceptDoctor,
+  rejectDoctor,
+  getADoctor
 } = require("./Routes/adminController.js");
 
 const app = express();
@@ -80,6 +83,9 @@ app.get("/getHealthPackage",getHealthPackage)
 app.get("/getAllAdmins",getAllAdmins);
 app.get("/getAllDoctors",getAllDoctors);
 app.get("/getAllPatients",getAllPatients);
+app.put("/acceptDoctor",acceptDoctor);
+app.put("/rejectDoctor",rejectDoctor);
+app.get("/getADoctor", getADoctor);
 
 //Patient
 app.post("/addPatient", createPatient);
@@ -95,9 +101,8 @@ app.get("/selectPrescription",selectPrescription);
 app.get("/allDoctors", getDoctors);
 app.get("/viewMySubscribedHealthPackage",viewMySubscribedHealthPackage);
 app.put("/CancelSubscription",CancelSubscription);
-app.get("/ViewMyWallet",ViewMyWallet)
+app.get("/ViewMyWallet",ViewMyWallet);
 app.get("/viewPatientAppointments", viewPatientAppointments); //new Req.45//
-
 
 //Doctor
 app.get("/filterAppointmentsForDoctor", filterAppointmentsForDoctor);
@@ -110,5 +115,5 @@ app.get("/filterPatientsByAppointments", filterPatientsByAppointments);
 app.get("/viewPatient", viewPatient);
 app.get("/viewmypatientsbyname",exactPatients);
 app.post("/createPrescription",createPrescription);
-app.get("/ViewDoctorWallet",ViewDoctorWallet)
+app.get("/ViewDoctorWallet",ViewDoctorWallet);
 app.get("/viewDoctorAppointments", viewDoctorAppointments);

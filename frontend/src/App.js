@@ -28,7 +28,7 @@ import DeleteDoctor from './pages/admin/DeleteDoctor';
 import ViewSubscribedHealthPackageAndCancel from './pages/patient/ViewSubscribedHealthPackageAndCancel';
 import ViewMyWallet from './pages/patient/ViewMyWallet';
 import ViewDoctorWallet from './pages/doctor/ViewDoctorWallet';
-
+import DoctorApplication from './pages/admin/DoctorApplication';
 function App() {
   return (
     <div className="App">
@@ -65,6 +65,7 @@ function App() {
             <Route path="/ViewSubscribedHealthPackageAndCancel" element={<ViewSubscribedHealthPackageAndCancel/>}/>
             <Route path="/ViewMyWallet" element={<ViewMyWallet/>}/>
             <Route path="/ViewDoctorWallet" element={<ViewDoctorWallet/>}/>
+            <Route path="/DoctorApplication" element={<DoctorApplication/>}/>
           </Routes>
         </div>
       </BrowserRouter>
