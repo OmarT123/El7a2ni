@@ -5,7 +5,7 @@ const CheckoutAppointment = () => {
     const [familyMembers, setFamilyMembers] = useState([])
     const [selectedFamilyMember, setSelectedFamilyMember] = useState('')
     const [appointment, setAppointment] = useState(0)
-    const patientId = "6575badad728c698d3d1d93d"
+    const patientId = "65775548b35fbc02783d8d9f"
 
     useEffect(() => {
         const getFamilyMembers = async() => {

@@ -71,6 +71,9 @@ const doctorSchema = new Schema(
     degreePDF: {
       type: String,
       required: true,
+    },
+    contract: {
+      type: String
     }
   },
   { timestamps: true }

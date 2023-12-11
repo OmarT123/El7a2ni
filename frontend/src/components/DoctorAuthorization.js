@@ -22,7 +22,7 @@ const DoctorAuthorization = (WrappedComponent) => {
             const { success, type , user } = response.data;
 
             if (success) {
-              if (type === 'doctor') {
+              if (type === 'doctor' && user.status === 'accepted') {
                 setShowContent(true);
                 setUser(user); 
               } else {

@@ -8,6 +8,7 @@ const Login = () => {
   const [showContent, setShowContent] = useState(true);
 
   useEffect(() => {
+    localStorage.clear()
     const userToken = localStorage.getItem('userToken');
 
     if (userToken) {
@@ -29,7 +30,15 @@ const Login = () => {
 
       if (response.data.success) {
         localStorage.setItem('userToken', response.data.token);
-        window.location.href = '/Home';
+        axios
+          .get('/loginAuthentication')
+          .then((response) => {
+            const { success, type , user } = response.data;
+            if (type === 'doctor' && user.status === 'approved')
+              window.location.href = '/doctorContract'
+            else
+              window.location.href = '/Home';
+          })
       }
     } catch (error) {
       console.error('Login error:', error);
