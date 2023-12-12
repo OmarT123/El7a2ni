@@ -125,9 +125,9 @@ app.get("/viewMySubscribedHealthPackage",viewMySubscribedHealthPackage);
 app.put("/CancelSubscription",CancelSubscription);
 app.get("/ViewMyWallet",ViewMyWallet)
 app.get("/viewPatientAppointments", viewPatientAppointments);
-app.get("/payWithCard", payWithCard)
+app.get("/payWithCard",getUserFromTokenMiddleware, payWithCard)
 app.get("/payWithWallet", payWithWallet)
-app.put("/buyHealthPackage", buyHealthPackage)
+app.put("/buyHealthPackage",getUserFromTokenMiddleware, buyHealthPackage)
 app.put("/reserveAppointment", reserveAppointment)
 app.get("/sendCheckoutMail", sendCheckoutMail)
 app.get("/getHealthPackageForPatient", getHealthPackageForPatient)
@@ -147,7 +147,7 @@ app.get("/viewPatient", getUserFromTokenMiddleware,viewPatient);
 app.get("/viewmypatientsbyname",getUserFromTokenMiddleware,exactPatients);
 app.post("/createPrescription",getUserFromTokenMiddleware,createPrescription);
 app.get("/viewDoctorAppointments", viewDoctorAppointments); 
-app.post("/addAppointmentSlots", addAppointmentSlots);
+app.post("/addAppointmentSlots",getUserFromTokenMiddleware, addAppointmentSlots);
 app.get("/ViewDoctorWallet",ViewDoctorWallet)
 
 //user 

@@ -21,10 +21,35 @@ const Patient = ({user}) => {
     return (
         <div>
         {patient && <div className='user-info'>
-            <p><strong>name: </strong>{patient.name}</p>
-            <p><strong>email: </strong>{patient.email}</p>
-            <p><strong>birthDate: </strong>{patient.birthDate}</p>
-            <button onClick={toggleRecords}>Health Records</button>
+            <p><strong>Name: </strong>{patient.name}</p>
+            <p><strong>Username: </strong>{patient.username}</p>
+            <p><strong>Email: </strong>{patient.email}</p>
+            <p><strong>Date of birth: </strong>{patient.birthDate}</p>
+            <p><strong>Gender: </strong>{patient.gender}</p>
+            <p><strong>Mobile number: </strong>{patient.mobileNumber}</p>
+            <p>
+            <strong>Emergency Contact: </strong>
+            {patient.emergencyContact ? (
+                <>
+                <span>Name: {patient.emergencyContact.name}</span> <br/>
+                <span>Phone Number: {patient.emergencyContact.mobileNumber}</span> <br/>
+                <span>Relation to patient: {patient.emergencyContact.relation}</span>
+                </>
+            ) : (
+                'N/A'
+            )}
+            </p>
+            <p>
+            <strong>Health Package: </strong>
+            {patient.healthPackage ? (
+                <>
+                <span>Name: {patient.healthPackage.name}</span> <br/>
+                <span>Doctor discount: {patient.healthPackage.doctorDiscount}</span>
+                </>
+            ) : (
+                'N/A'
+            )}
+            </p>
         
         </div>}
         {showRecords && (

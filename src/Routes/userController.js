@@ -53,14 +53,14 @@ const login = async (req, res) => {
             if (passwordMatched) {
                 const token = createToken(user.username);
                 if (user instanceof adminModel) {
-                    res.cookie('userToken', token, { httpOnly: true, maxAge: maxAge });
+                    res.cookie('userToken', token, { httpOnly: true, maxAge: null });
                     return res.json({ success: true, user: user, message: "Admin login successful" });
                 } else if (user instanceof patientModel) {
-                    res.cookie( 'userToken', token, { httpOnly: true, maxAge: maxAge });
+                    res.cookie( 'userToken', token, { httpOnly: true, maxAge: null });
 
                     return res.json({ success: true, user: user, message: "Patient login successful" });
                 } else if (user instanceof doctorModel) {
-                    res.cookie('userToken', token, { httpOnly: true, maxAge: maxAge});
+                    res.cookie('userToken', token, { httpOnly: true, maxAge: null});
 
                     return res.json({ success: true, user: user, message: "Doctor login successful" });
                 }
