@@ -1,6 +1,7 @@
 import axios from 'axios'
 import {useEffect, useState} from 'react'
 import HealthPackageDetailsForClinic from '../../components/HealthPackageDetailsForClinic'
+import PatientAuthorization from '../../components/PatientAuthorization'
 
 
 const ViewHealthPackages = () => {
@@ -27,4 +28,4 @@ const ViewHealthPackages = () => {
 
 
 
-export default ViewHealthPackages
+export default PatientAuthorization(ViewHealthPackages)

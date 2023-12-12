@@ -1,16 +1,20 @@
 import {useState, useEffect} from 'react'
 import axios from 'axios'
+import PatientAuthorization from '../../components/PatientAuthorization'
 
-const SuccessfulCheckoutAppointment = () => {
-    const patientId = "6575badad728c698d3d1d93d"
+const SuccessfulCheckoutAppointment = ({user}) => {
+    // const patientId = "6575badad728c698d3d1d93d"
     
     useEffect(() => {
         const verifyCheckout = async () => {
             const body = {}
             body['appointmentId'] = localStorage.getItem('appointment')
-            await axios.put('/reserveAppointment?id='+patientId,body).then(res=>console.log(res.data))
+            const name = localStorage.getItem('attendantName')
+            body['name'] = name
+            console.log(name)
+            await axios.put('/reserveAppointment?id='+user._id,body).then(res=>console.log(res.data))
             body['message'] = "Booked Appointment"
-            await axios.get('/sendCheckoutMail?id='+patientId, {params: body}).then(res=>console.log(res.data))
+            await axios.get('/sendCheckoutMail?id='+user._id, {params: body}).then(res=>console.log(res.data))
             window.location.href = '/'
         }
         verifyCheckout()
@@ -24,4 +28,4 @@ const SuccessfulCheckoutAppointment = () => {
     )
 }
 
-export default SuccessfulCheckoutAppointment
+export default PatientAuthorization(SuccessfulCheckoutAppointment)

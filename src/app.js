@@ -47,6 +47,7 @@ const {
   viewMySubscribedHealthPackage,
   CancelSubscription,
   ViewMyWallet,
+  getHealthPackageForFamily
 } = require("./Routes/patientController");
 const {
   addAdmin,
@@ -135,6 +136,7 @@ app.get("/viewFreeAppointments", viewFreeAppointments)
 app.get("/getAnAppointment", getAnAppointment)
 app.put("/uploadHealthRecord", uploadHealthRecord);
 app.get("/getHealthRecords", getHealthRecords);
+app.get("/getHealthPackageForFamily", getHealthPackageForFamily)
 //Doctor
 app.get("/filterAppointmentsForDoctor",getUserFromTokenMiddleware ,filterAppointmentsForDoctor);
 app.post("/addAppointment",getUserFromTokenMiddleware,createAppointment);

@@ -432,15 +432,8 @@ const payWithCard = async (req, res) => {
   const patient = await patientModel.findById(patientId)
   const url = req.query.url
   const item = req.query.item;
-  // console.log(req.query)
   const type = req.query.type
   const price = item.price
-  // if (patient.healthPackage && type === 'appointment')
-  // {
-  //     const healthPackageId = patient.healthPackage.healthPackageID
-  //     const healthPackage = await healthPackageModel.findById(healthPackageId)
-  //     price *= (1 - (healthPackage.doctorDiscount)/100)
-  // }
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ['card'],
     mode: 'payment',
@@ -490,22 +483,44 @@ const payWithWallet = async(req, res) => {
 
 const buyHealthPackage = async (req, res) => {
   const patientId = req.query.id
-
+  const name = req.body.name
   const healthPackageId = req.body.healthPackageId
   try {
     const curDate = new Date()
     curDate.setMonth(curDate.getMonth() + 1);
+    const healthPackage = await healthPackageModel.findById(healthPackageId)
     const hPackage = {
       healthPackageID: healthPackageId,
       status: 'subscribed',
       endDate: curDate
     }
     const patient = await patientModel.findById(patientId)
-    // const subscribedTo = patient.healthPackages.filter(hp => hp.status === 'subscribed')
-    // if (subscribedTo && subscribedTo.length !== 0)
-    //   return res.jsذon("Failed")
-    patient['healthPackage'] = hPackage
-    await patient.save()
+    if (name === patient.name)
+    {
+      patient['healthPackage'] = hPackage
+      patient.familyMembers.map((fm) => {
+        const update = async (fm) => {
+          await familyModel.findByIdAndUpdate(fm.toString(), 
+          {healthPackageDiscount : {healthPackageID:healthPackageId, discount:healthPackage.familyDiscount}})
+        }
+        update(fm)
+        })
+        await patient.save()
+      }
+    else
+    {
+      patient.familyMembers.map(fm => {
+        const check = async (fm) => {
+          const familyMember = await familyModel.findById(fm)
+          if (familyMember.name === name)
+          {
+            familyMember['healthPackage'] = hPackage
+            await familyMember.save()
+          }
+        }
+          check(fm)
+      })
+    }
     res.json("Updated Successfully")
   }
   catch(err) {
@@ -516,8 +531,10 @@ const buyHealthPackage = async (req, res) => {
 const reserveAppointment = async(req, res) => {
   const patientId = req.query.id
   const appointmentId = req.body.appointmentId
+  const name = req.body.name
+  console.log(name)
   try {
-    const appointment = await appointmentModel.findByIdAndUpdate(appointmentId, { patient: new mongoose.Types.ObjectId(patientId), status: "upcoming" }, {new: true})
+    const appointment = await appointmentModel.findByIdAndUpdate(appointmentId, { patient: new mongoose.Types.ObjectId(patientId), status: "upcoming", attendantName: name }, {new: true})
     res.json('updated Successfully')
   }catch (err) {
     res.json(err.message)
@@ -554,7 +571,31 @@ const getHealthPackageForPatient = async (req,res) => {
   try {
     const id = req.query.id
     const hpackage = await healthPackageModel.findById(id)
-    res.json(hpackage)
+    res.json({hpackage,discount:0})
+  }catch(err)
+  {res.json(err.message)}
+}
+
+const getHealthPackageForFamily = async (req,res) => {
+  try {
+    const id = req.query.id
+    const name = req.query.name
+    const patientId = req.query.patientId
+    const patient = await patientModel.findById(patientId)
+    let discount = 0
+    for (let i = 0; i < patient.familyMembers.length; i++)
+    {
+      const familyMember = await familyModel.findById(patient.familyMembers[i].toString())
+      if (familyMember.name === name)
+      {
+        if (id === familyMember.healthPackageDiscount.healthPackageID.toString())
+          {
+            discount = familyMember.healthPackageDiscount.discount}
+        break;
+      }
+    }
+    const hpackage = await healthPackageModel.findById(id)
+    res.json({hpackage,discount})
   }catch(err)
   {res.json(err.message)}
 }
@@ -593,6 +634,7 @@ const getAnAppointment = async (req, res) => {
     console.log(err.message)
   }
 }
+
 
 const uploadHealthRecord = async (req, res) =>{
   try{
@@ -713,4 +755,5 @@ module.exports = {
   viewMySubscribedHealthPackage,
   CancelSubscription,
   ViewMyWallet,
+  getHealthPackageForFamily
 };
