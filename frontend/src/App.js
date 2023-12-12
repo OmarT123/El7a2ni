@@ -37,10 +37,12 @@ import UploadHealthRecords from './pages/UploadHealthRecords';
 import ViewSubscribedHealthPackageAndCancel from './pages/patient/ViewSubscribedHealthPackageAndCancel';
 import ViewMyWallet from './pages/patient/ViewMyWallet';
 import ViewDoctorWallet from './pages/doctor/ViewDoctorWallet';
-import DoctorApplication from './pages/admin/DoctorApplication';import Login from './pages/user/Login'
+import DoctorApplication from './pages/admin/DoctorApplication';
+import Login from './pages/user/Login'
 import ChangePassword from './pages/user/ChangePassword';
 import ResetPassword from './pages/user/ResetPassword';
 import ResetPasswordOTP from './pages/user/ResetPasswordOTP';
+import DoctorContract from './pages/doctor/DoctorContract';
 
 function App() {
   return (
@@ -51,14 +53,12 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/Home" element={<Home />} />
-
             <Route path="/Login" element ={<Login />}/>
             <Route path="/ChangePassword" element ={<ChangePassword />}/>
-
             <Route path="/ResetPassword" element ={<ResetPassword />}/>
             <Route path="/ResetPasswordOTP" element ={<ResetPasswordOTP />}/>
             {/* <Route path="/NotAuthorized" element ={<NotAuthorized />}/> */}
-            <Route path="/UnapprovedDoctors" element={<UnApprovedDoctors />} />
+            <Route path="/UnapprovedDoctors" element={<UnapprovedDoctors />} />
             <Route path='/FamilyMembers' element={<FamilyMembers/>}/>
             <Route path="/editDoctor" element={<DoctoreditForm/>}/>
             <Route path="/viewMyPatients" element={<MyPatients/>}/>
@@ -95,6 +95,7 @@ function App() {
             <Route path="/ViewMyWallet" element={<ViewMyWallet/>}/>
             <Route path="/ViewDoctorWallet" element={<ViewDoctorWallet/>}/>
             <Route path="/DoctorApplication" element={<DoctorApplication/>}/>
+            <Route path="/doctorContract" element={<DoctorContract />} />
           </Routes>
         </div>
       </BrowserRouter>
