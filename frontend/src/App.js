@@ -3,7 +3,7 @@ import {BrowserRouter, Routes, Route} from 'react-router-dom'
 
 import Home from './pages/Home'
 import NavBar from './components/NavBar'
-import UnapprovedDoctors from './pages/admin/unApprovedDoctors';
+import UnApprovedDoctors from './pages/admin/unApprovedDoctors';
 import HealthPackage from './pages/admin/HealthPackage';
 import ViewHealthPackages from './pages/patient/ViewHealthPackages';
 import HealthPackageInfo from './pages/admin/HealthPackageInfo';

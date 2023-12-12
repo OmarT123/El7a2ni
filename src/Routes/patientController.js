@@ -12,9 +12,8 @@ const stripe = require("stripe")(process.env.STRIPE_PRIVATE_KEY)
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt');
 require("dotenv").config();
-
-
-
+const HealthPackageModel = require("../Models/HealthPackage.js");
+const bcrypt = require('bcrypt');
 
 
 const addPatient = async(req,res) => {
@@ -297,6 +296,9 @@ const viewMySubscribedHealthPackage = async (req, res) => {
       console.log('Patient not found');
       return;
     }
+
+    const extendedHealthPackages = [];
+
     const healthPackagePatient = patient.healthPackage;
     if(healthPackagePatient== undefined)
       res.json();
@@ -308,10 +310,33 @@ const viewMySubscribedHealthPackage = async (req, res) => {
       ...healthPackage.toObject(),        // Spread properties from healthPackage
       status: status,
       endDate: endDate,
+    patientName: patient.name,
     };
-    //console.log(extendedHealthPackage);
-    res.json(extendedHealthPackage);
-  }
+    extendedHealthPackages.push(extendedHealthPackage);
+    }
+
+    // Process family members' health packages
+    for (const familyMemberId of patient.familyMembers) {
+      const familyMember = await familyModel.findById(familyMemberId).populate('healthPackage').exec();
+
+      if (familyMember) {
+        const healthPackageFamilyMember = familyMember.healthPackage;
+        if (healthPackageFamilyMember != undefined) {
+          const status = healthPackageFamilyMember.status;
+          const endDate = healthPackageFamilyMember.endDate;
+          const healthPackage = await HealthPackageModel.findById(healthPackageFamilyMember.healthPackageID);
+          const extendedHealthPackage = {
+            ...healthPackage.toObject(),
+            patientName: familyMember.name,
+            status: status,
+            endDate: endDate,
+          };
+          extendedHealthPackages.push(extendedHealthPackage);
+        }
+      }
+    }
+
+    res.json(extendedHealthPackages);
   }
   catch (err) {
     res.json(err.message);
