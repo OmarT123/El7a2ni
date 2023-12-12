@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import AdminAuthorization from '../../components/AdminAuthorization';
 
-const DoctorApplication = () => {
+const DoctorApplication = ({user}) => {
     const [id, setId] = useState(false);
     const [degree, setDegree] = useState(false);
     const [license, setLicense] = useState(false);
     const [Doctor, setDoctor] = useState(null);
-    const doctorId = "657675eb6962cce38703700a";
+    //const doctorId = "657675eb6962cce38703700a";
+    const queryParams = new URLSearchParams(window.location.search)
+    const doctorId = queryParams.get('id');
 
     useEffect(() => {
         const getDoctor = async () => {
@@ -67,4 +70,4 @@ const DoctorApplication = () => {
     );
 }
 
-export default DoctorApplication;
+export default AdminAuthorization(DoctorApplication);

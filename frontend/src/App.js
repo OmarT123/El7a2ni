@@ -58,7 +58,7 @@ function App() {
             <Route path="/ResetPassword" element ={<ResetPassword />}/>
             <Route path="/ResetPasswordOTP" element ={<ResetPasswordOTP />}/>
             {/* <Route path="/NotAuthorized" element ={<NotAuthorized />}/> */}
-            <Route path="/UnapprovedDoctors" element={<UnapprovedDoctors />} />
+            <Route path="/UnapprovedDoctors" element={<UnApprovedDoctors />} />
             <Route path='/FamilyMembers' element={<FamilyMembers/>}/>
             <Route path="/editDoctor" element={<DoctoreditForm/>}/>
             <Route path="/viewMyPatients" element={<MyPatients/>}/>

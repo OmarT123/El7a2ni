@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import axios from "axios";
+import PatientAuthorization from "../PatientAuthorization";
 
-const LinkFamilyMember = () => {
-  const hardcodedPatientId = '6576608bf09d11bc630c6d2f';
+const LinkFamilyMember = ({user}) => {
+  // const hardcodedPatientId = '6576608bf09d11bc630c6d2f';
 
   const [formData, setFormData] = useState({
     email: "",
@@ -23,7 +24,7 @@ const LinkFamilyMember = () => {
     setSuccessMessage("");
 
     try {
-      const response = await axios.post(`/linkFamilyMember?id=${hardcodedPatientId}`, formData);
+      const response = await axios.post(`/linkFamilyMember?id=${user._id}`, formData);
 
       setSuccessMessage(response.data);
     } catch (error) {
@@ -82,4 +83,4 @@ const LinkFamilyMember = () => {
   );
 };
 
-export default LinkFamilyMember;
+export default PatientAuthorization(LinkFamilyMember);

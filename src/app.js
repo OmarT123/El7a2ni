@@ -125,23 +125,23 @@ app.get("/selectPrescription",getUserFromTokenMiddleware,selectPrescription);
 app.get("/allDoctors",getUserFromTokenMiddleware, getDoctors);
 app.get("/viewPatientAppointments", viewPatientAppointments);
 app.post("/linkFamilyMember", linkFamilyMemberAccount);
-app.get("/viewMySubscribedHealthPackage",viewMySubscribedHealthPackage);
-app.put("/CancelSubscription",CancelSubscription);
-app.get("/ViewMyWallet",ViewMyWallet)
+app.get("/viewMySubscribedHealthPackage",getUserFromTokenMiddleware,viewMySubscribedHealthPackage);
+app.put("/CancelSubscription",getUserFromTokenMiddleware,CancelSubscription);
+app.get("/ViewMyWallet",getUserFromTokenMiddleware,ViewMyWallet)
 app.get("/viewPatientAppointments", viewPatientAppointments);
 app.get("/payWithCard",getUserFromTokenMiddleware, payWithCard)
-app.get("/payWithWallet", payWithWallet)
+app.get("/payWithWallet", getUserFromTokenMiddleware, payWithWallet)
 app.put("/buyHealthPackage",getUserFromTokenMiddleware, buyHealthPackage)
-app.put("/reserveAppointment", reserveAppointment)
-app.get("/sendCheckoutMail", sendCheckoutMail)
+app.put("/reserveAppointment", getUserFromTokenMiddleware,reserveAppointment)
+app.get("/sendCheckoutMail", getUserFromTokenMiddleware,sendCheckoutMail)
 app.get("/getHealthPackageForPatient", getHealthPackageForPatient)
 app.get("/viewFreeAppointments",getUserFromTokenMiddleware, viewFreeAppointments)
 app.get("/getAnAppointment", getAnAppointment)
-app.put("/uploadHealthRecord", uploadHealthRecord);
-app.get("/getHealthRecords", getHealthRecords);
+app.put("/uploadHealthRecord",getUserFromTokenMiddleware, uploadHealthRecord);
+app.get("/getHealthRecords",getUserFromTokenMiddleware, getHealthRecords);
 app.get("/viewFreeAppointmentsByName",getUserFromTokenMiddleware, viewFreeAppointmentsByName)
 
-app.get("/getHealthPackageForFamily", getHealthPackageForFamily)
+app.get("/getHealthPackageForFamily",getUserFromTokenMiddleware, getHealthPackageForFamily)
 //Doctor
 app.get("/filterAppointmentsForDoctor",getUserFromTokenMiddleware ,filterAppointmentsForDoctor);
 app.post("/addAppointment",getUserFromTokenMiddleware,createAppointment);
@@ -155,7 +155,7 @@ app.get("/viewmypatientsbyname",getUserFromTokenMiddleware,exactPatients);
 app.post("/createPrescription",getUserFromTokenMiddleware,createPrescription);
 app.get("/viewDoctorAppointments", viewDoctorAppointments); 
 app.post("/addAppointmentSlots",getUserFromTokenMiddleware, addAppointmentSlots);
-app.get("/ViewDoctorWallet",ViewDoctorWallet)
+app.get("/ViewDoctorWallet",getUserFromTokenMiddleware,ViewDoctorWallet)
 app.put("/acceptContract", getUserFromTokenMiddleware, acceptContract)
 app.put("/rejectContract", getUserFromTokenMiddleware, rejectContract)
 

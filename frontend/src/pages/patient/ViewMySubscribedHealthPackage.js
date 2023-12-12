@@ -1,18 +1,18 @@
 import axios from 'axios'
 import {useState , useEffect} from 'react'
 import { Navigate, useNavigate  } from 'react-router-dom';
-import CancelSubscription from './CancelSubscription'; 
+import CancelSubscription from './CancelSubscription';
+import PatientAuthorization from '../../components/PatientAuthorization'; 
 
-const ViewMySubscribedHealthPackage = () => {
+const ViewMySubscribedHealthPackage = ({user}) => {
 
     const [HealthPackage, setHealthPackage] = useState([]);
-    const id = "6575badad728c698d3d1d93d"
     const navigate = useNavigate ();
 
   useEffect(() => {
     const fetchHealthPackage= async () => {
       try {
-        await axios.get("/viewMySubscribedHealthPackage?id="+id)
+        await axios.get("/viewMySubscribedHealthPackage")
         .then((res)=>{
             setHealthPackage(res.data)
         }).catch((err)=>console.log(err))
@@ -60,4 +60,4 @@ const ViewMySubscribedHealthPackage = () => {
 };
 
 
-export default ViewMySubscribedHealthPackage
+export default PatientAuthorization(ViewMySubscribedHealthPackage);

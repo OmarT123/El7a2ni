@@ -1,6 +1,6 @@
 import React from 'react';
-
 import ViewMySubscribedHealthPackage from './ViewMySubscribedHealthPackage';
+import PatientAuthorization from '../../components/PatientAuthorization';
 
 const ViewSubscribedHealthPackageAndCancel = () => {
   return (
@@ -16,4 +16,4 @@ const ViewSubscribedHealthPackageAndCancel = () => {
   
 };
 
-export default ViewSubscribedHealthPackageAndCancel;
+export default PatientAuthorization(ViewSubscribedHealthPackageAndCancel);

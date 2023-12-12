@@ -26,7 +26,7 @@ const UnapprovedDoctors = ({user}) => {
     <div className="home">
       <div className="Doctors">
         {doctors && doctors.map((doctor) => (
-          <DoctorDetails key={doctor._id} doctor = {doctor} link={"doctor"} />
+          <DoctorDetails key={doctor._id} doctor = {doctor} link={"DoctorApplication"} />
         ))}
       </div>
     </div>

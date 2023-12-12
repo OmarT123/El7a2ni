@@ -1,16 +1,15 @@
 import axios from 'axios'
 import {useState , useEffect} from 'react'
+import DoctorAuthorization from '../../components/DoctorAuthorization';
 
+const ViewMyWallet = ({user}) => {
 
-const ViewMyWallet = () => {
-
-    const [Wallet, setWallet] = useState(null);
-    const id = "6574ba9399c7ac25ed46c98f"
+    const [Wallet, setWallet] = useState(0);
 
   useEffect(() => {
     const fetchWallet= async () => {
       try {
-        await axios.get("/ViewDoctorWallet?id="+id)
+        await axios.get("/ViewDoctorWallet")
         .then((res)=>{
             setWallet(res.data)
             console.log(res.data)
@@ -23,12 +22,12 @@ const ViewMyWallet = () => {
     };
     fetchWallet()
     ;
-  }, [id]);
+  }, []);
 
   return (
     <div>
       <h2>view my wallet</h2>
-      {Wallet !== null ? (
+      {Wallet !== 0 ? (
       <div>
         <p>Amount in Wallet: {Wallet}</p>
       </div>
@@ -40,4 +39,4 @@ const ViewMyWallet = () => {
 };
 
 
-export default ViewMyWallet
+export default DoctorAuthorization(ViewMyWallet);

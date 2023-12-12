@@ -54,7 +54,8 @@ const doctorSchema = new Schema(
       type: String,
     },
     wallet:{
-      type:Number
+      type:Number,
+      default: 0
     },
     status:{
       type: String,

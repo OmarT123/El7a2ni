@@ -165,6 +165,7 @@ const myPatients = async (req, res) => {
     let allMyAppointments = await appointmentModel
       .find({ doctor: id })
       .populate({ path: "patient" });
+    
 
     let uniquePatientsSet = new Set();
 
@@ -209,13 +210,14 @@ const exactPatients = async (req, res) => {
   try {
     let id = req.user._id;
     const { name } = req.query;
+    const searchName = new RegExp(name, "i")
 
     let allMyAppointments = await appointmentModel.find({ doctor: id }).populate({ path: 'patient' });
     let patients = allMyAppointments.map(appointment => appointment.patient);
 
     let uniquePatientsSet = new Set();
     let filteredPatients = patients.filter(patient => {
-      if (patient && patient.name === name && !uniquePatientsSet.has(patient._id)) {
+      if (patient && searchName.test(patient.name) && !uniquePatientsSet.has(patient._id)) {
         uniquePatientsSet.add(patient._id);
         return true;
       }
@@ -246,8 +248,8 @@ const filterPatientsByAppointments = async (req, res) => {
 };
 const ViewDoctorWallet = async (req, res) => {
   try {
-    const DoctorId = req.query.id;
-    const Doctor = await doctorModel.findById(DoctorId).populate('wallet').exec();
+    const DoctorId = req.user._id;
+    const Doctor = await doctorModel.findById(DoctorId)
    
     if (!Doctor) {
       console.log('Doctor not found');
@@ -313,12 +315,10 @@ const addHealthRecord = async (req, res) =>{
 const addAppointmentSlots = async (req,res) => {
   const doctorID = req.user._id;
   const doctor = await doctorModel.findById(doctorID);
-  
-  if(doctor.status === "approved")
+  if(doctor.status === "accepted")
   {
     const combinedDateTimeString = `${req.body.date}T${req.body.time}`;
     const date = new Date(combinedDateTimeString);
-    console.log("Time found: "+ req.body.time);
     const minTime = new Date(date.getTime()- 60 * 60 * 1000)
     const maxTime = new Date(date.getTime() + 60 * 60 * 1000)
     const existingAppointment = await appointmentModel.findOne({
@@ -348,7 +348,7 @@ const addAppointmentSlots = async (req,res) => {
     }
   }
   else
-    res.status(400).json("Please review your employment contract.")
+    res.json("Please review your employment contract.")
 
 }
 

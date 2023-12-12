@@ -8,9 +8,7 @@ const familyMemberSchema = new Schema(
       required: true,
     },
     nationalId: {
-      type: String,
-      unique: true,
-      required: true,
+      type: String
     },
     age: {
       type: Number,

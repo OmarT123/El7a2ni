@@ -4,13 +4,12 @@ import axios from 'axios';
 const CancelSubscription = () => {
   const [isSubscriptionCanceled, setSubscriptionCanceled] = useState(false);
   const [hasHealthPackage, setHasHealthPackage] = useState(null);
-  const id = "6575badad728c698d3d1d93d"
-
+  
   useEffect(() => {
     // Fetch the patient data and check if they have a health package
     const fetchPatientData = async () => {
       try {
-        await axios.get("/viewMySubscribedHealthPackage?id="+id)
+        await axios.get("/viewMySubscribedHealthPackage")
         .then((res)=>{
           setHasHealthPackage(res.data)
           if(res.data.status=="cancelled")
@@ -22,11 +21,11 @@ const CancelSubscription = () => {
     };
 
     fetchPatientData();
-  }, [id]);
+  }, []);
 
   const handleCancelSubscription = async () => {
     try {
-      const response = await axios.put("/CancelSubscription?id="+id);
+      const response = await axios.put("/CancelSubscription");
       console.log(response.data);
       setSubscriptionCanceled(true);
       setTimeout(() => {

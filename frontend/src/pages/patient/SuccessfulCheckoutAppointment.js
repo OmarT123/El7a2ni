@@ -3,8 +3,7 @@ import axios from 'axios'
 import PatientAuthorization from '../../components/PatientAuthorization'
 
 const SuccessfulCheckoutAppointment = ({user}) => {
-    // const patientId = "6575badad728c698d3d1d93d"
-    
+   
     useEffect(() => {
         const verifyCheckout = async () => {
             const body = {}

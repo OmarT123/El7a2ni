@@ -3,7 +3,6 @@ import axios from 'axios'
 import PatientAuthorization from '../../components/PatientAuthorization'
 
 const SuccessfulCheckoutHealthPackage = ({ user }) => {
-    // const patientId = "65763bc6b8ee85160043f31a"
     
     useEffect(() => {
         const verifyCheckout = async () => {

@@ -1,7 +1,8 @@
 import {useState} from 'react'
 import axios from 'axios'
+import DoctorAuthorization from '../DoctorAuthorization'
 
-const DoctoreditForm  = () => {
+const DoctoreditForm  = ({ user }) => {
     
 
     const [email, setMail] = useState('')
@@ -13,7 +14,7 @@ const DoctoreditForm  = () => {
         e.preventDefault()
 
         // temporarily hard coded id until a user is logged in
-        const id = "653e568a25a9d07a9ad10789"
+        // const id = "653e568a25a9d07a9ad10789"
 
         const doctorData = {}
         if (email !== '')
@@ -22,7 +23,7 @@ const DoctoreditForm  = () => {
             doctorData['hourlyRate']=hourlyRate
         if (affiliation !== '')
             doctorData['affiliation']=affiliation
-        const response = await axios.put("/editDoctor?id="+id,doctorData)
+        const response = await axios.put("/editDoctor",doctorData)
         setMessage(response.data)
     
     }
@@ -61,4 +62,4 @@ const DoctoreditForm  = () => {
     )
 }
 
-export default DoctoreditForm
+export default DoctorAuthorization(DoctoreditForm)

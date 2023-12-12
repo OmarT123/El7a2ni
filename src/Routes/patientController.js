@@ -4,16 +4,13 @@ const appointmentModel = require("../Models/Appointment.js");
 const doctorModel = require("../Models/Doctor.js");
 const medicineModel = require("../Models/Medicine.js")
 const prescriptionModel = require("../Models/Prescription.js");
-const HealthPackageModel = require("../Models/HealthPackage.js");
-const healthPackageModel = require('../Models/HealthPackage.js')
+const healthPackageModel = require("../Models/HealthPackage.js");
 const userModel = require("../Models/User.js")
 const mongoose = require("mongoose");
 const stripe = require("stripe")(process.env.STRIPE_PRIVATE_KEY)
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt');
 require("dotenv").config();
-const HealthPackageModel = require("../Models/HealthPackage.js");
-const bcrypt = require('bcrypt');
 
 
 const addPatient = async(req,res) => {
@@ -289,7 +286,7 @@ const filterDoctorsSpecialityDate = async(req,res)=>{
 
 const viewMySubscribedHealthPackage = async (req, res) => {
   try {
-    const patientId = req.query.id;
+    const patientId = req.user._id;
     const patient = await patientModel.findById(patientId).populate('healthPackage').exec();
     
     if (!patient) {
@@ -301,11 +298,11 @@ const viewMySubscribedHealthPackage = async (req, res) => {
 
     const healthPackagePatient = patient.healthPackage;
     if(healthPackagePatient== undefined)
-      res.json();
+      return res.json([]);
     else{
     const status = healthPackagePatient.status;
     const endDate = healthPackagePatient.endDate;
-    const healthPackage = await HealthPackageModel.findById(healthPackagePatient.healthPackageID);
+    const healthPackage = await healthPackageModel.findById(healthPackagePatient.healthPackageID);
     const extendedHealthPackage = {
       ...healthPackage.toObject(),        // Spread properties from healthPackage
       status: status,
@@ -324,7 +321,7 @@ const viewMySubscribedHealthPackage = async (req, res) => {
         if (healthPackageFamilyMember != undefined) {
           const status = healthPackageFamilyMember.status;
           const endDate = healthPackageFamilyMember.endDate;
-          const healthPackage = await HealthPackageModel.findById(healthPackageFamilyMember.healthPackageID);
+          const healthPackage = await healthPackageModel.findById(healthPackageFamilyMember.healthPackageID);
           const extendedHealthPackage = {
             ...healthPackage.toObject(),
             patientName: familyMember.name,
@@ -348,7 +345,7 @@ const viewMySubscribedHealthPackage = async (req, res) => {
 const CancelSubscription= async (req, res) => {
   
   try{
-  const patientId = req.query.id;
+  const patientId = req.user._id;
   const patient = await patientModel.findById(patientId);
   if (!patient) {
     return res.status(404).json({ message: 'Patient not found' });
@@ -365,7 +362,7 @@ const CancelSubscription= async (req, res) => {
 
 const ViewMyWallet = async (req, res) => {
   try {
-    const patientId = req.query.id;
+    const patientId = req.user._id;
     const patient = await patientModel.findById(patientId).populate('wallet').exec();
    
     if (!patient) {
@@ -440,12 +437,14 @@ const payWithCard = async (req, res) => {
 }
 
 const payWithWallet = async(req, res) => {
-  const patientId = req.query.id
+  const patientId = req.user._id
   const price = req.query.price
   const url = req.query.url
   const type = req.query.type
   try {
     const patient = await patientModel.findById(patientId)
+
+    console.log('--------')
     // if (patient.healthPackage && type === 'appointment')
     // {
     //   const healthPackageId = patient.healthPackage.healthPackageID
@@ -514,7 +513,7 @@ const buyHealthPackage = async (req, res) => {
 }
 
 const reserveAppointment = async(req, res) => {
-  const patientId = req.query.id
+  const patientId = req.user._id
   const appointmentId = req.body.appointmentId
   const name = req.body.name
   console.log(name)
@@ -527,7 +526,7 @@ const reserveAppointment = async(req, res) => {
 }
 
 const sendCheckoutMail = async (req, res) => {
-  const patientId = req.query.id
+  const patientId = req.user._id
   const patient = await patientModel.findById(patientId)
   const message = req.query.message
   
@@ -565,7 +564,7 @@ const getHealthPackageForFamily = async (req,res) => {
   try {
     const id = req.query.id
     const name = req.query.name
-    const patientId = req.query.patientId
+    const patientId = req.user._id
     const patient = await patientModel.findById(patientId)
     let discount = 0
     for (let i = 0; i < patient.familyMembers.length; i++)
@@ -684,7 +683,7 @@ const getAnAppointment = async (req, res) => {
 
 const uploadHealthRecord = async (req, res) =>{
   try{
-    let id = req.body.id;
+    let id = req.query.id;
     let healthRecord = req.body.base64;
   const patient = await patientModel.findById(id);
   patient.HealthRecords.push(healthRecord);
@@ -698,7 +697,9 @@ const uploadHealthRecord = async (req, res) =>{
 const getHealthRecords = async (req, res) =>{
   try{
   let id = req.query.id;
+  // console.log(id)
   const patient = await patientModel.findById(id);
+  // console.log(patient)
   const healthRecords = patient.HealthRecords;
   res.json( healthRecords );
 } catch (error) {
@@ -756,13 +757,17 @@ const linkFamilyMemberAccount = async (req, res) => {
         .json({ error: "Family member is already linked to the patient." });
       }
 
+      // console.log(primaryPatient)
       // Create a family member entry
       const familyMember = await familyModel.create({
       patient: primaryPatient._id,
       familyMember: familyMemberToLink._id,
       relationToPatient,
+      name: familyMemberToLink.name,
+      age: calculateAge(familyMemberToLink.birthDate),
+      nationalId: Math.floor(Math.random() * 10000),
+      gender: familyMemberToLink.gender
     });
-    
     // Update the primary patient's family members
     primaryPatient.familyMembers.push(familyMember._id);
     await primaryPatient.save();
@@ -773,6 +778,19 @@ const linkFamilyMemberAccount = async (req, res) => {
   }
 };
 
+function calculateAge(birthDate) {
+  const today = new Date();
+  const birthDateObj = new Date(birthDate);
+
+  let age = today.getUTCFullYear() - birthDateObj.getUTCFullYear();
+  const monthDiff = today.getUTCMonth() - birthDateObj.getUTCMonth();
+
+  if (monthDiff < 0 || (monthDiff === 0 && today.getUTCDate() < birthDateObj.getUTCDate())) {
+    age--;
+  }
+
+  return age;
+}
 
 module.exports = {
   createFamilyMember,

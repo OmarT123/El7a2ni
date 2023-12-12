@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import PatientAuthorization from "../PatientAuthorization";
 
-const PatientAppointments = () => {
+const PatientAppointments = ({ user }) => {
   // Hardcoded patientId for demonstration purposes
-  const hardcodedPatientId = "656cb41125a74d947f10e349";
+  // const hardcodedPatientId = "656cb41125a74d947f10e349";
 
   const [appointments, setAppointments] = useState({
     upcomingAppointments: [],
@@ -15,7 +16,7 @@ const PatientAppointments = () => {
       try {
         const response = await axios.get('/viewPatientAppointments', {
           params: {
-            id: hardcodedPatientId,
+            id: user._id,
           },
         });
 
@@ -56,4 +57,4 @@ const PatientAppointments = () => {
   );
 };
 
-export default PatientAppointments;
+export default PatientAuthorization(PatientAppointments);

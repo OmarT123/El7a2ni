@@ -31,7 +31,7 @@ const UploadHealthRecords = () => {
       alert('Please upload your documents in the PDF format only.');
     else{
       const body = {id: id,base64}
-       await axios.put("/uploadHealthRecord",body).then(res=> {
+       await axios.put("/uploadHealthRecord?id="+id,body).then(res=> {
         alert(res.data);
         window.location.reload();
         }).catch(err=>console.log(err))
