@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import DoctorAuthorization from '../../components/DoctorAuthorization';
 
-const AddAppointmentSlots = () => {
+const AddAppointmentSlots = ({user}) => {
   // Set your API links here
-  let id = '65496e4a5c31c981636dc271';
-  const getAppointmentsApiLink = "/filterAppointmentsForDoctor?id=" + id;
-  const addAppointmentApiLink = "/addAppointmentSlots?id=" + id;
+  const getAppointmentsApiLink = "/filterAppointmentsForDoctor" ;
+  const addAppointmentApiLink = "/addAppointmentSlots";
+  const queryParams = new URLSearchParams(window.location.search)
+  const id = queryParams.get('id')
 
   const [appointments, setAppointments] = useState([]);
   const [selectedDate, setSelectedDate] = useState('');
@@ -50,13 +52,19 @@ const AddAppointmentSlots = () => {
       setMessage('Please select both date and time.');
       return;
     }
-
-    const newAppointment = {
+    let newAppointment={};
+    if(id){
+      newAppointment = {
       date: selectedDate,
       time: selectedTime,
-      // Add other appointment details as needed
+      patientID: id,
+    };}
+    else {
+      newAppointment = {
+      date: selectedDate,
+      time: selectedTime,
     };
-
+    }
     try {
       const response = await axios.post(addAppointmentApiLink, newAppointment);
       const result = response.data;
@@ -125,4 +133,4 @@ const AddAppointmentSlots = () => {
   );
 };
 
-export default AddAppointmentSlots;
+export default  DoctorAuthorization(AddAppointmentSlots);

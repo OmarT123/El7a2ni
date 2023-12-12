@@ -1,11 +1,11 @@
 import {useEffect, useState} from 'react';
 import axios from 'axios';
 
-const UploadHealthRecords = (passedID) => {
+const UploadHealthRecords = () => {
     const [documents, setDocuments] = useState([]);
-    let id = "6575badad728c698d3d1d93d"; //hard coded ID for a patient in our DB
     var base64;
-
+    const queryParams = new URLSearchParams(window.location.search)
+    const id = queryParams.get('id')
     function convertToBase64(e) {
         e.preventDefault();
         //Read File

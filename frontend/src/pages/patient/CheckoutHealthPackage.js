@@ -1,15 +1,15 @@
 import {useEffect, useState} from 'react';
 import axios from 'axios';
+import PatientAuthorization from '../../components/PatientAuthorization';
 
 const CheckoutHealthPackage = () => {
     const [familyMembers, setFamilyMembers] = useState([])
     const [selectedFamilyMember, setSelectedFamilyMember] = useState('')
     const [healthPackage, setHealthPackage] = useState(0)
-    const patientId = "65763bc6b8ee85160043f31a"
 
     useEffect(() => {
         const getFamilyMembers = async() => {
-            await axios.get("/getFamilyMembers?id="+patientId).then(res => setFamilyMembers(res.data))
+            await axios.get("/getFamilyMembers").then(res => setFamilyMembers(res.data))
         }
         const getHealthPackage = async() => {
             const healthPackageId = localStorage.getItem('healthPackage')
@@ -36,7 +36,7 @@ const CheckoutHealthPackage = () => {
         if (selectedFamilyMember === '')
             alert('Please Select a family member')
         else
-            await axios.get("/payWithWallet?id="+patientId,{params: body}).then(res => window.location.href = res.data.url).catch(err => console.log(err))
+            await axios.get("/payWithWallet",{params: body}).then(res => window.location.href = res.data.url).catch(err => console.log(err))
     }
 
     const handleFamilyMemberSelect = async (event) => {
@@ -64,4 +64,4 @@ const CheckoutHealthPackage = () => {
   )
 }
 
-export default CheckoutHealthPackage
+export default PatientAuthorization(CheckoutHealthPackage);

@@ -413,7 +413,7 @@ const viewPatientAppointments = async (req, res) => {
 };
 
 const payWithCard = async (req, res) => {
-  const patientId = "65763bc6b8ee85160043f31a";
+  const patientId = req.user._id;
   const patient = await patientModel.findById(patientId)
   const url = req.query.url
   const item = req.query.item;
@@ -474,8 +474,7 @@ const payWithWallet = async(req, res) => {
 }
 
 const buyHealthPackage = async (req, res) => {
-  const patientId = req.query.id
-  
+  const patientId = req.user._id;
   const healthPackageId = req.body.healthPackageId
   try {
     const curDate = new Date()
