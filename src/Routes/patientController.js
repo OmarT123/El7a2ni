@@ -683,8 +683,10 @@ const getAnAppointment = async (req, res) => {
 
 const uploadHealthRecord = async (req, res) =>{
   try{
-    let id = req.query.id;
-    let healthRecord = req.body.base64;
+  let id = req.user._id;
+  if(req.query.id)
+    id = req.query.id;
+  let healthRecord = req.body.base64;
   const patient = await patientModel.findById(id);
   patient.HealthRecords.push(healthRecord);
   await patient.save();
