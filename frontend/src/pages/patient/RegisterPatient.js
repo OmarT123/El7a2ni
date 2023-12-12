@@ -30,7 +30,7 @@ const RegisterPatient = () => {
             alert('Please fill all the fields')
         else{
             const body = {name,username,email,password,birthDate,gender,mobileNumber,emergencyContact}
-            await axios.post("/addPatient",body).then(res=>alert(res.data)).catch(err=>console.log(err))
+            await axios.post("/addPatient",body).then(res=>alert(res.data.message)).catch(err=>console.log(err))
         }
     }
 

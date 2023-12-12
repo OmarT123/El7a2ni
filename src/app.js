@@ -19,6 +19,8 @@ const {
   addAppointmentSlots,
   ViewDoctorWallet,
   viewDoctorAppointments,
+  acceptContract,
+  rejectContract
 } = require("./Routes/doctorController");
 const {
   addPatient,
@@ -47,6 +49,7 @@ const {
   viewMySubscribedHealthPackage,
   CancelSubscription,
   ViewMyWallet,
+  viewFreeAppointmentsByName,
   getHealthPackageForFamily
 } = require("./Routes/patientController");
 const {
@@ -126,16 +129,18 @@ app.get("/viewMySubscribedHealthPackage",viewMySubscribedHealthPackage);
 app.put("/CancelSubscription",CancelSubscription);
 app.get("/ViewMyWallet",ViewMyWallet)
 app.get("/viewPatientAppointments", viewPatientAppointments);
-app.get("/payWithCard", payWithCard)
+app.get("/payWithCard",getUserFromTokenMiddleware, payWithCard)
 app.get("/payWithWallet", payWithWallet)
-app.put("/buyHealthPackage", buyHealthPackage)
+app.put("/buyHealthPackage",getUserFromTokenMiddleware, buyHealthPackage)
 app.put("/reserveAppointment", reserveAppointment)
 app.get("/sendCheckoutMail", sendCheckoutMail)
 app.get("/getHealthPackageForPatient", getHealthPackageForPatient)
-app.get("/viewFreeAppointments", viewFreeAppointments)
+app.get("/viewFreeAppointments",getUserFromTokenMiddleware, viewFreeAppointments)
 app.get("/getAnAppointment", getAnAppointment)
 app.put("/uploadHealthRecord", uploadHealthRecord);
 app.get("/getHealthRecords", getHealthRecords);
+app.get("/viewFreeAppointmentsByName",getUserFromTokenMiddleware, viewFreeAppointmentsByName)
+
 app.get("/getHealthPackageForFamily", getHealthPackageForFamily)
 //Doctor
 app.get("/filterAppointmentsForDoctor",getUserFromTokenMiddleware ,filterAppointmentsForDoctor);
@@ -149,8 +154,10 @@ app.get("/viewPatient", getUserFromTokenMiddleware,viewPatient);
 app.get("/viewmypatientsbyname",getUserFromTokenMiddleware,exactPatients);
 app.post("/createPrescription",getUserFromTokenMiddleware,createPrescription);
 app.get("/viewDoctorAppointments", viewDoctorAppointments); 
-app.post("/addAppointmentSlots", addAppointmentSlots);
+app.post("/addAppointmentSlots",getUserFromTokenMiddleware, addAppointmentSlots);
 app.get("/ViewDoctorWallet",ViewDoctorWallet)
+app.put("/acceptContract", getUserFromTokenMiddleware, acceptContract)
+app.put("/rejectContract", getUserFromTokenMiddleware, rejectContract)
 
 //user 
 

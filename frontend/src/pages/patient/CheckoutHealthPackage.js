@@ -10,7 +10,7 @@ const CheckoutHealthPackage = ({ user }) => {
 
     useEffect(() => {
         const getFamilyMembers = async() => {
-            await axios.get("/getFamilyMembers?id="+user._id).then(res => setFamilyMembers(res.data))
+            await axios.get("/getFamilyMembers").then(res => setFamilyMembers(res.data))
         }
         const getHealthPackage = async() => {
             const healthPackageId = localStorage.getItem('healthPackage')
@@ -41,7 +41,7 @@ const CheckoutHealthPackage = ({ user }) => {
         else
             {
                 localStorage.setItem('subscriberName', selectedFamilyMember)
-                await axios.get("/payWithWallet?id="+user._id,{params: body}).then(res => window.location.href = res.data.url).catch(err => console.log(err))}
+                await axios.get("/payWithWallet",{params: body}).then(res => window.location.href = res.data.url).catch(err => console.log(err))
     }
 
     const handleFamilyMemberSelect = async (event) => {
@@ -77,4 +77,4 @@ const CheckoutHealthPackage = ({ user }) => {
   )
 }
 
-export default PatientAuthorization(CheckoutHealthPackage)
+export default PatientAuthorization(CheckoutHealthPackage);

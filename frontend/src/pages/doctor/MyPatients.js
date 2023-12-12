@@ -10,6 +10,7 @@ const MyPatients = ({user}) => {
     const [Patients,setPatients] = useState([]);
     const[name,setName]=useState('');
     const id = user._id;
+    
     const search = async(e) => {
         e.preventDefault()
         const body = {}

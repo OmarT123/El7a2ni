@@ -199,19 +199,59 @@ const acceptDoctor = async (req, res) => {
   const { doctorId } = req.query;
 
   try {
-    const doctor = await doctorModel.findByIdAndUpdate(doctorId,{status: "approved"});
+    const currentDate = new Date();
+
+    const currentYear = currentDate.getFullYear();
+    const currentMonth = currentDate.getMonth() + 1;
+    const currentDay = currentDate.getDate();
+
+    const doc = await doctorModel.findById(doctorId)
+    const doctor = await doctorModel.findByIdAndUpdate(doctorId,{status: "approved", contract:`
+    <header className="header-contract">
+    <h1>Clinic Services Contract</h1>
+    <p>Effective Date: ${currentYear}/${currentMonth}/${currentDay}</p>
+  </header>
+
+  <section>
+    <h2>Parties</h2>
+    <p>This Agreement is entered into between:</p>
+    <p><strong>Provider:</strong> El7a2ni</p>
+    <p><strong>Client:</strong> ${doc.name}</p>
+    <P><strong>Clinic Markup:</strong> ${process.env.CLINIC_MARKUP}</p>
+  </section>
+
+  <section>
+    <h2>Scope of Services</h2>
+    <p>The Provider agrees to provide medical services to the Client, including but not limited to:</p>
+    <ul>
+      <li>Consultations</li>
+      <li>Examinations</li>
+      <li>Treatments</li>
+      <!-- Add more specific services as needed -->
+    </ul>
+  </section>
+
+  <section>
+    <h2>Terms and Conditions</h2>
+    <ol>
+      <li>The Client agrees to pay for services rendered based on the agreed-upon fee schedule.</li>
+      <li>Any additional services not covered by this agreement will be subject to additional charges.</li>
+      <!-- Add more terms and conditions as needed -->
+    </ol>
+  </section>
+
+  <footer>
+    <p>This contract is legally binding upon the parties as of the Effective Date.</p>
+    <p>Provider: Omar Abdelaty</p>
+    <p>Client: ${doc.name}</p>
+  </footer>
+    `});
 
     if (!doctor) {
       return res.json({ message: 'doctor not found' });
     }
 
-    // console.log(doctor)
-    // doctor.status = "approved";
-
     sendMail(doctor, "Application Accepted, please log in to view your contract")
-
-    // await doctor.save();
-
     return res.status(200).json({
       message: 'doctor request accepted successfully',
       doctor,

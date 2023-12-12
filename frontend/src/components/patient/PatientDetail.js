@@ -7,7 +7,7 @@ const PatientDetail = ({patient}) =>
     return (
         <Link to={link}>
         <div className="details">
-            <h4>{patient.name}</h4>
+            <h4><strong> Name: </strong>{patient.name}</h4>
             <p><strong>Birth Date: </strong>{patient.birthDate}</p>
             <p><strong>Gender: </strong>{patient.gender}</p>
             <p><strong>Mobile Number: </strong>{patient.mobileNumber}</p>
@@ -22,9 +22,12 @@ const PatientDetail = ({patient}) =>
             </div>
                 ))}
 
-             {/* Add the button here */}
             <Link to={`/uploadHealthRecords?id=${patient._id}`}>
                 <button>Upload Health Records</button>
+            </Link>
+
+            <Link to={`/AddAppointmentSlot?id=${patient._id}`}>
+                <button>Schedule Followup</button>
             </Link>
             
         </div>
