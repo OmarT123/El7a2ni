@@ -1,19 +1,21 @@
 import {useEffect, useState} from 'react';
 import axios from 'axios';
 
-const CheckoutAppointment = () => {
+import PatientAuthorization from '../../components/PatientAuthorization'
+
+const CheckoutAppointment = ({ user }) => {
     const [familyMembers, setFamilyMembers] = useState([])
     const [selectedFamilyMember, setSelectedFamilyMember] = useState('')
     const [appointment, setAppointment] = useState(0)
-    const patientId = "65775548b35fbc02783d8d9f"
+    // const patientId = "6575badad728c698d3d1d93d"
 
     useEffect(() => {
         const getFamilyMembers = async() => {
-            await axios.get("/getFamilyMembers?id="+patientId).then(res => setFamilyMembers(res.data))
+            await axios.get("/getFamilyMembers?id="+user._id).then(res => setFamilyMembers(res.data))
         }
         const getAppointment = async() => {
             const appointmentId = localStorage.getItem('appointment')
-            await axios.get("/getAnAppointment?id="+appointmentId,{params:{patientId}}).then(res => setAppointment(res.data))
+            await axios.get("/getAnAppointment?id="+appointmentId,{params:{patientId: user._id}}).then(res => setAppointment(res.data))
         }
         getFamilyMembers()
         getAppointment()
@@ -26,6 +28,7 @@ const CheckoutAppointment = () => {
         body['item']={name:"Appointment", price:appointment.price}
         body['type'] = 'appointment'
 
+        localStorage.setItem('attendantName', selectedFamilyMember)
         if (selectedFamilyMember === '')
             alert('Please Select a family member')
         else
@@ -37,10 +40,11 @@ const CheckoutAppointment = () => {
         body['url']='SuccessfulCheckoutAppointment'
         body['price']=appointment.price
         body['type'] = 'appointment'
+        localStorage.setItem('attendantName', selectedFamilyMember)
         if (selectedFamilyMember === '')
             alert('Please Select a family member')
         else
-            await axios.get("/payWithWallet?id="+patientId,{params: body}).then(res => window.location.href = res.data.url).catch(err => console.log(err))
+            await axios.get("/payWithWallet?id="+user._id,{params: body}).then(res => window.location.href = res.data.url).catch(err => console.log(err))
     }
 
     const handleFamilyMemberSelect = async (event) => {
@@ -54,9 +58,9 @@ const CheckoutAppointment = () => {
         <h3>Choose Family Member</h3>
         <select onChange={handleFamilyMemberSelect} value={selectedFamilyMember}>
             <option value="">Family Members...</option>
-            <option value="PATIENT NAME">PATIENT NAME</option>
+            <option value={user.name}>{user.name}</option>
             {familyMembers.length > 0 && familyMembers.map((member, index) => {
-                return <option key={index} value={member}>{member.name}</option>
+                return <option key={index} value={member.name}>{member.name}</option>
             }
             )}
         </select>
@@ -68,4 +72,4 @@ const CheckoutAppointment = () => {
   )
 }
 
-export default CheckoutAppointment
+export default PatientAuthorization(CheckoutAppointment)

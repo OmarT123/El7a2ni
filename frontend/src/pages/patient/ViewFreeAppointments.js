@@ -1,6 +1,7 @@
 import {useState, useEffect} from 'react'
 import axios from 'axios'
 import FreeAppointment from '../../components/patient/FreeAppointment'
+import PatientAuthorization from '../../components/PatientAuthorization'
 
 const ViewFreeAppointments = () => {
     const [appointments, setAppointments] = useState([])
@@ -39,4 +40,4 @@ const ViewFreeAppointments = () => {
     )
 }
 
-export default ViewFreeAppointments
+export default PatientAuthorization(ViewFreeAppointments)
