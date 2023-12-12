@@ -19,6 +19,8 @@ const {
   addAppointmentSlots,
   ViewDoctorWallet,
   viewDoctorAppointments,
+  acceptContract,
+  rejectContract
 } = require("./Routes/doctorController");
 const {
   addPatient,
@@ -47,6 +49,7 @@ const {
   viewMySubscribedHealthPackage,
   CancelSubscription,
   ViewMyWallet,
+  viewFreeAppointmentsByName,
 } = require("./Routes/patientController");
 const {
   addAdmin,
@@ -131,10 +134,12 @@ app.put("/buyHealthPackage",getUserFromTokenMiddleware, buyHealthPackage)
 app.put("/reserveAppointment", reserveAppointment)
 app.get("/sendCheckoutMail", sendCheckoutMail)
 app.get("/getHealthPackageForPatient", getHealthPackageForPatient)
-app.get("/viewFreeAppointments", viewFreeAppointments)
+app.get("/viewFreeAppointments",getUserFromTokenMiddleware, viewFreeAppointments)
 app.get("/getAnAppointment", getAnAppointment)
 app.put("/uploadHealthRecord", uploadHealthRecord);
 app.get("/getHealthRecords", getHealthRecords);
+app.get("/viewFreeAppointmentsByName",getUserFromTokenMiddleware, viewFreeAppointmentsByName)
+
 //Doctor
 app.get("/filterAppointmentsForDoctor",getUserFromTokenMiddleware ,filterAppointmentsForDoctor);
 app.post("/addAppointment",getUserFromTokenMiddleware,createAppointment);
@@ -149,6 +154,8 @@ app.post("/createPrescription",getUserFromTokenMiddleware,createPrescription);
 app.get("/viewDoctorAppointments", viewDoctorAppointments); 
 app.post("/addAppointmentSlots",getUserFromTokenMiddleware, addAppointmentSlots);
 app.get("/ViewDoctorWallet",ViewDoctorWallet)
+app.put("/acceptContract", getUserFromTokenMiddleware, acceptContract)
+app.put("/rejectContract", getUserFromTokenMiddleware, rejectContract)
 
 //user 
 

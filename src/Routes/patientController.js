@@ -4,11 +4,14 @@ const appointmentModel = require("../Models/Appointment.js");
 const doctorModel = require("../Models/Doctor.js");
 const medicineModel = require("../Models/Medicine.js")
 const prescriptionModel = require("../Models/Prescription.js");
+const HealthPackageModel = require("../Models/HealthPackage.js");
 const healthPackageModel = require('../Models/HealthPackage.js')
 const userModel = require("../Models/User.js")
 const mongoose = require("mongoose");
 const stripe = require("stripe")(process.env.STRIPE_PRIVATE_KEY)
 const nodemailer = require('nodemailer');
+const bcrypt = require('bcrypt');
+require("dotenv").config();
 const HealthPackageModel = require("../Models/HealthPackage.js");
 const bcrypt = require('bcrypt');
 
@@ -18,7 +21,7 @@ const addPatient = async(req,res) => {
   const{username, name, email, password, birthDate, gender, mobileNumber,emergencyContact} = req.body;
   try{
     if (!username || !password || !name || !birthDate || !gender || !mobileNumber || !emergencyContact || !email) {
-      return res.status(400).json({ success: false, message: "All fields are required. Please provide valid information for each field!" });
+      return res.json({ success: false, message: "All fields are required. Please provide valid information for each field!" });
     }
     const user = await userModel.findOne({username})
   if (user)
@@ -46,7 +49,7 @@ const addPatient = async(req,res) => {
     })
     await user.save();
 
-    res.json("Registered Successfully !!");
+    res.json({message: "Registered Successfully !!"});
   }
   }catch(error){
       res.json({error:error.message})
@@ -89,6 +92,7 @@ const createFamilyMember = async (req, res) => {
     res.json("Error in adding a family member!!");
   }
 };
+
 const searchForDoctorByNameSpeciality = async (req, res) => {
   const baseQuery = {};
   if (req.query.name) {
@@ -280,26 +284,7 @@ const filterDoctorsSpecialityDate = async(req,res)=>{
   }
 }
 
-const getDoctors = async (req, res) => {
-  try{
-    const doctors = await doctorModel.find({})
-    const clinicMarkUp= 10;
-    const patientId = req.user._id;
-    const patient = await patientModel.findById(patientId).populate({path:"healthPackage"});
-    const discount = 0
-    let data=[]
-    for (let index = 0; index < doctors.length; index++) {
-        const element = doctors[index]._doc;
-        const sessionPrice=(element.hourlyRate+10/100*clinicMarkUp-discount)
-        data.push( {...element,sessionPrice:sessionPrice});
-    }
-    res.status(200).json(data)
-  }
 
-  catch(error){
-    res.status(400).json({error:error.message})
-  }
-}
 
 
 const viewMySubscribedHealthPackage = async (req, res) => {
@@ -311,6 +296,9 @@ const viewMySubscribedHealthPackage = async (req, res) => {
       console.log('Patient not found');
       return;
     }
+
+    const extendedHealthPackages = [];
+
     const healthPackagePatient = patient.healthPackage;
     if(healthPackagePatient== undefined)
       res.json();
@@ -319,24 +307,47 @@ const viewMySubscribedHealthPackage = async (req, res) => {
     const endDate = healthPackagePatient.endDate;
     const healthPackage = await HealthPackageModel.findById(healthPackagePatient.healthPackageID);
     const extendedHealthPackage = {
-    ...healthPackage.toObject(),        // Spread properties from healthPackage
-    status: status,
-    endDate: endDate,
+      ...healthPackage.toObject(),        // Spread properties from healthPackage
+      status: status,
+      endDate: endDate,
+    patientName: patient.name,
     };
-    //console.log(extendedHealthPackage);
-    res.json(extendedHealthPackage);
-  }
+    extendedHealthPackages.push(extendedHealthPackage);
+    }
+
+    // Process family members' health packages
+    for (const familyMemberId of patient.familyMembers) {
+      const familyMember = await familyModel.findById(familyMemberId).populate('healthPackage').exec();
+
+      if (familyMember) {
+        const healthPackageFamilyMember = familyMember.healthPackage;
+        if (healthPackageFamilyMember != undefined) {
+          const status = healthPackageFamilyMember.status;
+          const endDate = healthPackageFamilyMember.endDate;
+          const healthPackage = await HealthPackageModel.findById(healthPackageFamilyMember.healthPackageID);
+          const extendedHealthPackage = {
+            ...healthPackage.toObject(),
+            patientName: familyMember.name,
+            status: status,
+            endDate: endDate,
+          };
+          extendedHealthPackages.push(extendedHealthPackage);
+        }
+      }
+    }
+
+    res.json(extendedHealthPackages);
   }
   catch (err) {
     res.json(err.message);
-
+    
   }
 };
 
 
 const CancelSubscription= async (req, res) => {
-
-try{
+  
+  try{
   const patientId = req.query.id;
   const patient = await patientModel.findById(patientId);
   if (!patient) {
@@ -344,7 +355,7 @@ try{
   }
   patient.healthPackage.status = "cancelled";
   await patient.save();
-
+  
   res.json({ message: 'Subscription canceled successfully' });
 } catch (error) {
   console.error('Error canceling subscription:', error.message);
@@ -366,7 +377,7 @@ const ViewMyWallet = async (req, res) => {
   }
   catch (err) {
     res.json(err.message);
-
+    
   }
 };
 
@@ -377,13 +388,13 @@ const viewPatientAppointments = async (req, res) => {
     const currentDate = new Date();
 
     const upcomingAppointments = await appointmentModel
-      .find({
+    .find({
         patient: patientID,
         date: { $gte: currentDate },
       })
       .populate({ path: "doctor" });
 
-    const pastAppointments = await appointmentModel
+      const pastAppointments = await appointmentModel
       .find({
         patient: patientID,
         date: { $lt: currentDate },
@@ -449,7 +460,7 @@ const payWithWallet = async(req, res) => {
     //   const healthPackage = await healthPackageModel.findById(healthPackageId)
     //   price *= (1 - (healthPackage.doctorDiscount)/100)
     // }
-  if (patient.wallet < price)
+    if (patient.wallet < price)
     {
       return res.json({success: false, message:"Insufficient funds!"})
     }
@@ -464,7 +475,6 @@ const payWithWallet = async(req, res) => {
 
 const buyHealthPackage = async (req, res) => {
   const patientId = req.user._id;
-
   const healthPackageId = req.body.healthPackageId
   try {
     const curDate = new Date()
@@ -502,7 +512,7 @@ const sendCheckoutMail = async (req, res) => {
   const patientId = req.query.id
   const patient = await patientModel.findById(patientId)
   const message = req.query.message
-
+  
   const transporter = nodemailer.createTransport({
     service: process.env.NODEMAILER_SERVICE,
     auth: {
@@ -533,11 +543,72 @@ const getHealthPackageForPatient = async (req,res) => {
   {res.json(err.message)}
 }
 
+const getDoctors = async (req, res) => {
+  try{
+    const doctors = await doctorModel.find({})
+    const clinicMarkUp= process.env.CLINIC_MARKUP;
+    const patientId = req.user._id;
+    const patient = await patientModel.findById(patientId);
+    let discount = 1
+    if (patient.healthPackage)
+    {
+      const healthPackageID = patient.healthPackage.healthPackageID.toString()
+      const healthPackage = await healthPackageModel.findById(healthPackageID).catch(err=> console.log(err.message))
+      discount = 1 - healthPackage.doctorDiscount/100;
+    }
+    let data=[]
+    for (let index = 0; index < doctors.length; index++) {
+        const element = doctors[index]._doc;
+        const sessionPrice=((element.hourlyRate+10/100*clinicMarkUp)*discount)
+        // console.log(sessionPrice)
+        data.push( {...element,sessionPrice:sessionPrice});
+    }
+    res.status(200).json(data)
+  }
+  
+catch(error){
+  res.status(400).json({error:error.message})
+  }
+}
+
 const viewFreeAppointments = async(req,res) => {
   try {
     const allAppointments = await appointmentModel.find({status:"free"}).populate({path:"doctor"})
-    const result = allAppointments.map(app => {return {appointment: app, price: app.doctor.hourlyRate}})
-    
+    const clinicMarkUp= process.env.CLINIC_MARKUP;
+    const patientId = req.user._id;
+    const patient = await patientModel.findById(patientId);
+
+    let discount = 1
+    if (patient.healthPackage)
+    {
+      const healthPackageID = patient.healthPackage.healthPackageID.toString()
+      const healthPackage = await healthPackageModel.findById(healthPackageID).catch(err=> console.log(err.message))
+      discount = 1 - healthPackage.doctorDiscount/100;
+    }
+    const result = allAppointments.map(app => {return {appointment: app, price: (app.doctor.hourlyRate+10/100*clinicMarkUp)*discount}})
+    res.json(result)
+  }
+  catch(err) {console.log(err)}
+}
+
+const viewFreeAppointmentsByName = async(req,res) => {
+  try {
+    const name = req.query.name
+    const searchName = new RegExp(name,"i")
+    const allAppointments = await appointmentModel.find({status:"free"}).populate({path:"doctor"})
+    const appointments = allAppointments.filter(app => searchName.test(app.doctor.name))
+    const clinicMarkUp= process.env.CLINIC_MARKUP;
+    const patientId = req.user._id;
+    const patient = await patientModel.findById(patientId);
+
+    let discount = 1
+    if (patient.healthPackage)
+    {
+      const healthPackageID = patient.healthPackage.healthPackageID.toString()
+      const healthPackage = await healthPackageModel.findById(healthPackageID).catch(err=> console.log(err.message))
+      discount = 1 - healthPackage.doctorDiscount/100;
+    }
+    const result = appointments.map(app => {return {appointment: app, price: (app.doctor.hourlyRate+10/100*clinicMarkUp)*discount}})
     res.json(result)
   }
   catch(err) {console.log(err)}
@@ -550,17 +621,17 @@ const getAnAppointment = async (req, res) => {
     const doctor = appointment.doctor
     const patientId = req.query.patientId
     const patient = await patientModel.findById(patientId)
-    let price = doctor.hourlyRate
-    
+    const clinicMarkUp = process.env.CLINIC_MARKUP
+    let price = doctor.hourlyRate+clinicMarkUp
+    let discount = 1
     if (patient.healthPackage)
     {
-      const healthPackageId = patient.healthPackage.healthPackageID
-      const healthPackage = await healthPackageModel.findById(healthPackageId)
-      // console.log(healthPackage)
-      price *= (1 - (healthPackage.doctorDiscount)/100)
+      const healthPackageID = patient.healthPackage.healthPackageID.toString()
+      const healthPackage = await healthPackageModel.findById(healthPackageID).catch(err=> console.log(err.message))
+      discount = 1 - healthPackage.doctorDiscount/100;
     }
-
-    const response = {appointment: appointment, price: price}
+    
+    const response = {appointment: appointment, price: (doctor.hourlyRate+10/100*clinicMarkUp)*discount}
     res.json(response)
   }
   catch(err){
@@ -570,14 +641,14 @@ const getAnAppointment = async (req, res) => {
 
 const uploadHealthRecord = async (req, res) =>{
   try{
-  let id = req.body.id;
-  let healthRecord = req.body.base64;
+    let id = req.body.id;
+    let healthRecord = req.body.base64;
   const patient = await patientModel.findById(id);
   patient.HealthRecords.push(healthRecord);
   await patient.save();
   res.json('Health record added successfully');
-  }catch (error) {
-    res.json('Internal server error' );
+}catch (error) {
+  res.json('Internal server error' );
   }
 }
 
@@ -599,7 +670,7 @@ const linkFamilyMemberAccount = async (req, res) => {
   try {
     const patientId = new mongoose.Types.ObjectId(req.query.id);
     const { email, phone, relationToPatient } = req.body;
-
+    
     // Validate that the relation is restricted to wife/husband/children
     const allowedRelations = ["wife", "husband", "children"];
     if (!allowedRelations.includes(relationToPatient)) {
@@ -618,7 +689,7 @@ const linkFamilyMemberAccount = async (req, res) => {
     const familyMemberToLink = await patientModel.findOne({
       $or: [{ email }, { mobileNumber: phone }],
     });
-
+    
     if (!familyMemberToLink) {
       return res.status(404).json({ error: "Family member not found." });
     }
@@ -629,7 +700,7 @@ const linkFamilyMemberAccount = async (req, res) => {
         error: "Cannot link the primary patient's account as a family member.",
       });
     }
-
+    
     // Check if the patient is not already linked
     const existingFamilyMember = await familyModel.findOne({
       patient: primaryPatient._id,
@@ -640,19 +711,19 @@ const linkFamilyMemberAccount = async (req, res) => {
       return res
         .status(400)
         .json({ error: "Family member is already linked to the patient." });
-    }
+      }
 
-    // Create a family member entry
-    const familyMember = await familyModel.create({
+      // Create a family member entry
+      const familyMember = await familyModel.create({
       patient: primaryPatient._id,
       familyMember: familyMemberToLink._id,
       relationToPatient,
     });
-
+    
     // Update the primary patient's family members
     primaryPatient.familyMembers.push(familyMember._id);
     await primaryPatient.save();
-
+    
     res.json("Family member linked successfully.");
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -673,6 +744,7 @@ module.exports = {
   selectPrescription,
   getDoctors,
   linkFamilyMemberAccount,
+  viewPatientAppointments,
   payWithCard,
   payWithWallet,
   buyHealthPackage,
@@ -686,5 +758,5 @@ module.exports = {
   viewMySubscribedHealthPackage,
   CancelSubscription,
   ViewMyWallet,
-  viewPatientAppointments
+  viewFreeAppointmentsByName
 };

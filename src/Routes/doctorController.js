@@ -47,7 +47,7 @@ const filterAppointmentsForDoctor = async (req, res) => {
         .find(filterQuery)
         .populate({ path: "patient" });
       if (filteredAppointments.length === 0) {
-        return res.json("No matching appointments found for the Doctor." );
+        return res.json([]);
       }
       res.json(filteredAppointments);
     } catch (err) {
@@ -60,7 +60,7 @@ const filterAppointmentsForDoctor = async (req, res) => {
     try {
       const filteredAppointments = await appointmentModel.find(filterQuery);
       if (filteredAppointments.length === 0) {
-        return res.json("No matching appointments found for the Doctor." );
+        return res.json([]);
       } 
       else{
         res.json(filteredAppointments);
@@ -368,6 +368,26 @@ const createAppointment = async (req, res) => {
   }
 };
 
+const acceptContract = async(req, res) => {
+  try {
+    let doctorId = req.user._id
+    await doctorModel.findByIdAndUpdate(doctorId, {status: "accepted"})
+    res.json('The contract has been accepted')
+  }catch (err) {
+    res.json(err.message)
+  }
+}
+
+const rejectContract = async(req, res) => {
+  try {
+    let doctorId = req.user._id
+    await doctorModel.findByIdAndUpdate(doctorId, {status: "rejected"})
+    res.json('The contract has been rejected')
+  }catch (err) {
+    res.json(err.message)
+  }
+}
+
 
 
 module.exports = {
@@ -383,5 +403,7 @@ module.exports = {
   addAppointmentSlots,
   ViewDoctorWallet,
   viewDoctorAppointments,
-  addHealthRecord
+  addHealthRecord,
+  acceptContract,
+  rejectContract
 };

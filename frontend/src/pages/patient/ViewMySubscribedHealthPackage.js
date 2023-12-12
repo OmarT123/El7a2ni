@@ -1,11 +1,11 @@
 import axios from 'axios'
 import {useState , useEffect} from 'react'
 import { Navigate, useNavigate  } from 'react-router-dom';
-
+import CancelSubscription from './CancelSubscription'; 
 
 const ViewMySubscribedHealthPackage = () => {
 
-    const [HealthPackage, setHealthPackage] = useState(null);
+    const [HealthPackage, setHealthPackage] = useState([]);
     const id = "6575badad728c698d3d1d93d"
     const navigate = useNavigate ();
 
@@ -28,18 +28,23 @@ const ViewMySubscribedHealthPackage = () => {
 
   return (
     <div>
-      <h2>Subscribed Health Package</h2>
-      {HealthPackage ? (
+      <h2>Subscribed Health Packages</h2>
+      {HealthPackage && HealthPackage.length > 0 ? (
         <div>
-         
-          <p>Health Package Name: {HealthPackage.name}</p>
-          <p>Price: {HealthPackage.price}</p>
-          <p>Family Discount: {HealthPackage.familyDiscount}</p>
-          <p>Doctor Discount: {HealthPackage.doctorDiscount}</p>
-          <p>Medicine Discount: {HealthPackage.medicineDiscount}</p>
-          <p>Status: {HealthPackage.status}</p>
-          <p>End Date: {new Date(HealthPackage.endDate).toLocaleString().substring(0, 9)}</p>
-          {/* Add more details as needed */}
+          {HealthPackage.map((packageItem, index) => (
+            <div key={index}>
+              <p>Name of package owner: {packageItem.patientName}</p>
+              <p>Health Package Name: {packageItem.name}</p>
+              <p>Price: {packageItem.price}</p>
+              <p>Family Discount: {packageItem.familyDiscount}</p>
+              <p>Doctor Discount: {packageItem.doctorDiscount}</p>
+              <p>Medicine Discount: {packageItem.medicineDiscount}</p>
+              <p>Status: {packageItem.status}</p>
+              <p>End Date: {new Date(packageItem.endDate).toLocaleString().substring(0, 9)}</p>
+              <CancelSubscription />
+              <hr />
+            </div>
+          ))}
         </div>
       ) : (
         <div>
@@ -51,6 +56,7 @@ const ViewMySubscribedHealthPackage = () => {
       )}
     </div>
   );
+  
 };
 
 
