@@ -1,12 +1,12 @@
 import axios from 'axios'
-import {useState,useEffect} from 'react'
+import {useState , useEffect} from 'react'
 
-const RegisterPatient = () => {
+const RegisterPatient = ({user}) => {
     const [name, setName] = useState('')
     const [username, setUsername] = useState('')
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
-    const [birthDate, setBirthDate] = useState(null)
+    const [birthDate, setBirthDate] = useState('');
     const [gender, setGender] = useState('')
     const [mobileNumber, setMobileNumber] = useState('')
     const [emergencyContact, setEmergencyContact] = useState({})
@@ -29,12 +29,19 @@ const RegisterPatient = () => {
         if(!name || !username || !email || !password || !birthDate || !gender || !mobileNumber || !emergencyContact)
             alert('Please fill all the fields')
         else{
-            const body = {name,username,email,password,birthDate,gender,mobileNumber,emergencyContact}
-            await axios.post("/addPatient",body).then(res=>alert(res.data.message)).catch(err=>console.log(err))
-        }
+            try {
+                const body = { name, username, email, password, birthDate, gender, mobileNumber, emergencyContact };
+                const response = await axios.post('/addPatient', body);
+                setResponseMessage(response.data);
+              } catch (error) {
+                console.error('Registration error:', error);
+                setResponseMessage('An error occurred during registration');
+              }
+            }
     }
 
     return (
+       
         <div className="search-container">
             {showContent && (
             <form className='create'>
@@ -106,7 +113,7 @@ const RegisterPatient = () => {
                 />
 
                 <label>relation:</label>
-                <select onChange={(e)=> setEmergencyContact(prev => ({...prev, mobileNumber:e.target.value}))}>
+                <select onChange={(e)=> setEmergencyContact(prev => ({...prev, relation:e.target.value}))}>
                 <option value="">Select an option</option>
                 <option value="husband">Husband</option>
                 <option value="wife">Wife</option>
@@ -116,12 +123,16 @@ const RegisterPatient = () => {
 
 
                 <button onClick={register}>Register</button>
+                {responseMessage && <div>{responseMessage}</div>}
             </form>
-            )}
+              ) }
             <div className='search-results'></div>
+         
         </div>
+        
     )
-
+    
+            
 }
 
-export default RegisterPatient
+export default RegisterPatient ;

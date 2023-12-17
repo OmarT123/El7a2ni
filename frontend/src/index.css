@@ -495,3 +495,384 @@ header {
 .contract > button {
   margin: 20px
 }
+
+
+/* google font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;800&family=VT323&display=swap');
+
+/* layout */
+:root {
+  --primary: #1aac83;
+  --error: #e7195a;
+}
+body {
+  background: #f1f1f1;
+  margin: 0;
+  font-family: "Poppins";
+}
+header {
+  background: #fff;
+}
+header .container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+header a {
+  color: #333;
+  text-decoration: none;
+}
+.pages{
+  max-width: 1400px;
+  padding: 20px;
+  margin: 0 auto;
+}
+/* homepage */
+.home {
+  display: grid;
+  grid-template-columns: 3fr 1fr;
+  gap: 100px;
+}
+.pharmacist-details, .medicine-details {
+  background: #fff;
+  border-radius: 4px;
+  margin: 20px auto;
+  padding: 20px;
+  position: relative;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
+}
+.pharmacist-details h4, .medicine-details h4 {
+  margin: 0 0 10px 0;
+  font-size: 1.2em;
+  color: var(--primary);
+}
+.pharmacist-details p, .medicine-details p {
+  margin: 0;
+  font-size: 0.9em;
+  color: #555;
+}
+.pharmacist-details span {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  cursor: pointer;
+  background: #f1f1f1;
+  padding: 6px;
+  border-radius: 50%;
+  color: #333;
+}
+/* Delete Patient */
+
+/* Delete Patient */
+
+.delete-patient-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 10px; 
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
+}
+
+h3 {
+  font-size: 1.8rem; 
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.patient-card {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 15px; 
+  margin-bottom: 15px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.patient-card p {
+  margin: 10px 0; 
+}
+.familyMember-card p {
+  margin: 10px 0;
+}
+.familyMember-card {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 15px; 
+  margin-bottom: 15px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+button {
+  background-color: #ff6347;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 8px 16px; 
+  cursor: pointer;
+  font-size: 1rem; 
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #d9534f;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+
+/* Delete Pharmacist */
+
+.delete-pharmacist-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 10px; /* Slightly increased border radius for a softer look */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Add a subtle shadow for depth */
+}
+
+h3 {
+  font-size: 1.8rem; /* Increased font size for headings */
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.pharmacist-card {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 15px; /* Increased padding for patient cards */
+  margin-bottom: 15px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.pharmacist-card p {
+  margin: 10px 0; /* Increased spacing between paragraphs */
+}
+
+button {
+  background-color: #ff6347;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 8px 16px; /* Increased padding for buttons */
+  cursor: pointer;
+  font-size: 1rem; /* Increased font size for buttons */
+  transition: background-color 0.3s; /* Smooth hover transition */
+}
+
+button:hover {
+  background-color: #d9534f;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Add a shadow on hover for interactive feel */
+}
+
+.search-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  /*height: 100vh;*/
+  
+}
+
+.form-container {
+  max-width: 40%;
+  margin-right: 40px;
+}
+
+.create {
+ /* display: flex;
+  flex-direction: column;*/
+  /*max-width: 40%;*/
+  /*margin: 0 auto;
+  margin-top: 20px;
+  padding: 30px;
+  border-radius: 7px;*/
+  /*background-color: #fff;*/
+  display: flex;
+  flex-direction: column;
+  max-width: 400px; /* Adjust the maximum width of the form */
+  width: 100%;
+  padding: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.form-container > .create {
+  max-width: 100%;
+}
+
+.create > h3 {
+  text-align: center;
+}
+
+.create > button {
+  margin: 10px auto;
+  width: 50%
+}
+
+.search-results {
+  display: flex;
+  flex-direction: column;
+  width: 60%;
+  padding: 30px;
+  border-radius: 7px;
+}
+
+.family-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.family-members {
+  width: 60%;
+  font-size: 10px;
+}
+
+.family-form {
+  max-height: 330px
+}
+
+.details {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  text-align: center;
+  flex-wrap: wrap;
+  font-size: 10px;
+  margin: 10px;
+  padding: 10px 20px;
+  border-radius: 5px;
+  background-color: #fff;
+}
+
+a {
+    color:#333;
+    text-decoration: none;
+} 
+
+.application {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+
+.horizontal {
+  display: flex;
+  flex-direction: column;
+}
+
+.horizontal:first-child {
+  width: 65%
+}
+
+.horizontal:nth-child(2) {
+  width: 30%
+}
+
+.horizontal > iframe, .horizontal > button {
+  margin-bottom: 15px;
+  width: 90%
+}
+
+.horizontal:first-child > button {
+  width: 30%;
+}
+
+/* Apply this style to your number input */
+input[type="number"] {
+  -moz-appearance: textfield; /* Firefox */
+}
+
+/* Remove the arrows in Chrome, Safari, and Edge */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Remove the arrows in Internet Explorer */
+input[type="number"] {
+  -ms-appearance: none;
+}
+
+.checkout > select{
+  margin: 10px 0;
+}
+
+.checkout-address {
+  display: flex;
+  flex-direction: row;
+  border-bottom: 10px;
+}
+
+.order-details {
+  background-color: #9f9f9f;
+  border-radius: 5px;
+  width: 30%;
+  max-height: 220px;
+}
+
+.order-details > h3 {
+  align-items: center;
+  text-align: center;
+}
+
+.address {
+  display: flex;
+  flex-direction: column;
+  width: 50%;
+  margin-right: 10px;
+}
+
+.address > input{
+  margin-bottom: 10px;
+  width: 99%
+}
+
+.address > .address-name > input:first-child {
+  width: 48%;
+  margin-right: 12px;
+  margin-bottom:10px;
+}
+.address > .address-name > input:nth-child(2) {
+  width: 48%;
+  margin-bottom:10px;
+}
+
+.Orders {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.Orders > div{
+  background-color: #ddd;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  padding: 0 20px
+}
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.loading-spinner {
+  border: 8px solid #f3f3f3;
+  border-top: 8px solid #3498db;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+}
+

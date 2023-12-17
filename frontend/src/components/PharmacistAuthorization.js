@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import NotAuthorized from './NotAuthorized';
+import NotAuthorized from '../../../../Pharmacy_Team03/frontend/src/components/NotAuthorized';
 
-const PatientAuthorization = (WrappedComponent) => {
+const PharmacistAuthorization = (WrappedComponent) => {
 
-  const PatientAuthorization = (props) => {
+  const PharmacistAuthorization = (props) => {
     const [showContent, setShowContent] = useState(false);
     const [user, setUser] = useState(null);
     const navigate = useNavigate();
@@ -22,7 +22,7 @@ const PatientAuthorization = (WrappedComponent) => {
             const { success, type , user } = response.data;
 
             if (success) {
-              if (type === 'patient') {
+              if (type === 'pharmacist') {
                 setShowContent(true);
                 setUser(user); 
               } else {
@@ -46,9 +46,9 @@ const PatientAuthorization = (WrappedComponent) => {
     );
   };
 
-  return PatientAuthorization;
+  return PharmacistAuthorization;
 };
 
 
 
-export default PatientAuthorization;
+export default PharmacistAuthorization;
