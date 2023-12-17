@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import NotAuthorized from '../../../../Pharmacy_Team03/frontend/src/components/NotAuthorized';
+import NotAuthorized from './NotAuthorized';
 
 const AdminAuthorization = (WrappedComponent) => {
   const AdminAuthorization = (props) => {

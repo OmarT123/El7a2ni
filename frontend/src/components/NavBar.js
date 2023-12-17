@@ -5,7 +5,7 @@ const NavBar = () => {
         <header style={headerStyle}>
             <div className='container' style={containerStyle}>
                 <Link to="/" style={linkStyle}>
-                    <h1 style={titleStyle}>Virtual Clinic</h1>
+                    <h1 style={titleStyle}>El7a2ni</h1>
                 </Link>
             </div>
         </header>

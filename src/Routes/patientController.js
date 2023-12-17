@@ -9,7 +9,6 @@ const userModel = require("../Models/User.js")
 const orderModel = require('../Models/Order.js')
 const adminModel = require('../Models/Admin');
 const mongoose = require("mongoose");
-const { default: mongoose } = require('mongoose');
 const stripe = require("stripe")(process.env.STRIPE_PRIVATE_KEY)
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt');

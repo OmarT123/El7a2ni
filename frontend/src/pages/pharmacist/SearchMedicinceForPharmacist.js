@@ -1,5 +1,4 @@
-import axios from 'axios'
-import {useState,useEffect} from 'react'
+
 import SearchMedicine from '../../components/SearchMedicine'
 import PharmacistAuthorization from '../../components/PharmacistAuthorization'
 
