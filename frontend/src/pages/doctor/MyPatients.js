@@ -2,34 +2,30 @@ import axios from 'axios';
 import {useState,useEffect} from 'react'
 
 import PatientDetail from '../../components/patient/PatientDetail'
+import DoctorAuthorization from '../../components/DoctorAuthorization';
 
 
 
-const MyPatients = () => { 
+const MyPatients = ({user}) => { 
     const [Patients,setPatients] = useState([]);
     const[name,setName]=useState('');
-   //hardcoded id for a doctor
-    const id = "65496e4a5c31c981636dc271"
-    
+    const id = user._id;
     
     const search = async(e) => {
         e.preventDefault()
         const body = {}
         if (name !== "")
             body['name']=name
-        await axios.get("/viewmypatientsbyname?id="+id,{params : body})
+        await axios.get("/viewmypatientsbyname",{params : body})
         .then((res)=>{
-            console.log(res.data)
-            //console.log(docs)
             setPatients(res.data)
         }).catch((err)=>console.log(err))
     }
 
     const getPatients =  async () => {
-         await axios.get('/viewmypatients?id='+id).then(
+         await axios.get('/viewmypatients').then(
         (res) => { 
-            setPatients(res.data)
-
+            setPatients(res.data);
         }
          );
     }
@@ -58,4 +54,4 @@ const MyPatients = () => {
 );
 
         }
-export default MyPatients
+export default DoctorAuthorization(MyPatients) ;

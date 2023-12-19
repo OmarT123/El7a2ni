@@ -8,9 +8,7 @@ const familyMemberSchema = new Schema(
       required: true,
     },
     nationalId: {
-      type: String,
-      unique: true,
-      required: true,
+      type: String
     },
     age: {
       type: Number,
@@ -23,6 +21,25 @@ const familyMemberSchema = new Schema(
     relationToPatient: {
       type: String,
       required: true,
+    },
+    healthPackage:{
+      type: {
+        healthPackageID: {
+          type : mongoose.Schema.Types.ObjectId,
+          ref : 'HealthPackage',
+        },
+        status: String,
+        endDate: Date,
+      },
+    },
+    healthPackageDiscount:{
+      type: {
+        healthPackageID: {
+          type : mongoose.Schema.Types.ObjectId,
+          ref : 'HealthPackage',
+        },
+        discount: Number,
+      },
     },
   },
   { timestamps: true }

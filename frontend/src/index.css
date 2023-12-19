@@ -388,4 +388,110 @@ strong {
   font-weight: bold;
   color: #999;
 }
+.application {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
 
+
+/* Add this style to set the overall layout of the application */
+.application {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+
+/* Add this style for the doctor information section */
+.doctor-info {
+  margin-bottom: 20px;
+}
+
+/* Style for horizontal layout */
+.horizontal {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+/* Style for iframes and buttons in horizontal layout */
+.horizontal > iframe,
+.horizontal > button {
+  flex: 1;
+  margin-right: 10px;
+}
+
+/* Adjust the width of the first button in the horizontal layout */
+.horizontal:first-child > button {
+  width: 30%;
+}
+
+/* Style for buttons in the second horizontal layout */
+.horizontal:nth-child(2) > button {
+  width: 48%; /* Adjust as needed */
+}
+
+/* Add media query for responsiveness */
+@media (max-width: 768px) {
+  .horizontal {
+    flex-direction: column;
+  }
+}
+
+.checkout {
+  display: flex;
+  flex-direction: column;
+}
+
+.checkout > select {
+  width: 40%
+}
+
+.checkout > h3, .checkout > button {
+  margin-bottom: 10px;
+}
+
+.checkout > button {
+  width: 30%
+}
+
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.loading-spinner {
+  border: 8px solid #f3f3f3;
+  border-top: 8px solid #3498db;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.contract {
+  padding: 10px;
+  background-color: #fff;
+  padding-left: 40px;
+  margin-bottom: 15px;
+  border-radius: 7px
+}
+
+header {
+  padding: 10px
+}
+
+.contract > button {
+  margin: 20px
+}

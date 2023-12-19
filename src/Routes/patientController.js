@@ -4,51 +4,60 @@ const appointmentModel = require("../Models/Appointment.js");
 const doctorModel = require("../Models/Doctor.js");
 const medicineModel = require("../Models/Medicine.js")
 const prescriptionModel = require("../Models/Prescription.js");
+const healthPackageModel = require("../Models/HealthPackage.js");
 const userModel = require("../Models/User.js")
 const mongoose = require("mongoose");
+const stripe = require("stripe")(process.env.STRIPE_PRIVATE_KEY)
+const nodemailer = require('nodemailer');
+const bcrypt = require('bcrypt');
+require("dotenv").config();
 
-const createPatient = async (req, res) => {
-  const {
-    username,
-    name,
-    email,
-    password,
-    birthDate,
-    gender,
-    mobileNumber,
-    emergencyContact,
-  } = req.body;
-  try {
+
+const addPatient = async(req,res) => {
+
+  const{username, name, email, password, birthDate, gender, mobileNumber,emergencyContact} = req.body;
+  try{
+    if (!username || !password || !name || !birthDate || !gender || !mobileNumber || !emergencyContact || !email) {
+      return res.json({ success: false, message: "All fields are required. Please provide valid information for each field!" });
+    }
     const user = await userModel.findOne({username})
-    if (user)
-    {
-      res.status(409).json("Username already exists")
-    }
-    else {
-      const patient = await patientModel.create({
-        username,
-        name,
-        email,
-        password,
-        birthDate,
-        gender,
-        mobileNumber,
-        emergencyContact,
-      });
-      await userModel.create({
-        username, 
-        userId : patient._id
-      })
-      res.json("Created Successfully");
-    }
-  } catch (error) {
-    res.status(404).json({ error: error.message });
+  if (user)
+  {
+    res.json("Username already exists")
   }
-};
+  else{
+    
+    const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%^&*()?[\]{}|<>])[A-Za-z\d@$!%^&*()?[\]{}|<>]{10,}$/;
+    if (!passwordRegex.test(password)) {
+      return res.json({
+        success: false,
+        message: "Password must contain at least 1 lowercase letter, 1 uppercase letter, 1 number, 1 special character, and be at least 10 characters long.",
+      });
+    }
+    const salt = await bcrypt.genSalt();
+    const encryptedPassword = await bcrypt.hash(password ,salt)
+    const patient = await patientModel.create({username,name,email, password :encryptedPassword,birthDate, gender, mobileNumber,emergencyContact});
+    await patient.save();
+
+   const user = await userModel.create({
+      username, 
+      userId : patient._id,
+      type : 'patient'
+    })
+    await user.save();
+
+    res.json({message: "Registered Successfully !!"});
+  }
+  }catch(error){
+      res.json({error:error.message})
+  }
+}
+
+
 
 const createFamilyMember = async (req, res) => {
   try {
-    let patientId = req.query.id;
+    let patientId = req.user._id;
     let name = req.body.name;
     let nationalId = req.body.nationalId;
     let age = req.body.age;
@@ -71,7 +80,7 @@ const createFamilyMember = async (req, res) => {
     });
     const patient = await patientModel.findById(patientId);
     if (!patient)
-      return res.status(404).send("No such patient found in the database.");
+      return res.send("No such patient found in the database.");
     await familyMember.save();
     patient.familyMembers.push(familyMember.id);
     await patient.save();
@@ -80,6 +89,7 @@ const createFamilyMember = async (req, res) => {
     res.json("Error in adding a family member!!");
   }
 };
+
 const searchForDoctorByNameSpeciality = async (req, res) => {
   const baseQuery = {};
   if (req.query.name) {
@@ -98,13 +108,22 @@ const searchForDoctorByNameSpeciality = async (req, res) => {
 
 const filterPrescriptionByDateDoctorStatus = async (req, res) => {
   const baseQuery = {};
-  baseQuery["patient"] =  new mongoose.Types.ObjectId(req.query.id)
+  baseQuery["patient"] =  req.user._id;
   if (req.query.doctor) {
-    //baseQuery["doctor"] = new RegExp(req.body.doctor, "i");
-    baseQuery["doctor"] = new mongoose.Types.ObjectId(req.query.doctor);
+    const searchName = req.query.doctor;
+    const searchQuery = new RegExp(searchName, "i"); // 'i' flag makes it case-insensitive
+    try {
+  
+      const doctor = await doctorModel.find({ name: searchQuery });
+      if(results.length == 0){
+        res.json("Doctor is not Found !!" );
+      }
+    } catch (error) {
+      res.status(500).json(error.message);
+  }
+    baseQuery["doctor"] = doctor._id;
   }
   if (req.query.filled || req.query.filled == false) {
-    //baseQuery["filled"] = new RegExp(req.body.filled, "i");
     baseQuery["filled"] = req.query.filled;
   }
   if (req.query.date) {
@@ -116,13 +135,10 @@ const filterPrescriptionByDateDoctorStatus = async (req, res) => {
   }
   try {
     const prescriptions = await prescriptionModel.find(baseQuery).populate({path:"medicines.medId"});
-    // console.log(baseQuery)
-    // console.log(prescriptions)
-    // const filtered = prescriptions.filter(pres => toString(pres._id) === req.query.id)
+
     res.json(prescriptions);
   } catch (err) {
-    //res.status(500).send({ message: "No prescriptions found!" });
-    res.status(404).send({ message: "No prescriptions found!" });
+        res.status(404).send({ message: "No prescriptions found!" });
   }
 }
 
@@ -143,8 +159,8 @@ const filterAppointmentsForPatient = async (req, res) => {
   if (statusToBeFiltered) {
     filterQuery["status"] = statusToBeFiltered;
   }
-  if (req.query.id) {
-    const id = req.query.id;
+  if (req.user._id) {
+    const id = req.user._id;
     filterQuery["patient"] = new mongoose.Types.ObjectId(id);
     try {
       const filteredAppointments = await appointmentModel
@@ -192,7 +208,7 @@ const selectDoctorFromFilterSearch = async (req, res) => {
   
 const getFamilyMembers = async (req, res) => {
   try {
-    const patientId = req.query.id;
+    const patientId = req.user._id;
     const patient = await patientModel.findById(patientId).populate({path:"familyMembers"})
     const familyMember = patient.familyMembers;
     res.json(familyMember);
@@ -203,15 +219,12 @@ const getFamilyMembers = async (req, res) => {
   
  const viewMyPrescriptions = async (req, res) => {
   try {
-    const patientId = req.query.id;
-    const prescriptions = await prescriptionModel.find({ patient: new mongoose.Types.ObjectId(patientId) }).populate({path:'medicines.medId'}).populate({path :'doctor'}).exec();
-    // console.log(prescriptions.doctor.name);
-
+    const patientId = req.user._id;
+    const prescriptions = await prescriptionModel.find({ patient: patientId }).populate({path:'medicines.medId'}).populate({path :'doctor'}).exec();
     res.json(prescriptions);
   }
   catch (err) {
     res.json(err.message);
-
   }
 };
   
@@ -219,7 +232,6 @@ const getFamilyMembers = async (req, res) => {
   try {
     const prescriptionId = req.query.id;
     const prescription = await prescriptionModel.findById(prescriptionId).populate({path :'medicines.medId'}).exec();
-    //console.log(prescription)
     res.status(200).json(prescription);
   } catch (error) {
     res.status(404).json({ error: error.message });
@@ -237,19 +249,17 @@ const filterDoctorsSpecialityDate = async(req,res)=>{
 
       let busyDoctors = await appointmentModel.find({createdAt:{ $gte: startDate, $lt: endDate }}).populate({path:"doctor"});
       const busyDoctorsMapped = busyDoctors.map(appointment=>appointment.doctor);
-      //console.log(busyDoctorsMapped);
       let query = {};
       if (req.query.speciality)
         query["speciality"]=req.query.speciality
       let doctors = await doctorModel.find(query);
-      //console.log(doctors)
       let availableDoctors = [];
       for (let i = 0; i < doctors.length; i++){
         let found = false;
         for (let j = 0; j < busyDoctorsMapped.length;j++)
         {
-          console.log(doctors[i].username)
-          console.log(busyDoctorsMapped[j].username)
+          // console.log(doctors[i].username)
+          // console.log(busyDoctorsMapped[j].username)
           if (doctors[i].username === busyDoctorsMapped[j].username)
           { 
             found = true;
@@ -271,30 +281,522 @@ const filterDoctorsSpecialityDate = async(req,res)=>{
   }
 }
 
+
+
+
+const viewMySubscribedHealthPackage = async (req, res) => {
+  try {
+    const patientId = req.user._id;
+    const patient = await patientModel.findById(patientId).populate('healthPackage').exec();
+    
+    if (!patient) {
+      console.log('Patient not found');
+      return;
+    }
+
+    const extendedHealthPackages = [];
+
+    const healthPackagePatient = patient.healthPackage;
+    if(healthPackagePatient== undefined)
+      return res.json([]);
+    else{
+    const status = healthPackagePatient.status;
+    const endDate = healthPackagePatient.endDate;
+    const healthPackage = await healthPackageModel.findById(healthPackagePatient.healthPackageID);
+    const extendedHealthPackage = {
+      ...healthPackage.toObject(),        // Spread properties from healthPackage
+      status: status,
+      endDate: endDate,
+    patientName: patient.name,
+    };
+    extendedHealthPackages.push(extendedHealthPackage);
+    }
+
+    // Process family members' health packages
+    for (const familyMemberId of patient.familyMembers) {
+      const familyMember = await familyModel.findById(familyMemberId).populate('healthPackage').exec();
+
+      if (familyMember) {
+        const healthPackageFamilyMember = familyMember.healthPackage;
+        if (healthPackageFamilyMember != undefined) {
+          const status = healthPackageFamilyMember.status;
+          const endDate = healthPackageFamilyMember.endDate;
+          const healthPackage = await healthPackageModel.findById(healthPackageFamilyMember.healthPackageID);
+          const extendedHealthPackage = {
+            ...healthPackage.toObject(),
+            patientName: familyMember.name,
+            status: status,
+            endDate: endDate,
+          };
+          extendedHealthPackages.push(extendedHealthPackage);
+        }
+      }
+    }
+
+    res.json(extendedHealthPackages);
+  }
+  catch (err) {
+    res.json(err.message);
+    
+  }
+};
+
+
+const CancelSubscription= async (req, res) => {
+  
+  try{
+  const patientId = req.user._id;
+  const patient = await patientModel.findById(patientId);
+  if (!patient) {
+    return res.status(404).json({ message: 'Patient not found' });
+  }
+  patient.healthPackage.status = "cancelled";
+  await patient.save();
+  
+  res.json({ message: 'Subscription canceled successfully' });
+} catch (error) {
+  console.error('Error canceling subscription:', error.message);
+  res.status(500).json({ message: 'Internal Server Error' });
+}
+};
+
+const ViewMyWallet = async (req, res) => {
+  try {
+    const patientId = req.user._id;
+    const patient = await patientModel.findById(patientId).populate('wallet').exec();
+   
+    if (!patient) {
+      console.log('Patient not found');
+      return;
+    }
+    const wallet = patient.wallet;
+    res.json(wallet);
+  }
+  catch (err) {
+    res.json(err.message);
+    
+  }
+};
+
+
+const viewPatientAppointments = async (req, res) => {
+  try {
+    const patientID = req.query.id;
+    const currentDate = new Date();
+
+    const upcomingAppointments = await appointmentModel
+    .find({
+        patient: patientID,
+        date: { $gte: currentDate },
+      })
+      .populate({ path: "doctor" });
+
+      const pastAppointments = await appointmentModel
+      .find({
+        patient: patientID,
+        date: { $lt: currentDate },
+      })
+      .populate({ path: "doctor" });
+
+    const appointmentData = {
+      upcomingAppointments,
+      pastAppointments,
+    };
+
+    res.status(200).json(appointmentData);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+const payWithCard = async (req, res) => {
+  const patientId = req.user._id;
+  const patient = await patientModel.findById(patientId)
+  const url = req.query.url
+  const item = req.query.item;
+  const type = req.query.type
+  const price = item.price
+  const session = await stripe.checkout.sessions.create({
+    payment_method_types: ['card'],
+    mode: 'payment',
+    line_items: [{
+        price_data: {
+          currency: "eur",
+          product_data: {
+            name: item.name
+          },
+          unit_amount: item.price*100
+        },
+        quantity: 1
+      }]
+    ,
+    success_url: `http://localhost:3000/${url}`,
+    cancel_url:`http://localhost:3000/cancelCheckout`,
+  })
+  res.json({url: session.url})
+}
+
+const payWithWallet = async(req, res) => {
+  const patientId = req.user._id
+  const price = req.query.price
+  const url = req.query.url
+  const type = req.query.type
+  try {
+    const patient = await patientModel.findById(patientId)
+
+    console.log('--------')
+    // if (patient.healthPackage && type === 'appointment')
+    // {
+    //   const healthPackageId = patient.healthPackage.healthPackageID
+    //   console.log(healthPackageId)
+    //   const healthPackage = await healthPackageModel.findById(healthPackageId)
+    //   price *= (1 - (healthPackage.doctorDiscount)/100)
+    // }
+    if (patient.wallet < price)
+    {
+      return res.json({success: false, message:"Insufficient funds!"})
+    }
+    const newWallet = patient.wallet - price
+    const updatedPatient = await patientModel.findByIdAndUpdate(patient._id,{ wallet :newWallet})
+    res.json({success:true, url: `/${url}`})
+  }
+  catch(err) {
+    res.json(err.message)
+  }
+}
+
+const buyHealthPackage = async (req, res) => {
+  const patientId = req.user._id;
+  const name = req.body.name
+  const healthPackageId = req.body.healthPackageId
+  try {
+    const curDate = new Date()
+    curDate.setMonth(curDate.getMonth() + 1);
+    const healthPackage = await healthPackageModel.findById(healthPackageId)
+    const hPackage = {
+      healthPackageID: healthPackageId,
+      status: 'subscribed',
+      endDate: curDate
+    }
+    const patient = await patientModel.findById(patientId)
+    if (name === patient.name)
+    {
+      patient['healthPackage'] = hPackage
+      patient.familyMembers.map((fm) => {
+        const update = async (fm) => {
+          await familyModel.findByIdAndUpdate(fm.toString(), 
+          {healthPackageDiscount : {healthPackageID:healthPackageId, discount:healthPackage.familyDiscount}})
+        }
+        update(fm)
+        })
+        await patient.save()
+      }
+    else
+    {
+      patient.familyMembers.map(fm => {
+        const check = async (fm) => {
+          const familyMember = await familyModel.findById(fm)
+          if (familyMember.name === name)
+          {
+            familyMember['healthPackage'] = hPackage
+            await familyMember.save()
+          }
+        }
+          check(fm)
+      })
+    }
+    res.json("Updated Successfully")
+  }
+  catch(err) {
+    res.json(err.message)
+  }
+}
+
+const reserveAppointment = async(req, res) => {
+  const patientId = req.user._id
+  const appointmentId = req.body.appointmentId
+  const name = req.body.name
+  console.log(name)
+  try {
+    const appointment = await appointmentModel.findByIdAndUpdate(appointmentId, { patient: new mongoose.Types.ObjectId(patientId), status: "upcoming", attendantName: name }, {new: true})
+    res.json('updated Successfully')
+  }catch (err) {
+    res.json(err.message)
+  }
+}
+
+const sendCheckoutMail = async (req, res) => {
+  const patientId = req.user._id
+  const patient = await patientModel.findById(patientId)
+  const message = req.query.message
+  
+  const transporter = nodemailer.createTransport({
+    service: process.env.NODEMAILER_SERVICE,
+    auth: {
+      user: process.env.NODEMAILER_EMAIL,
+      pass: process.env.NODEMAILER_PASSWORD,
+    },
+  });
+  const mailOptions = {
+    from: process.env.NODEMAILER_EMAIL,
+    to: patient.email,
+    subject: 'Payment Confirmation',
+    text: message,
+  };
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    res.json('done')
+  } catch (error) {
+    res.json('done')
+  }
+}
+
+const getHealthPackageForPatient = async (req,res) => {
+  try {
+    const id = req.query.id
+    const hpackage = await healthPackageModel.findById(id)
+    res.json({hpackage,discount:0})
+  }catch(err)
+  {res.json(err.message)}
+}
+
+const getHealthPackageForFamily = async (req,res) => {
+  try {
+    const id = req.query.id
+    const name = req.query.name
+    const patientId = req.user._id
+    const patient = await patientModel.findById(patientId)
+    let discount = 0
+    for (let i = 0; i < patient.familyMembers.length; i++)
+    {
+      const familyMember = await familyModel.findById(patient.familyMembers[i].toString())
+      if (familyMember.name === name)
+      {
+        if (id === familyMember.healthPackageDiscount.healthPackageID.toString())
+          {
+            discount = familyMember.healthPackageDiscount.discount}
+        break;
+      }
+    }
+    const hpackage = await healthPackageModel.findById(id)
+    res.json({hpackage,discount})
+  }catch(err)
+  {res.json(err.message)}
+}
+
 const getDoctors = async (req, res) => {
   try{
     const doctors = await doctorModel.find({})
-    const clinicMarkUp= 10;
-    const patientId = req.query.id;
-    const patient = await patientModel.findById(patientId).populate({path:"healthPackage"});
-    const discount = 0
+    const clinicMarkUp= process.env.CLINIC_MARKUP;
+    const patientId = req.user._id;
+    const patient = await patientModel.findById(patientId);
+    let discount = 1
+    if (patient.healthPackage)
+    {
+      const healthPackageID = patient.healthPackage.healthPackageID.toString()
+      const healthPackage = await healthPackageModel.findById(healthPackageID).catch(err=> console.log(err.message))
+      discount = 1 - healthPackage.doctorDiscount/100;
+    }
     let data=[]
     for (let index = 0; index < doctors.length; index++) {
         const element = doctors[index]._doc;
-        const sessionPrice=(element.hourlyRate+10/100*clinicMarkUp-discount)
+        const sessionPrice=((element.hourlyRate+10/100*clinicMarkUp)*discount)
+        // console.log(sessionPrice)
         data.push( {...element,sessionPrice:sessionPrice});
     }
     res.status(200).json(data)
   }
-
+  
 catch(error){
   res.status(400).json({error:error.message})
+  }
 }
+
+const viewFreeAppointments = async(req,res) => {
+  try {
+    const allAppointments = await appointmentModel.find({status:"free"}).populate({path:"doctor"})
+    const clinicMarkUp= process.env.CLINIC_MARKUP;
+    const patientId = req.user._id;
+    const patient = await patientModel.findById(patientId);
+
+    let discount = 1
+    if (patient.healthPackage)
+    {
+      const healthPackageID = patient.healthPackage.healthPackageID.toString()
+      const healthPackage = await healthPackageModel.findById(healthPackageID).catch(err=> console.log(err.message))
+      discount = 1 - healthPackage.doctorDiscount/100;
+    }
+    const result = allAppointments.map(app => {return {appointment: app, price: (app.doctor.hourlyRate+10/100*clinicMarkUp)*discount}})
+    res.json(result)
+  }
+  catch(err) {console.log(err)}
+}
+
+const viewFreeAppointmentsByName = async(req,res) => {
+  try {
+    const name = req.query.name
+    const searchName = new RegExp(name,"i")
+    const allAppointments = await appointmentModel.find({status:"free"}).populate({path:"doctor"})
+    const appointments = allAppointments.filter(app => searchName.test(app.doctor.name))
+    const clinicMarkUp= process.env.CLINIC_MARKUP;
+    const patientId = req.user._id;
+    const patient = await patientModel.findById(patientId);
+
+    let discount = 1
+    if (patient.healthPackage)
+    {
+      const healthPackageID = patient.healthPackage.healthPackageID.toString()
+      const healthPackage = await healthPackageModel.findById(healthPackageID).catch(err=> console.log(err.message))
+      discount = 1 - healthPackage.doctorDiscount/100;
+    }
+    const result = appointments.map(app => {return {appointment: app, price: (app.doctor.hourlyRate+10/100*clinicMarkUp)*discount}})
+    res.json(result)
+  }
+  catch(err) {console.log(err)}
+}
+
+const getAnAppointment = async (req, res) => {
+  try {
+    const appointmentId = req.query.id
+    const appointment = await appointmentModel.findById(appointmentId).populate({path:'doctor'})
+    const doctor = appointment.doctor
+    const patientId = req.query.patientId
+    const patient = await patientModel.findById(patientId)
+    const clinicMarkUp = process.env.CLINIC_MARKUP
+    let price = doctor.hourlyRate+clinicMarkUp
+    let discount = 1
+    if (patient.healthPackage)
+    {
+      const healthPackageID = patient.healthPackage.healthPackageID.toString()
+      const healthPackage = await healthPackageModel.findById(healthPackageID).catch(err=> console.log(err.message))
+      discount = 1 - healthPackage.doctorDiscount/100;
+    }
+    
+    const response = {appointment: appointment, price: (doctor.hourlyRate+10/100*clinicMarkUp)*discount}
+    res.json(response)
+  }
+  catch(err){
+    console.log(err.message)
+  }
+}
+
+
+const uploadHealthRecord = async (req, res) =>{
+  try{
+  let id = req.user._id;
+  if(req.query.id)
+    id = req.query.id;
+  let healthRecord = req.body.base64;
+  const patient = await patientModel.findById(id);
+  patient.HealthRecords.push(healthRecord);
+  await patient.save();
+  res.json('Health record added successfully');
+}catch (error) {
+  res.json('Internal server error' );
+  }
+}
+
+const getHealthRecords = async (req, res) =>{
+  try{
+  let id = req.query.id;
+  // console.log(id)
+  const patient = await patientModel.findById(id);
+  // console.log(patient)
+  const healthRecords = patient.HealthRecords;
+  res.json( healthRecords );
+} catch (error) {
+  console.error(error);
+  res.status(500).json({ error: 'Internal server error' });
+}
+}
+
+
+//New Req.19//
+const linkFamilyMemberAccount = async (req, res) => {
+  try {
+    const patientId = new mongoose.Types.ObjectId(req.query.id);
+    const { email, phone, relationToPatient } = req.body;
+    
+    // Validate that the relation is restricted to wife/husband/children
+    const allowedRelations = ["wife", "husband", "children"];
+    if (!allowedRelations.includes(relationToPatient)) {
+      return res.status(400).json({
+        error: "Invalid relation. Relation must be wife, husband, or children.",
+      });
+    }
+
+    // Find the primary patient
+    const primaryPatient = await patientModel.findById(patientId);
+    if (!primaryPatient) {
+      return res.status(404).json({ error: "Primary patient not found." });
+    }
+
+    // Find the patient to link
+    const familyMemberToLink = await patientModel.findOne({
+      $or: [{ email }, { mobileNumber: phone }],
+    });
+    
+    if (!familyMemberToLink) {
+      return res.status(404).json({ error: "Family member not found." });
+    }
+
+    // Check if the patient to link is not the same as the primary patient
+    if (familyMemberToLink._id.equals(primaryPatient._id)) {
+      return res.status(400).json({
+        error: "Cannot link the primary patient's account as a family member.",
+      });
+    }
+    
+    // Check if the patient is not already linked
+    const existingFamilyMember = await familyModel.findOne({
+      patient: primaryPatient._id,
+      familyMember: familyMemberToLink._id,
+    });
+
+    if (existingFamilyMember) {
+      return res
+        .status(400)
+        .json({ error: "Family member is already linked to the patient." });
+      }
+
+      // console.log(primaryPatient)
+      // Create a family member entry
+      const familyMember = await familyModel.create({
+      patient: primaryPatient._id,
+      familyMember: familyMemberToLink._id,
+      relationToPatient,
+      name: familyMemberToLink.name,
+      age: calculateAge(familyMemberToLink.birthDate),
+      nationalId: Math.floor(Math.random() * 10000),
+      gender: familyMemberToLink.gender
+    });
+    // Update the primary patient's family members
+    primaryPatient.familyMembers.push(familyMember._id);
+    await primaryPatient.save();
+    
+    res.json("Family member linked successfully.");
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+function calculateAge(birthDate) {
+  const today = new Date();
+  const birthDateObj = new Date(birthDate);
+
+  let age = today.getUTCFullYear() - birthDateObj.getUTCFullYear();
+  const monthDiff = today.getUTCMonth() - birthDateObj.getUTCMonth();
+
+  if (monthDiff < 0 || (monthDiff === 0 && today.getUTCDate() < birthDateObj.getUTCDate())) {
+    age--;
+  }
+
+  return age;
 }
 
 module.exports = {
   createFamilyMember,
-  createPatient,
+  addPatient,
   searchForDoctorByNameSpeciality,
   filterAppointmentsForPatient,
   getFamilyMembers,
@@ -303,5 +805,22 @@ module.exports = {
   selectDoctorFromFilterSearch,
   viewMyPrescriptions,
   selectPrescription,
-  getDoctors
+  getDoctors,
+  linkFamilyMemberAccount,
+  viewPatientAppointments,
+  payWithCard,
+  payWithWallet,
+  buyHealthPackage,
+  reserveAppointment,
+  sendCheckoutMail,
+  getHealthPackageForPatient,
+  viewFreeAppointments,
+  getAnAppointment,
+  uploadHealthRecord,
+  getHealthRecords,
+  viewMySubscribedHealthPackage,
+  CancelSubscription,
+  ViewMyWallet,
+  viewFreeAppointmentsByName,
+  getHealthPackageForFamily
 };

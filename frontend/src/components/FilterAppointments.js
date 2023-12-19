@@ -17,12 +17,12 @@ const FilterAppointments  = ({apiLink}) => {
         if (date !== "")
         FilterData['date']=date;
 
-        // temporarily hard coded id until a user is logged in
         try {
             const response = await axios.get(apiLink, {params : FilterData});
             const apps = response.data;
             if (typeof apps == 'string') {
               setMessage(apps);
+              setAppointments('');
             } else {
               setAppointments(apps);
               setMessage("Filtered Appointments Results:");
@@ -59,7 +59,7 @@ const FilterAppointments  = ({apiLink}) => {
             <li key={appointment._id}>
               <div>Status: {appointment.status}</div>
               <div>Date: {appointment.date}</div>
-              <div>Doctor: {appointment.doctor && appointment.doctor.name}</div>
+              <div>Paitent: {appointment.patient && appointment.patient.name}</div>
             </li>
           ))}
         </ul>

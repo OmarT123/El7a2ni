@@ -1,5 +1,5 @@
 import axios from 'axios'
-import {useState} from 'react'
+import {useState,useEffect} from 'react'
 
 const RegisterPatient = () => {
     const [name, setName] = useState('')
@@ -10,6 +10,18 @@ const RegisterPatient = () => {
     const [gender, setGender] = useState('')
     const [mobileNumber, setMobileNumber] = useState('')
     const [emergencyContact, setEmergencyContact] = useState({})
+    const [showContent, setShowContent] = useState(false)
+    const [responseMessage, setResponseMessage] = useState('');
+
+     useEffect(() => {
+    const userToken = localStorage.getItem('userToken');
+
+    if (userToken) {
+      window.location.href = '/Home';
+    } else {
+      setShowContent(true);
+    }
+  }, []);
     
     const register = async(e) => {
         e.preventDefault()
@@ -18,12 +30,13 @@ const RegisterPatient = () => {
             alert('Please fill all the fields')
         else{
             const body = {name,username,email,password,birthDate,gender,mobileNumber,emergencyContact}
-            await axios.post("/addPatient",body).then(res=>alert(res.data)).catch(err=>console.log(err))
+            await axios.post("/addPatient",body).then(res=>alert(res.data.message)).catch(err=>console.log(err))
         }
     }
 
     return (
         <div className="search-container">
+            {showContent && (
             <form className='create'>
                 <h3>Create new Account</h3>
 
@@ -104,6 +117,7 @@ const RegisterPatient = () => {
 
                 <button onClick={register}>Register</button>
             </form>
+            )}
             <div className='search-results'></div>
         </div>
     )

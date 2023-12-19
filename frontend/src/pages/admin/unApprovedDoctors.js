@@ -1,10 +1,11 @@
 import {useEffect, useState} from 'react';
 import axios from 'axios';
+import AdminAuthorization from '../../components/AdminAuthorization';
 
 //components
 import DoctorDetails from '../../components/patient/DoctorDetails'
 
-const UnapprovedDoctors = () => {
+const UnapprovedDoctors = ({user}) => {
   const [doctors, setDoctors] = useState(null)
 
   useEffect(() => 
@@ -25,11 +26,11 @@ const UnapprovedDoctors = () => {
     <div className="home">
       <div className="Doctors">
         {doctors && doctors.map((doctor) => (
-          <DoctorDetails key={doctor._id} doctor = {doctor} />
+          <DoctorDetails key={doctor._id} doctor = {doctor} link={"DoctorApplication"} />
         ))}
       </div>
     </div>
   )
 }
 
-export default UnapprovedDoctors
+export default AdminAuthorization(UnapprovedDoctors) ;

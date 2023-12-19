@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import AdminAuthorization from '../../components/AdminAuthorization';
 
-const DeletePatient = () => {
+const DeletePatient = ({user}) => {
   const [message, setMessage] = useState(null);
   const [patientsList, setPatientsList] = useState([]);
 
@@ -47,11 +48,11 @@ const DeletePatient = () => {
                     <p>Family Member Relation : {familyMember.relationToPatient}</p>  
                     </div>
                    ) )  }
-                   {/* {patient.healthPackage &&patient.healthPackage.map((healthPack)=> (
+                   {patient.healthPackage &&patient.healthPackage.map((healthPack)=> (
                       <div key={healthPack._id} className="healthPack-card">
                     <p>Health Package Name : {healthPack.name}</p> 
                     </div>
-                   ) )  } */}
+                   ) )  }
                    {/* /* need to display the health package with populate ASAP */ }
 
 
@@ -65,4 +66,4 @@ const DeletePatient = () => {
   );
 };
 
-export default DeletePatient;
+export default AdminAuthorization(DeletePatient) ;

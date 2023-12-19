@@ -1,7 +1,7 @@
 import {useState} from 'react'
 import axios from 'axios'
 
-const FamilyMemberForm  = ({handleClick}) => {
+const FamilyMemberForm  = ({userId,handleClick}) => {
     const [name, setName] = useState('')
     const [nationalId, setNationalId] = useState('')
     const [age, setAge] = useState(0)
@@ -13,7 +13,7 @@ const FamilyMemberForm  = ({handleClick}) => {
         e.preventDefault()
 
         // temporarily hard coded id until a user is logged in
-        const id = "654814b4801a1dd510bd5b98"
+        const id = userId
 
         const familyMember = {name, nationalId, age, gender, relationToPatient}
         const response = await axios.post("/addFamilyMember?id="+id,familyMember)
