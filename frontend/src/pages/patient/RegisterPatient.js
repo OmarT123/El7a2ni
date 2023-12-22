@@ -12,6 +12,7 @@ const RegisterPatient = ({user}) => {
     const [emergencyContact, setEmergencyContact] = useState({})
     const [showContent, setShowContent] = useState(false)
     const [responseMessage, setResponseMessage] = useState('');
+    const [nationalId, setNationalID] = useState('');
 
      useEffect(() => {
     const userToken = localStorage.getItem('userToken');
@@ -30,7 +31,7 @@ const RegisterPatient = ({user}) => {
             alert('Please fill all the fields')
         else{
             try {
-                const body = { name, username, email, password, birthDate, gender, mobileNumber, emergencyContact };
+                const body = { name, username, email, password, birthDate, gender, mobileNumber, emergencyContact, nationalId };
                 const response = await axios.post('/addPatient', body);
                 setResponseMessage(response.data);
               } catch (error) {
@@ -59,6 +60,13 @@ const RegisterPatient = ({user}) => {
                 type="text"
                 value={username}
                 onChange={(e)=>setUsername(e.target.value)}
+                />
+
+                <label>National ID:</label>
+                <input
+                type="number"
+                value={nationalId}
+                onChange={(e)=>setNationalID(e.target.value)}
                 />
 
                 <label>Email:</label>

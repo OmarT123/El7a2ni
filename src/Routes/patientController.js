@@ -16,9 +16,9 @@ require("dotenv").config();
 
 
 const addPatient = async(req,res) => {
-  const{username, name, email, password, birthDate, gender, mobileNumber,emergencyContact} = req.body;
+  const{username, name, email, password, birthDate, gender, mobileNumber,emergencyContact, nationalId} = req.body;
   try{
-    if (!username || !password || !name || !birthDate || !gender || !mobileNumber || !emergencyContact || !email) {
+    if (!username || !password || !name || !birthDate || !gender || !mobileNumber || !emergencyContact || !email || !nationalId) {
       return res.json({ success: false, message: "All fields are required. Please provide valid information for each field!" });
     }
     const user = await userModel.findOne({username})
@@ -38,7 +38,7 @@ const addPatient = async(req,res) => {
 
     const salt = await bcrypt.genSalt();
     const encryptedPassword = await bcrypt.hash(password ,salt)
-    const patient = await patientModel.create({username,name,email, password :encryptedPassword,birthDate, gender, mobileNumber,emergencyContact, cart: { items: [], amountToBePaid: 0 }});
+    const patient = await patientModel.create({username,name,email, password :encryptedPassword,birthDate, gender, mobileNumber,emergencyContact, cart: { items: [], amountToBePaid: 0 }, nationalId});
     await patient.save();
 
    const user = await userModel.create({
@@ -75,18 +75,17 @@ const searchMedicinePatient = async (req, res) => {
   const searchName = req.query.name;
   const searchQuery = new RegExp(searchName, "i"); // 'i' flag makes it case-insensitive
   try {
-
-    const results = await medicineModel.find({ name: searchQuery });
-    if(results.length == 0){
-      res.json("Medicine is not Found !!" );
-    }
-    else {
+    const results = await medicineModel.find({ name: searchQuery, stockQuantity: { $gt: 0 } });
+    if (results.length === 0) {
+      res.json("Medicine is not Found !!");
+    } else {
       res.json(results);
     }
   } catch (error) {
-    res.status(500).json(error.message);
-}
-}
+    res.json(error.message);
+  }
+};
+
 
 
 const viewMyCart = async (req, res) => {
@@ -98,14 +97,14 @@ const viewMyCart = async (req, res) => {
       model: 'Medicine'
     });
     if (!patient) {
-      return res.status(404).json({ message: "Patient not found" });
+      return res.json({ message: "Patient not found" });
     }
 
     const cart = patient.cart; 
 
-    res.status(200).json({ cart:cart ,wallet:patient.wallet});
+    res.json({ cart:cart ,wallet:patient.wallet});
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.json({ error: error.message });
   }
 };
 
@@ -203,11 +202,11 @@ const addToCart = async (req, res) => {
    const patientId =req.user._id; // Replace with your method of obtaining the patient's ID
    let oldcart = await cartvalue(patientId);
    if (!medicine) {
-     return res.status(404).json({ message: "Medicine not found" });
+     return res.json({ message: "Medicine not found" });
    } 
 
    if (quantity > medicine.stockQuantity) {
-     return res.status(400).json({ message: "Requested quantity exceeds available stock", cart:oldcart});
+     return res.json({ message: "Requested quantity exceeds available stock", cart:oldcart});
    
     }
  
@@ -435,39 +434,65 @@ const searchForDoctorByNameSpeciality = async (req, res) => {
 
 const filterPrescriptionByDateDoctorStatus = async (req, res) => {
   const baseQuery = {};
-  baseQuery["patient"] =  req.user._id;
+  baseQuery["patient"] = req.user._id;
+
   if (req.query.doctor) {
     const searchName = req.query.doctor;
-    const searchQuery = new RegExp(searchName, "i"); // 'i' flag makes it case-insensitive
+    const searchQuery = new RegExp(searchName, "i");
+
     try {
-  
-      const doctor = await doctorModel.find({ name: searchQuery });
-      if(results.length == 0){
-        res.json("Doctor is not Found !!" );
+      const doctors = await doctorModel.find({ name: searchQuery });
+
+      if (!doctors || doctors.length === 0) {
+        return res.json("Doctor is not Found!!");
       }
+
+      const doctorIds = doctors.map(doctor => doctor._id);
+      baseQuery["doctor"] = { $in: doctorIds };
+
     } catch (error) {
-      res.status(500).json(error.message);
+      return res.status(500).json(error.message);
+    }
   }
-    baseQuery["doctor"] = doctor._id;
-  }
-  if (req.query.filled || req.query.filled == false) {
+
+  if (req.query.filled || req.query.filled === false) {
     baseQuery["filled"] = req.query.filled;
   }
+
   if (req.query.date) {
-    const dateParam = req.query.date
+    const dateParam = req.query.date;
     const startDate = new Date(dateParam);
     const endDate = new Date(dateParam);
     endDate.setDate(endDate.getDate() + 1);
     baseQuery["createdAt"] = { $gte: startDate, $lt: endDate };
   }
-  try {
-    const prescriptions = await prescriptionModel.find(baseQuery).populate({path:"medicines.medId"});
 
-    res.json(prescriptions);
+  try {
+    const prescriptions = await prescriptionModel
+      .find(baseQuery)
+      .populate({ path: "medicines.medId" })
+      .exec();
+
+    if (prescriptions.length === 0) {
+      return res.json("No prescriptions found!");
+    }
+    let extendedPrescriptions = [];
+    for (prescription of prescriptions)
+    {
+      let doctorr = await doctorModel.findOne(prescription.doctor._id)
+      const extendedPrescription = {
+        ...prescription.toObject(),
+        doctor: doctorr.name,
+      }
+      extendedPrescriptions.push(extendedPrescription);
+      console.log(extendedPrescription);
+    }
+    return res.json(extendedPrescriptions);
   } catch (err) {
-        res.status(404).send({ message: "No prescriptions found!" });
+    return res.json("Internal Server Error" );
   }
-}
+};
+
 
 const filterAppointmentsForPatient = async (req, res) => {
   // Need login
@@ -1106,7 +1131,7 @@ const linkFamilyMemberAccount = async (req, res) => {
     // Validate that the relation is restricted to wife/husband/children
     const allowedRelations = ["wife", "husband", "children"];
     if (!allowedRelations.includes(relationToPatient)) {
-      return res.status(400).json({
+      return res.json({
         error: "Invalid relation. Relation must be wife, husband, or children.",
       });
     }
@@ -1114,7 +1139,7 @@ const linkFamilyMemberAccount = async (req, res) => {
     // Find the primary patient
     const primaryPatient = await patientModel.findById(patientId);
     if (!primaryPatient) {
-      return res.status(404).json({ error: "Primary patient not found." });
+      return res.json({ error: "Primary patient not found." });
     }
 
     // Find the patient to link
@@ -1123,12 +1148,12 @@ const linkFamilyMemberAccount = async (req, res) => {
     });
     
     if (!familyMemberToLink) {
-      return res.status(404).json({ error: "Family member not found." });
+      return res.json({ error: "Family member not found." });
     }
 
     // Check if the patient to link is not the same as the primary patient
     if (familyMemberToLink._id.equals(primaryPatient._id)) {
-      return res.status(400).json({
+      return res.json({
         error: "Cannot link the primary patient's account as a family member.",
       });
     }
@@ -1140,9 +1165,7 @@ const linkFamilyMemberAccount = async (req, res) => {
     });
 
     if (existingFamilyMember) {
-      return res
-        .status(400)
-        .json({ error: "Family member is already linked to the patient." });
+      return res.json({ error: "Family member is already linked to the patient." });
       }
 
       // console.log(primaryPatient)
@@ -1153,7 +1176,8 @@ const linkFamilyMemberAccount = async (req, res) => {
       relationToPatient,
       name: familyMemberToLink.name,
       age: calculateAge(familyMemberToLink.birthDate),
-      nationalId: Math.floor(Math.random() * 10000),
+      //nationalId: Math.floor(Math.random() * 10000),
+      nationalId: familyMemberToLink.nationalId,
       gender: familyMemberToLink.gender
     });
     // Update the primary patient's family members

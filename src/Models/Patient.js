@@ -95,7 +95,10 @@ const patientSchema = new Schema(
     {
       type: String // format: street,appartmentNum,city,state,zipcode
     }
-  ]
+  ],
+  nationalId : {
+    type: Number,
+  }
 },
   { timestamps: true }
 );
