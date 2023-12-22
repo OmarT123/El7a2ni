@@ -2,6 +2,7 @@ import axios from 'axios'
 import {useState , useEffect} from 'react'
 import DisplayPrescription from '../../components/DisplayPrescription';
 import PatientAuthorization from '../../components/PatientAuthorization';
+import { Link } from 'react-router-dom';
 
 const ViewMyPrescriptions = ({user}) => {
 
@@ -40,73 +41,102 @@ const ViewMyPrescriptions = ({user}) => {
                 body["filled"]= filled === "true"?true:false
             if (doctor)
                 body["doctor"]=doctor
-            await axios.get("/filterPrescriptionByDateDoctorStatus",{params:body}).then(res=>setPrescriptionsFilter(res.data)).catch(err=>console.log(err.message))
+                await axios
+                .get("/filterPrescriptionByDateDoctorStatus", { params: body })
+                .then((res) => {
+                  if (typeof res.data === 'string') {
+                    alert(res.data);
+                  } else {
+                    // If the response is an array, it's prescriptions
+                    setPrescriptionsFilter(res.data);
+                    setSearchResults(true);
+                  }
+                })
+                .catch((err) => console.log(err.message));              
             setSearchResults(true)        
       }
 
         
 
-    return (
+      return (
         <div className='search-container'>
-            <form className='create'>
-                <h3>Search for Prescription</h3>
+          <form className='create'>
+          <h3>Search for Prescription</h3>
 
-                <label>Date:</label>
-                <input 
-                type="date"
-                value={createdAt}
-                onChange={(e)=>setCreatedAt(e.target.value)}
-                />
+            <label>Date:</label>
+            <input 
+            type="date"
+            value={createdAt}
+            onChange={(e)=>setCreatedAt(e.target.value)}
+            />
 
-                <label>Doctor Name:</label>
-                <input 
-                type="text"
-                value={doctor}
-                onChange={(e)=>setDoctor(e.target.value)}
-                />
+            <label>Doctor Name:</label>
+            <input 
+            type="text"
+            value={doctor}
+            onChange={(e)=>setDoctor(e.target.value)}
+            />
 
-                <label>Status:</label>
-                <select value={filled} onChange={(e)=>setFilled(e.target.value)}>
-                <option value="">Select an option</option>
-                <option value="true">Filled</option>
-                <option value="false">Not Filled</option>
-                </select>
-
-                <button onClick={search}>Search</button>
-                <button onClick={FetchPrescriptions}>Show All Prescriptions</button>
-            </form>
-            <div className="search-results view-prescriptions-container">
-            
-                {!searchResults && <div><h3 className='h3-viewmyPres'>My Prescriptions</h3>
-                {prescriptionList && prescriptionList.length > 0 && prescriptionList.map((prescription) => (
-                             <div key={prescription._id} className="prescription-card">
-                           <h4>Prescription Details:</h4>
-                              <p>Doctor: {prescription.doctor.name}</p>
-                                 <p>Medicines:</p>
-                            <ul>
-                              {prescription.medicines.map((medicine) => (
-                             <li key={medicine._id}>
-                               {medicine.medId.name} - {medicine.dosage}
-                     </li>
-                     ))}
-        </ul>
-      </div>
-    ))}
-                {message && <h3>{message}</h3>}</div>}
-                {prescriptionsFilter && 
+            <label>Status:</label>
+            <select value={filled} onChange={(e)=>setFilled(e.target.value)}>
+            <option value="">Select an option</option>
+            <option value="true">Filled</option>
+            <option value="false">Not Filled</option>
+            </select>
+            <button onClick={search}>Search</button>
+            <button onClick={FetchPrescriptions}>Show All Prescriptions</button>
+          </form>
+          <div className="search-results view-prescriptions-container">
+            <div>
+              <h3 className='h3-viewmyPres'>My Prescriptions</h3>
+              {(prescriptionList.length > 0 || prescriptionsFilter) && (
+                <div>
+                  {(prescriptionList.length > 0 && !searchResults) && (
                     <div>
-                        <h3 className='h3-viewmyPres'>My Prescriptions</h3>
-                    {prescriptionsFilter.map((prescription) => (
+                      {prescriptionList.map((prescription) => (
                         <div key={prescription._id} className="prescription-card">
-                            <DisplayPrescription key={prescription._id} prescription={prescription}/>
+                          <h4>Prescription Details:</h4>
+                          <p>Doctor: {prescription.doctor.name}</p>
+                          <p>Medicines:</p>
+                          <ul>
+                            {prescription.medicines.map((medicine) => (
+                              <li key={medicine._id}>
+                                {medicine.medId.name} - {medicine.dosage}
+                              </li>
+                            ))}
+                          </ul>
+                          <Link to={`/SelectedPrescription?id=${prescription._id}`}>View Prescription</Link>
+                        </div>
+                      ))}
                     </div>
-                ))}
+                  )}
+                  {prescriptionsFilter && (
+                    <div>
+                      {prescriptionsFilter.map((prescription) => (
+                        <div key={prescription._id} className="prescription-card">
+                          {/* Assuming DisplayPrescription is a component that displays prescription details */}
+                          <h4>Prescription Details:</h4>
+                          <p>Doctor: {prescription.doctor}</p>
+                          <p>Medicines:</p>
+                          <ul>
+                            {prescription.medicines.map((medicine) => (
+                              <li key={medicine._id}>
+                                {medicine.medId.name} - {medicine.dosage}
+                              </li>
+                            ))}
+                          </ul>
+                          <Link to={`/SelectedPrescription?id=${prescription._id}`}>View Prescription</Link>
+                        </div>
+                      ))}
                     </div>
-                }
+                  )}
+                </div>
+              )}
+              {message && <h3>{message}</h3>}
             </div>
-            </div>
-
-    )
+          </div>
+        </div>
+      );
 }
 
 
