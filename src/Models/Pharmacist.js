@@ -40,16 +40,6 @@ const pharmacistSchema = new Schema(
       type: String,// pending, rejected, accepted
       default: "pending",
   },
-  idPDF: {
-    type: String,
-    required: true,
-  },
-  degreePDF: {
-    type: String,
-  },
-  licensePDF: {
-    type: String,
-    },
 },
   { timestamps: true }
 );

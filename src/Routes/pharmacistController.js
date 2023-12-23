@@ -1,6 +1,7 @@
 const pharmacistModel = require('../Models/Pharmacist.js');
 const medicineModel = require('../Models/Medicine.js');
 const userModel = require('../Models/User.js');
+const pharmacistDocuments = require("../Models/PharmacistDocuments.js");
 const { default: mongoose } = require("mongoose");
 const bcrypt = require('bcrypt');
 require('dotenv').config();
@@ -110,9 +111,6 @@ const addPharmacist = async (req, res) => {
       hourlyRate: rate,
       affiliation: affiliation,
       educationalBackground: educationalBackground,
-      idPDF: idPDF,
-      degreePDF: degreePDF,
-      licensePDF: licensePDF,
     });
     
     await pharmacist.save();
@@ -124,6 +122,9 @@ const addPharmacist = async (req, res) => {
     });
     
     await userC.save();
+    
+    const newDocuments = await pharmacistDocuments.create({pharmacist: pharmacist._id, idPDF, degreePDF, licensePDF});
+    await newDocuments.save();
     
     res.json({ success: true, message: "Applied successfully!" });
   } catch (err) {

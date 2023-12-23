@@ -6,11 +6,13 @@ const medicineModel = require('../Models/Medicine.js');
 const healthPackageModel = require("../Models/HealthPackage.js");
 const userModel = require("../Models/User.js")
 const familyMemberModel = require ('../Models/FamilyMember.js')
+const DoctorDocuments = require("../Models/DoctorDocuments.js");
 
 
 const { default: mongoose } = require("mongoose");
 const nodemailer = require("nodemailer")
 const bcrypt = require('bcrypt');
+const PharmacistDocuments = require("../Models/PharmacistDocuments.js");
 require('dotenv').config();
 
 
@@ -105,10 +107,32 @@ const getPharmacist = async (req, res) => {
   try {
     const pharmacistId = req.query.id;
     const pharmacist = await pharmacistModel.findById(pharmacistId);
-    res.json(pharmacist);
+    const documents = await PharmacistDocuments.findOne({pharmacist: pharmacist._id});
+    extendedPharmacist = {
+      ...pharmacist.toObject(),
+      idPDF: documents.idPDF,
+      licensePDF: documents.licensePDF,
+      degreePDF: documents.degreePDF,
+    }
+    res.json(extendedPharmacist);
   } catch (error) {
     res.json({ error: error.message });
   }
+
+  // const doctorId = req.query.id
+  // try {
+  //   const doctor = await doctorModel.findById(doctorId);
+  //   const documents = await DoctorDocuments.findOne({doctor: doctor._id});
+  //   // console.log(doctor)
+  //   extendedDoctor = {
+  //     ...doctor.toObject(),
+  //     idPDF : documents.idPDF,
+  //     licensePDF: documents.licensePDF,
+  //     degreePDF : documents.degreePDF,
+  //   }
+  //   res.json(extendedDoctor);
+  // }catch(err)
+  //   {res.json(err.message)}
 };
 
 
@@ -201,23 +225,74 @@ catch (err) {
 
 
 
+// const viewDocInfo = async (req, res) => {
+//   try {
+//     const doctors = doctorModel
+//       .find({ status: "pending" })
+//       .populate()
+//       .then((doctors) => res.json(doctors));
+//   } catch (err) {
+//     res.json({ message: err.message });
+//   }
+// };
+
 const viewDocInfo = async (req, res) => {
   try {
-    const doctors = doctorModel
+    const doctors = await doctorModel
       .find({ status: "pending" })
-      .populate()
-      .then((doctors) => res.json(doctors));
+      .exec();
+
+    const doctorsWithDocuments = [];
+
+    for (const doctor of doctors) {
+      const { _id, name, email, birthDate, affiliation, speciality, educationalBackground, hourlyRate, createdAt} = doctor;
+
+      // Fetch documents from doctorDocuments model
+      const doctorDocuments = await DoctorDocuments.findOne({ doctor: doctor._id });
+
+      if (doctorDocuments) {
+        const { idPDF, licensePDF, degreePDF } = doctorDocuments;
+
+        // Include the additional documents
+        const doctorWithDocuments = {
+          _id,
+          name,
+          email,
+          birthDate,
+          affiliation,
+          speciality,
+          educationalBackground,
+          createdAt,
+          hourlyRate,
+          idPDF,
+          licensePDF,
+          degreePDF,
+        };
+
+        doctorsWithDocuments.push(doctorWithDocuments);
+      }
+    }
+
+    res.json(doctorsWithDocuments);
   } catch (err) {
     res.json({ message: err.message });
   }
 };
 
+
 const getADoctor = async (req,res) => {
   const doctorId = req.query.id
   try {
-    const doctor = await doctorModel.findById(doctorId)
+    const doctor = await doctorModel.findById(doctorId);
+    const documents = await DoctorDocuments.findOne({doctor: doctor._id});
     // console.log(doctor)
-    res.json(doctor)
+    extendedDoctor = {
+      ...doctor.toObject(),
+      idPDF : documents.idPDF,
+      licensePDF: documents.licensePDF,
+      degreePDF : documents.degreePDF,
+    }
+    res.json(extendedDoctor);
   }catch(err)
     {res.json(err.message)}
 }

@@ -78,7 +78,7 @@ const RegisterDoctor = () => {
         }
         else{
             const body = {name,username,email,password,birthDate,hourlyRate,affiliation,educationalBackground,speciality, idPDF, degreePDF, licensePDF}
-            await axios.post("/addDoctor",body).then(res=>alert(res.data)).catch(err=>console.log(err))
+            await axios.post("/addDoctor",body).then(res=>alert(res.data.message)).catch(err=>console.log(err))
         }
     }
 

@@ -74,7 +74,8 @@ const {
   getAllAddresses,
   cashOnDelivery,
   pastOrders,
-  cancelOrder
+  cancelOrder,
+  deleteHealthRecord
 } = require("./Routes/patientController");
 
 
@@ -205,7 +206,7 @@ app.get("/getAllAddresses",getUserFromTokenMiddleware ,getAllAddresses);
 app.get("/cashOnDelivery",getUserFromTokenMiddleware, cashOnDelivery);
 app.get("/pastOrders",getUserFromTokenMiddleware,pastOrders);
 app.put("/cancelOrder",getUserFromTokenMiddleware,cancelOrder)
-
+app.put("/deleteHealthRecord", getUserFromTokenMiddleware, deleteHealthRecord);
 
 
 //Doctor

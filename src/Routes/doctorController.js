@@ -5,6 +5,7 @@ const adminModel = require("../Models/Admin.js");
 const prescriptionModel = require("../Models/Prescription.js");
 const userModel = require("../Models/User.js")
 const healthPackageModel = require("../Models/HealthPackage.js")
+const doctorDocuments = require("../Models/DoctorDocuments.js");
 const { default: mongoose } = require("mongoose");
 const bcrypt = require('bcrypt');
 
@@ -68,7 +69,6 @@ const filterAppointmentsForDoctor = async (req, res) => {
     } catch (err) {
       console.error(err);
       res
-        .status(500)
         .json({ error: "No matching appointments found for the Doctor." });
     }
   }
@@ -87,7 +87,7 @@ const addDoctor = async (req, res) => {
     speciality,
     idPDF,
     degreePDF,
-    licensePDF
+    licensePDF,
   } = req.body;
   try {
     if (!username || !password || !name || !birthDate || !hourlyRate || !affiliation || !educationalBackground || !speciality || !email) {
@@ -98,7 +98,7 @@ const addDoctor = async (req, res) => {
     const user = await userModel.findOne({username})
     if (user)
     {
-      res.json("Username already exists")
+      res.json({message: "Username already exists"})
     }
     else {
       
@@ -122,9 +122,6 @@ const addDoctor = async (req, res) => {
         affiliation,
         educationalBackground,
         speciality,
-        idPDF,
-        degreePDF,
-        licensePDF
       });
       await doctor.save();
       const userC = await userModel.create({
@@ -133,10 +130,12 @@ const addDoctor = async (req, res) => {
         type :'doctor'
       })
       await userC.save();
-      res.json("Applied Successfully");
+      const newDocuments = await doctorDocuments.create({doctor : doctor._id, idPDF, degreePDF, licensePDF })
+      await newDocuments.save();
+      res.json({message: "Applied Successfully"});
     }
   } catch (error) {
-    res.json({ error: error.message });
+    res.json({ message: error.message });
   }
 };
 
@@ -179,7 +178,7 @@ const myPatients = async (req, res) => {
         return false;
       });
 
-    res.status(200).json(patients);
+    res.json(patients);
   } catch (err) {
     res.send(err.message);
   }
@@ -295,23 +294,6 @@ const viewDoctorAppointments = async (req, res) => {
   }
 };
 
-const addHealthRecord = async (req, res) =>{
-  try{
-  let id = req.body.id;
-  let healthRecord = req.body.base64;
-
-  const patient = await patientModel.findById(id);
-  patient.HealthRecords.push(healthRecord);
-  await patient.save();
-  res.status(200).json({ message: 'Health record added successfully'});
-  }catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-}
-
-
-
 const addAppointmentSlots = async (req,res) => {
   const doctorID = req.user._id;
   const doctor = await doctorModel.findById(doctorID);
@@ -403,7 +385,6 @@ module.exports = {
   addAppointmentSlots,
   ViewDoctorWallet,
   viewDoctorAppointments,
-  addHealthRecord,
   acceptContract,
   rejectContract
 };
