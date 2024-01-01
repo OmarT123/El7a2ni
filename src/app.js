@@ -1,7 +1,10 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const schedule = require('node-schedule');
 mongoose.set("strictQuery", false);
 const cookieParser = require('cookie-parser');
+const appointmentModel = require("./Models/Appointment.js")
+
 
 require("dotenv").config();
 const MongoURI = process.env.MONGO_URI;
@@ -75,7 +78,8 @@ const {
   cashOnDelivery,
   pastOrders,
   cancelOrder,
-  deleteHealthRecord
+  deleteHealthRecord,
+  cancelAppointment
 } = require("./Routes/patientController");
 
 
@@ -123,7 +127,8 @@ mongoose
   .connect(MongoURI)
   .then(() => {
     console.log("MongoDB is now connected!");
-    app.listen(port, () => {
+    app.listen(port, async () => {
+      await appointmentModel.cancelPastAppointments();
       console.log(`Listening to requests on http://localhost:${port}`);
     });
   })
@@ -205,8 +210,9 @@ app.get("/sendCheckoutMail", getUserFromTokenMiddleware,sendCheckoutMail);
 app.get("/getAllAddresses",getUserFromTokenMiddleware ,getAllAddresses);
 app.get("/cashOnDelivery",getUserFromTokenMiddleware, cashOnDelivery);
 app.get("/pastOrders",getUserFromTokenMiddleware,pastOrders);
-app.put("/cancelOrder",getUserFromTokenMiddleware,cancelOrder)
+app.put("/cancelOrder",getUserFromTokenMiddleware,cancelOrder);
 app.put("/deleteHealthRecord", getUserFromTokenMiddleware, deleteHealthRecord);
+app.put("/cancelAppointment", getUserFromTokenMiddleware, cancelAppointment);
 
 
 //Doctor

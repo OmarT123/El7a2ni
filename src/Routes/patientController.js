@@ -907,9 +907,19 @@ const reserveAppointment = async (req, res) => {
   const patientId = req.user._id
   const appointmentId = req.body.appointmentId
   const name = req.body.name
-  console.log(name)
+  const app = await appointmentModel.findById(appointmentId)
+  const doctorID = app.doctor
+  const doctor = await doctorModel.findById(doctorID);
+  const clinicMarkup = process.env.CLINIC_MARKUP
+  let discount = 1;
+  const patient = await patientModel.findById(patientId);
+  if(patient.healthPackage){
+    const healthPackageID = patient.healthPackage.healthPackageID.toString()
+    const healthPackage = await healthPackageModel.findById(healthPackageID).catch(err => console.log(err.message))
+    discount = 1 - healthPackage.doctorDiscount / 100;
+    }
   try {
-    const appointment = await appointmentModel.findByIdAndUpdate(appointmentId, { patient: new mongoose.Types.ObjectId(patientId), status: "upcoming", attendantName: name }, { new: true })
+    const appointment = await appointmentModel.findByIdAndUpdate(appointmentId, { patient: new mongoose.Types.ObjectId(patientId), status: "upcoming", attendantName: name, price: (doctor.hourlyRate + 10 / 100 * clinicMarkup) * discount }, { new: true })
     res.json('updated Successfully')
   } catch (err) {
     res.json(err.message)
@@ -1196,6 +1206,32 @@ const linkFamilyMemberAccount = async (req, res) => {
   }
 };
 
+const cancelAppointment = async (req, res) => {
+  try {
+    const appointmentID = req.body.appointmentID;
+    const appointment = await appointmentModel.findById(appointmentID);
+    appointment.status = 'cancelled';
+    await appointment.save();
+
+    const appointmentDate = new Date(appointment.date);
+    const currentDate = new Date();
+    const timeDifference = appointmentDate - currentDate;
+    const isWithin24Hours = timeDifference < 24 * 60 * 60 * 1000;
+
+    if (!isWithin24Hours) {
+      const patientID = appointment.patient;
+      const patient = await patientModel.findById(patientID);
+      patient.wallet += appointment.price;
+      await patient.save();
+    } 
+
+    return res.json('Appointment cancelled successfully');
+  } catch (error) {
+    return res.json();
+  }
+};
+
+
 function calculateAge(birthDate) {
   const today = new Date();
   const birthDateObj = new Date(birthDate);
@@ -1250,5 +1286,6 @@ module.exports = {
   cashOnDelivery,
   pastOrders,
   cancelOrder,
-  deleteHealthRecord
+  deleteHealthRecord,
+  cancelAppointment
 };

@@ -23,7 +23,6 @@ import FilterPatientsByAppointments from './pages/doctor/FilterPatientsByAppoint
 import DeleteAdmin from './pages/admin/DeleteAdmin';
 import DeleteDoctor from './pages/admin/DeleteDoctor';
 import DoctorsAppointments from './components/doctor/DoctorsAppointments';
-import PatientAppointments from './components/patient/PatientAppointments';
 import LinkFamilyMember from "./components/patient/LinkFamilyMember";
 import SuccessfulCheckoutHealthPackage from './pages/patient/SuccesfulCheckoutHealthPackage';
 import CheckoutHealthPackage from './pages/patient/CheckoutHealthPackage';
@@ -128,7 +127,6 @@ function App() {
             <Route path="/ViewMyPrescriptions" element={<ViewMyPrescriptions/>}/>
             <Route path="/SelectedPrescription" element={<SelectedPrescription/>}/>
             <Route path="/viewDoctorAppointments" element={<DoctorsAppointments/>}/>
-            <Route path="/viewPatientAppointments" element={<PatientAppointments />} />
             <Route path="/linkFamilyMemberAccount" element={<LinkFamilyMember />} />
             <Route path="/CheckoutHealthPackage" element={<CheckoutHealthPackage />} />
             <Route path="/SuccessfulCheckoutHealthPackage" element={<SuccessfulCheckoutHealthPackage />} />

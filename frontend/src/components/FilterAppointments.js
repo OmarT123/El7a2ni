@@ -1,4 +1,4 @@
-import {useState} from 'react'
+import {useEffect, useState} from 'react'
 import axios from 'axios'
 
 const FilterAppointments  = ({apiLink}) => {
@@ -10,7 +10,9 @@ const FilterAppointments  = ({apiLink}) => {
 
     
     const handleSubmit = async(e) => {
-        e.preventDefault()
+      if (e) {
+        e.preventDefault();
+        }
         const FilterData = {}
         if(status !=="")
         FilterData['status'] = status;
@@ -25,7 +27,7 @@ const FilterAppointments  = ({apiLink}) => {
               setAppointments('');
             } else {
               setAppointments(apps);
-              setMessage("Filtered Appointments Results:");
+              setMessage("Appointments:");
             }
           } catch (error) {
             
@@ -33,6 +35,21 @@ const FilterAppointments  = ({apiLink}) => {
           }
     }
 
+    const cancelAppointment = async(e, appointmentID) => {
+      e.preventDefault();
+      const response = await axios.put("/cancelAppointment", {appointmentID : appointmentID});
+      const res = response.data;
+      if(typeof res == 'string'){
+        window.location.reload();
+        alert(res);
+      }
+      else
+        alert("Error cancelling appointment.");
+    }
+
+    useEffect(() => {
+      handleSubmit();
+    }, [])
 
     return (
         <form className='FilterAppointments'>
@@ -58,8 +75,12 @@ const FilterAppointments  = ({apiLink}) => {
           {appointments.map((appointment) => (
             <li key={appointment._id}>
               <div>Status: {appointment.status}</div>
-              <div>Date: {appointment.date}</div>
-              <div>Paitent: {appointment.patient && appointment.patient.name}</div>
+              <div>Date: {appointment.date.substr(0, 10)}</div>
+              <div>Time: {appointment.date.substr(11, 5)}</div>
+              <div>Patient: {appointment.patient && appointment.attendantName}</div>
+              {appointment.status !== 'cancelled' && (
+                <button onClick={(e) => cancelAppointment(e, appointment._id)}>Cancel Appointment</button>
+              )} <hr/>
             </li>
           ))}
         </ul>

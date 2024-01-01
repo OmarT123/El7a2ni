@@ -313,11 +313,20 @@ const addAppointmentSlots = async (req,res) => {
     }
     else {
       if(req.body.patientID){
+        const clinicMarkup = process.env.CLINIC_MARKUP
+        let discount = 1;
+        const patient = await patientModel.findById(req.body.patientID);
+        if(patient.healthPackage){
+          const healthPackageID = patient.healthPackage.healthPackageID.toString()
+          const healthPackage = await healthPackageModel.findById(healthPackageID).catch(err => console.log(err.message))
+          discount = 1 - healthPackage.doctorDiscount / 100;
+        }           
         await appointmentModel.create({
           doctor: doctor._id,
           date,
           status: 'upcoming',
-          patient: new mongoose.Types.ObjectId(req.body.patientID)
+          patient: new mongoose.Types.ObjectId(req.body.patientID),
+          price: (doctor.hourlyRate + 10 / 100 * clinicMarkup) * discount
         })
       }
       else{
