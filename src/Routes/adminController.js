@@ -1,10 +1,18 @@
 const doctorModel = require("../Models/Doctor.js");
 const patientModel = require("../Models/Patient.js");
+const pharmacistModel = require('../Models/Pharmacist.js');
 const adminModel = require("../Models/Admin.js");
+const medicineModel = require('../Models/Medicine.js');
 const healthPackageModel = require("../Models/HealthPackage.js");
 const userModel = require("../Models/User.js")
+const familyMemberModel = require ('../Models/FamilyMember.js')
+
+
+const { default: mongoose } = require("mongoose");
 const nodemailer = require("nodemailer")
 const bcrypt = require('bcrypt');
+require('dotenv').config();
+
 
 
 const addAdmin = async (req, res) => {
@@ -45,6 +53,153 @@ const addAdmin = async (req, res) => {
     res.send(err.message);
   }
 };
+
+
+const filterByMedicinalUseAdmin = async(req,res) => {
+
+  const medUse = new RegExp(req.query.medicinalUse, "i")
+
+  try
+  {
+      const medicine = medicineModel.find({medicinalUse:medUse}).then((medicine) => res.json(medicine))
+  }
+  catch(err)
+  {
+      res.json({message:err.message})
+  }
+
+};
+
+
+const unapprovedPharmacists = async (req, res) => {
+  try {
+    const pharmacists = pharmacistModel
+      .find({ status: "pending" })
+      .populate()
+      .then((pharmacists) => res.json(pharmacists));
+  } catch (err) {
+    res.json({ message: err.message });
+  }
+};
+
+
+const searchMedicineAdmin = async (req, res) => {
+  const searchName = req.query.name;
+  const searchQuery = new RegExp(searchName, "i"); 
+  try {
+
+    const results = await medicineModel.find({ name: searchQuery });
+    if(results.length == 0){
+      res.json("Medicine is not Found !!" );
+    }
+    else {
+      res.json(results);
+    }
+  } catch (error) {
+    res.status(500).json(error.message);
+}
+};
+
+
+const getPharmacist = async (req, res) => {
+  try {
+    const pharmacistId = req.query.id;
+    const pharmacist = await pharmacistModel.findById(pharmacistId);
+    res.json(pharmacist);
+  } catch (error) {
+    res.json({ error: error.message });
+  }
+};
+
+
+
+const getAllPharmacists = async (req,res) => {
+
+  try {
+    const allPharmacists = await pharmacistModel.find({});
+    res.json(allPharmacists);
+  }
+  catch(error){
+    res.status(500).json({ error: error.message });
+
+  }
+}
+
+const viewAllPatients = async (req, res) => {
+  try{
+  const patients = await patientModel.find({})  
+    res.status(200).json(patients)
+    return patients
+}
+catch (err) {
+  res.json({ message: err.message });
+}
+};
+
+
+const rejectPharmacist = async (req, res) => {
+  const { pharmacistId } = req.query;
+
+  try {
+    const pharmacist = await pharmacistModel.findById(pharmacistId);
+
+    if (!pharmacist) {
+      return res.json({ message: 'Pharmacist not found' });
+    }
+
+
+    pharmacist.status = "rejected";
+
+
+    await pharmacist.save();
+
+    return res.json({
+      message: 'Pharmacist request rejected successfully',
+      pharmacist,
+    });
+  } catch (error) {
+    return res.json({ message: 'Internal Server Error' });
+  }
+};
+
+
+const acceptPharmacist = async (req, res) => {
+  const { pharmacistId } = req.query;
+
+  try {
+    const pharmacist = await pharmacistModel.findById(pharmacistId);
+
+    if (!pharmacist) {
+      return res.json({ message: 'Pharmacist not found' });
+    }
+
+    pharmacist.status = "accepted";
+    await pharmacist.save();
+
+    return res.json({
+      message: 'Pharmacist request accepted successfully',
+      pharmacist,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.json({ message: 'Internal Server Error' });
+  }
+};
+
+
+
+const viewAllPharmacists = async (req, res) => {
+  try{
+  const pharmacists = await pharmacistModel.find({})  
+    res.json(pharmacists)
+    return pharmacists
+}
+catch (err) {
+  res.json({ message: err.message });
+}
+};
+
+
 
 const viewDocInfo = async (req, res) => {
   try {
@@ -114,15 +269,40 @@ const deleteHealthPackage = async (req, res) => {
     res.json(err.message);
   }
 };
+
+
 const deletePatient = async (req, res) => {
-  const patientId = req.query.id;
+  let patientId = req.query.id;
   try {
     await patientModel.findByIdAndDelete(patientId);
-    res.status(200).json({ message: 'Patient deleted successfully from the Database' });
+    res.json("Deleted Patient Successfully from Database");
   } catch (err) {
-    res.status(404).json({ message: err.message });
-  }
+    res.send(err);
+  }
 };
+
+const deletePharmacist = async (req, res) => {
+  let pharmacistId = req.query.id;
+  try {
+    await pharmacistModel.findByIdAndDelete(pharmacistId);
+    res.json("Deleted Pharmacist Successfully from Database");
+  } catch (err) {
+    res.json(err);
+  }
+};
+
+
+const getPatient = async (req, res) => {
+  try {
+    const patientId = req.query.id;
+    const patient = await patientModel.findById(patientId);
+    res.json(patient);
+  } catch (error) {
+    res.json({ error: error.message });
+  }
+};
+
+
 const deleteDoctor = async (req, res) => {
   const doctorId = req.query.id; 
   try {
@@ -167,7 +347,7 @@ const getAllPatients = async (req,res) => {
     res.json(allPatient);
   }
   catch(error){
-    res.status(500).json({ error: error.message });
+    res.json({ error: error.message });
 
   }
 }
@@ -330,10 +510,21 @@ module.exports = {
   addAdmin,
   getAllHealthPackages,
   getHealthPackage,
-  getAllPatients,
   getAllAdmins,
   getAllDoctors,
   acceptDoctor,
   rejectDoctor,
   getADoctor,
+  unapprovedPharmacists,
+  getPharmacist,
+  deletePharmacist,
+  searchMedicineAdmin,
+  filterByMedicinalUseAdmin,
+  getPatient,
+  getAllPatients,
+  getAllPharmacists,
+  viewAllPatients,
+  viewAllPharmacists,
+  rejectPharmacist,
+  acceptPharmacist
 };
