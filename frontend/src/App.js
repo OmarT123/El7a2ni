@@ -1,159 +1,83 @@
-import {BrowserRouter, Routes, Route} from 'react-router-dom'
+import { animateScroll as scroll } from "react-scroll";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
+import {
+  Button,
+  Fab,
+  useScrollTrigger,
+  Fade,
+  Zoom,
+  Box,
+  Container,
+  CssBaseline,
+  Toolbar,
+  Typography,
+  Grid,
+} from "@mui/material";
+import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 
-import Home from './pages/Home'
-import NavBar from './components/NavBar'
-import UnApprovedDoctors from './pages/admin/unApprovedDoctors';
-import HealthPackage from './pages/admin/HealthPackage';
-import ViewHealthPackages from './pages/patient/ViewHealthPackages';
-import HealthPackageInfo from './pages/admin/HealthPackageInfo';
-import FamilyMembers from './pages/patient/FamilyMembers'
-import DoctoreditForm from './components/doctor/DoctoreditForm';
-import ViewMyPrescriptions from './pages/patient/ViewMyPrescriptions';
-import SelectedPrescription from './pages/patient/SelectedPrescription';
-import MyPatients from './pages/doctor/MyPatients';
-import SearchDoctor from './pages/patient/SearchDoctor'
-import RegisterDoctor from './pages/doctor/RegisterDoctor'
-import Patient from './components/Patient'
-import Doctor from './pages/patient/Doctor'
-import AddAppointmentSlots from './pages/doctor/AddAppointmentSlots'
-import FilterAppointmentsForDoctor from './pages/doctor/FilterAppointmentsForDoctor';
-import FilterAppointmentsForPatient from './pages/patient/FilterAppointmentsForPatient';
-import FilterPatientsByAppointments from './pages/doctor/FilterPatientsByAppointments'
-import DeleteAdmin from './pages/admin/DeleteAdmin';
-import DeleteDoctor from './pages/admin/DeleteDoctor';
-import DoctorsAppointments from './components/doctor/DoctorsAppointments';
-import PatientAppointments from './components/patient/PatientAppointments';
-import LinkFamilyMember from "./components/patient/LinkFamilyMember";
-import SuccessfulCheckoutHealthPackage from './pages/patient/SuccesfulCheckoutHealthPackage';
-import CheckoutHealthPackage from './pages/patient/CheckoutHealthPackage';
-import ViewFreeAppointments from './pages/patient/ViewFreeAppointments';
-import SuccessfulCheckoutAppointment from './pages/patient/SuccessfulCheckoutAppointment';
-import CheckoutAppointment from './pages/patient/CheckoutAppointment';
-import UploadHealthRecords from './pages/UploadHealthRecords';
-import ViewSubscribedHealthPackageAndCancel from './pages/patient/ViewSubscribedHealthPackageAndCancel';
-import ViewMyWallet from './pages/patient/ViewMyWallet';
-import ViewDoctorWallet from './pages/doctor/ViewDoctorWallet';
-import DoctorApplication from './pages/admin/DoctorApplication';
-import DoctorContract from './pages/doctor/DoctorContract';
+import NavBar from "./components/NavBar";
+import Footer from "./components/Footer";
+import HomePage from "./pages/HomePage";
+import Login from "./pages/Login";
 
-// imported from the pharamcy : 
-import UnApprovedPharmacists from './pages/admin/UnApprovedPharmacists'
-import RegisterPatient from './pages/patient/RegisterPatient';
-import RegisterPharmacist from './pages/pharmacist/RegisterPharmacist';
-import EditMedicine from './pages/pharmacist/EditMedicine'
-import SearchMedicineForAdmin from './pages/admin/SearchMedicineForAdmin'
-import SearchMedicineForPatient from './pages/patient/SearchMedicineForPatient'
-import SearchMedicineForPharmacist from './pages/pharmacist/SearchMedicinceForPharmacist'
-import AddAdmin from './pages/admin/AddAdmin'
-import DeletePatient from './pages/admin/DeletePatient'
-import DeletePharmacist from './pages/admin/DeletePharmacist'
-import PatientGetMedicine from './pages/patient/PatientGetMedicine'
-import AdminGetMedicine from './pages/admin/AdminGetMedicine'
-import PharmacistGetMedicine from './pages/pharmacist/PharmacistGetMedicine'
-import GetAllPharmacists from './pages/admin/GetAllPharmacists'
-import Pharmacist from './pages/admin/pharmacist'
-import AddMedicine from './pages/pharmacist/AddMedicine';
-import SearchMedicinalUsePharmacist from './pages/pharmacist/SearchMedicinalUsePharmacist';
-import SearchMedicinalUsePatient from './pages/patient/SearchMedicinalUsePatient';
-import SearchMedicinalUseAdmin from './pages/admin/SearchMedicinalUseAdmin';
-import PharmacistApplication from './pages/admin/PharmacistApplication';
-import MyCart from './pages/patient/MyCart' ;
-import Checkout from './pages/patient/Checkout';
-import PastOrders from './pages/patient/PastOrders';
-import SuccessfulCheckout from './pages/patient/SuccessfulCheckout';
+const ScrollTop = (props) => {
+  const { children, window } = props;
 
-// user 
+  const trigger = useScrollTrigger({
+    target: window ? window() : undefined,
+    disableHysteresis: true,
+    threshold: 100,
+  });
 
-import Login from './pages/user/Login'
-import ChangePassword from './pages/user/ChangePassword';
-import ResetPassword from './pages/user/ResetPassword';
-import ResetPasswordOTP from './pages/user/ResetPasswordOTP';
-import NotAuthorized from './components/NotAuthorized';
+  const scrollToTop = () => {
+    scroll.scrollToTop({
+      duration: 1000,
+      smooth: "easeInOutQuart",
+    });
+  };
 
-function App() {
   return (
-    <div className="App">
-      <BrowserRouter>
-        <NavBar />
-        <div className='pages'>
-          <Routes>
-            {/*Pharmacy Routing */}
-            {/* <Route path="/" element={<Home />} /> */}
-            <Route path="/RegisterPatient" element={<RegisterPatient />}/>
-            <Route path="/RegisterPharmacist" element={<RegisterPharmacist/>} />
-            <Route  path="/UnApprovedPharmacists"  element={<UnApprovedPharmacists />}  />
-            <Route path="/EditMedicine" element = {<EditMedicine/>} />
-            <Route path="/SearchMedicineForPharmacist" element = {<SearchMedicineForPharmacist/>}/>
-            <Route path="/SearchMedicineForAdmin" element = {<SearchMedicineForAdmin/>}/>
-            <Route path="/SearchMedicineForPatient" element = {<SearchMedicineForPatient/>}/>
-            <Route path="/AddAdmin" element = {<AddAdmin/>}/>
-            <Route path="/cart" element = {<MyCart/>}/>
-            <Route path="/DeletePatient" element = {<DeletePatient/>}/>
-            <Route path="/DeletePharmacist" element = {<DeletePharmacist/>}/>
-            <Route  path="/PatientGetMedicine" element={<PatientGetMedicine />}/>
-            <Route path="/AdminGetMedicine" element={<AdminGetMedicine />}  />
-            <Route  path="/PharmacistGetMedicine" element={<PharmacistGetMedicine />}/>
-            <Route path="/GetAllPharmacists"  element={<GetAllPharmacists />} />
-            <Route path="/pharmacist" element={<Pharmacist />}  />
-            <Route path="/addMedicine" element={<AddMedicine />}/>
-            <Route path="/searchMedicinalPharmacist" element={<SearchMedicinalUsePharmacist />} />
-            <Route path="/searchMedicinalPatient" element={<SearchMedicinalUsePatient />} />
-            <Route path="/searchMedicinalAdmin" element={<SearchMedicinalUseAdmin />} />
-            <Route path="/PharmacistApplication" element={<PharmacistApplication />} />
-            <Route path="/checkout" element={<Checkout />} />
-            <Route path="/PastOrders" element={<PastOrders />} />
-            <Route path="/SuccessfulCheckout" element={<SuccessfulCheckout />} />
-
-            {/*Virtual clinic Routing */}
-            <Route path="/Home" element={<Home />} />
-            <Route path="/UnapprovedDoctors" element={<UnApprovedDoctors />} />
-            <Route path='/FamilyMembers' element={<FamilyMembers/>}/>
-            <Route path="/editDoctor" element={<DoctoreditForm/>}/>
-            <Route path="/viewMyPatients" element={<MyPatients/>}/>
-            <Route path='/FilterAppointmentsForPatient' element={<FilterAppointmentsForPatient/>}/>
-            <Route path='/FilterAppointmentsForDoctor' element={<FilterAppointmentsForDoctor/>}/>
-            <Route path="/HealthPackage" element={<HealthPackage />} />
-            <Route path="/HealthPackageInfo" element={<HealthPackageInfo />} />
-            <Route path="/ViewHealthPackages" element={<ViewHealthPackages />} />
-            <Route path="/SearchDoctor" element={<SearchDoctor />} />
-            <Route path="/registerDoctor" element={<RegisterDoctor />} />
-            <Route path="/patient" element={<Patient />} />
-            <Route path="/doctor" element={<Doctor />} />
-            <Route path="/deleteAdmin" element={<DeleteAdmin/>}/>
-            <Route path="/deleteDoctor" element={<DeleteDoctor/>}/>
-            <Route path="/FilterPatientsByAppointments" element={<FilterPatientsByAppointments/>}/>
-            <Route path="/doctor" element={<Doctor/>}/>
-            <Route path="/patient" element={<Patient/>}/>
-            <Route path="/ViewMyPrescriptions" element={<ViewMyPrescriptions/>}/>
-            <Route path="/SelectedPrescription" element={<SelectedPrescription/>}/>
-            <Route path="/viewDoctorAppointments" element={<DoctorsAppointments/>}/>
-            <Route path="/viewPatientAppointments" element={<PatientAppointments />} />
-            <Route path="/linkFamilyMemberAccount" element={<LinkFamilyMember />} />
-            <Route path="/CheckoutHealthPackage" element={<CheckoutHealthPackage />} />
-            <Route path="/SuccessfulCheckoutHealthPackage" element={<SuccessfulCheckoutHealthPackage />} />
-            <Route path="/ViewFreeAppointments" element={<ViewFreeAppointments />} />
-            <Route path="/CheckoutAppointment" element={<CheckoutAppointment />} />
-            <Route path="/SuccessfulCheckoutAppointment" element={<SuccessfulCheckoutAppointment />} />
-            <Route path="/AddAppointmentSlot" element={<AddAppointmentSlots/>}/>
-            <Route path='/uploadHealthRecords' element={<UploadHealthRecords/>}/>
-            <Route path="/ViewSubscribedHealthPackageAndCancel" element={<ViewSubscribedHealthPackageAndCancel/>}/>
-            <Route path="/ViewMyWallet" element={<ViewMyWallet/>}/>
-            <Route path="/ViewDoctorWallet" element={<ViewDoctorWallet/>}/>
-            <Route path="/DoctorApplication" element={<DoctorApplication/>}/>
-            <Route path="/doctorContract" element={<DoctorContract />} />
-
-            {/*User Routing */}
-            <Route path="/login" element ={<Login />}/>
-            <Route path="/ChangePassword" element ={<ChangePassword />}/>
-            <Route path="/ResetPassword" element ={<ResetPassword />}/>
-            <Route path="/ResetPasswordOTP" element ={<ResetPasswordOTP />}/>
-
-          </Routes>
-        </div>
-      </BrowserRouter>
-    </div>
+    <Zoom in={trigger}>
+      <div
+        onClick={scrollToTop}
+        role="presentation"
+        style={{ position: "fixed", bottom: 16, right: 16 }}
+      >
+        {children}
+      </div>
+    </Zoom>
   );
-}
+};
+
+const scrollToSection = (id) => {
+  const section = document.getElementById(id);
+  if (section) {
+    section.scrollIntoView({ behavior: "smooth" });
+  }
+};
+
+const App = () => {
+  return (
+    <>
+      <CssBaseline />
+      <NavBar />
+
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/login" element={<Login />} />
+        </Routes>
+      </BrowserRouter>
+
+      <ScrollTop>
+        <Fab color="primary" size="large" aria-label="scroll back to top">
+          <KeyboardArrowUpIcon />
+        </Fab>
+      </ScrollTop>
+      <Footer id="footer"/>
+    </>
+  );
+};
 
 export default App;
