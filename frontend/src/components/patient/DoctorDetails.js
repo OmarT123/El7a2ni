@@ -1,4 +1,6 @@
 import {Link} from 'react-router-dom';
+import formatDistanceToNow from 'date-fns/formatDistanceToNow'
+
 const DoctorDetails = ({doctor, link}) => 
 {   const pageLink = "/"+link+"?id="+doctor._id;
     return (
@@ -12,7 +14,7 @@ const DoctorDetails = ({doctor, link}) =>
                 <p><strong>Hourly Rate: </strong>{doctor.hourlyRate}</p>
                 <p><strong>Affiliation: </strong>{doctor.affiliation}</p>
                 <p><strong>Educational Background: </strong>{doctor.educationalBackground}</p>
-                <p>Date registered: {doctor.createdAt}</p>
+                <p><strong>Date/Time registered: </strong>{formatDistanceToNow(new Date(doctor.createdAt),{addSuffix: true})}</p>
                 {doctor.sessionPrice && <p><strong>session price: </strong>{doctor.sessionPrice}</p>}
             </div>
         </Link>

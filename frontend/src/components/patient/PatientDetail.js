@@ -23,7 +23,7 @@ const PatientDetail = ({patient}) =>
                 ))}
 
             <Link to={`/uploadHealthRecords?id=${patient._id}`}>
-                <button>Upload Health Records</button>
+                <button>View/Upload Health Records</button>
             </Link>
 
             <Link to={`/AddAppointmentSlot?id=${patient._id}`}>
