@@ -69,34 +69,12 @@ const patientSchema = new Schema(
         discount: Number,
       },
     },
-    cart: { items:[
-      {
-        medicine: {
-            type: mongoose.Types.ObjectId,
-            ref: 'Medicine'
-        },
-        quantity: {
-          type: Number,
-          default: 1
-        }
-      }
-    ] ,
-    amountToBePaid: {
+    wallet: {
       type: Number,
       default: 0
-    }
-  },
+ }
 
-  wallet: {
-    type: Number,
-    default: 0
   },
-  deliveryAddress: [
-    {
-      type: String // format: street,appartmentNum,city,state,zipcode
-    }
-  ]
-},
   { timestamps: true }
 );
 
