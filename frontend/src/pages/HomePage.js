@@ -15,7 +15,8 @@ import FeatureCard from '../components/FeatureCard';
 import DotLine from '../components/DotLine';
 import FunFact from '../components/FunFacts';
 import TopLeftIconHeaderText from '../components/TopLeftIconHeaderText';
-
+import React, { useState } from 'react';
+import Popup from '../components/Popup';
 
 const traits1 = [
   {
@@ -54,6 +55,12 @@ const traits2 = [
 ]
 
 const HomePage = ({ scrollToSection }) => {
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+
+  const togglePopup = () => {
+    setIsPopupOpen(!isPopupOpen);
+  };
+  
     return (
         <>
             <ImageSlider scrollToSection={scrollToSection} />
@@ -128,6 +135,7 @@ const HomePage = ({ scrollToSection }) => {
                 {traits2.map(item => <TopLeftIconHeaderText icon={item.icon} title={item.title} text={item.text} />)}
               </Box>
             </Container>
+            
             
         </>
     )
