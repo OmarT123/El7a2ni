@@ -491,7 +491,6 @@ const filterPrescriptionByDateDoctorStatus = async (req, res) => {
 
 
 const filterAppointmentsForPatient = async (req, res) => {
-  // Need login
   const dateToBeFiltered = req.query.date;
   const statusToBeFiltered = req.query.status;
   const filterQuery = {};
@@ -507,7 +506,6 @@ const filterAppointmentsForPatient = async (req, res) => {
   if (statusToBeFiltered) {
     filterQuery["status"] = statusToBeFiltered;
   }
-  if (req.user._id) {
     const id = req.user._id;
     filterQuery["patient"] = new mongoose.Types.ObjectId(id);
     try {
@@ -517,29 +515,25 @@ const filterAppointmentsForPatient = async (req, res) => {
       if (filteredAppointments.length === 0) {
         return res.json("No matching appointments found for the Patient.");
       }
-      res.json(filteredAppointments);
+      const currentDate = new Date();
+      let upcomingAppointments = [];
+      let pastAppointments = [];
+      for(appointment of filteredAppointments)
+      {
+        if (appointment.date < currentDate)
+          pastAppointments.push(appointment)
+        else
+          upcomingAppointments.push(appointment)
+      }
+      const appointmentData = {
+        upcomingAppointments,
+        pastAppointments,
+      };
+      res.json(appointmentData);
     } catch (err) {
       console.error(err);
-      res
-        .status(500)
-        .json({ error: "An error occurred while retrieving appointments." });
+      res.json({ error: "An error occurred while retrieving appointments." });
     }
-  } else {
-    try {
-      const filteredAppointments = await appointmentModel.find(filterQuery);
-      if (filteredAppointments.length === 0) {
-        return res.json("No matching appointments found for the Patient.");
-      }
-      else {
-        res.json(filteredAppointments);
-      }
-    } catch (err) {
-      console.error(err);
-      res
-        .status(500)
-        .json({ error: "No matching appointments found for the Patient." });
-    }
-  }
 };
 
 const selectDoctorFromFilterSearch = async (req, res) => {

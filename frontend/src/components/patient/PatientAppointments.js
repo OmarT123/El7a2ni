@@ -3,8 +3,6 @@ import axios from "axios";
 import PatientAuthorization from "../PatientAuthorization";
 
 const PatientAppointments = ({ user }) => {
-  // Hardcoded patientId for demonstration purposes
-  // const hardcodedPatientId = "656cb41125a74d947f10e349";
 
   const [appointments, setAppointments] = useState({
     upcomingAppointments: [],

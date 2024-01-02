@@ -226,7 +226,7 @@ app.get("/filterPatientsByAppointments",getUserFromTokenMiddleware, filterPatien
 app.get("/viewPatient", getUserFromTokenMiddleware,viewPatient);
 app.get("/viewmypatientsbyname",getUserFromTokenMiddleware,exactPatients);
 app.post("/createPrescription",getUserFromTokenMiddleware,createPrescription);
-app.get("/viewDoctorAppointments", viewDoctorAppointments); 
+app.get("/viewDoctorAppointments", getUserFromTokenMiddleware, viewDoctorAppointments); 
 app.post("/addAppointmentSlots",getUserFromTokenMiddleware, addAppointmentSlots);
 app.get("/ViewDoctorWallet",getUserFromTokenMiddleware,ViewDoctorWallet)
 app.put("/acceptContract", getUserFromTokenMiddleware, acceptContract)
