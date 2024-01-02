@@ -688,7 +688,7 @@ const CancelSubscription = async (req, res) => {
     const patientId = req.user._id;
     const patient = await patientModel.findById(patientId);
     if (!patient) {
-      return res.status(404).json({ message: 'Patient not found' });
+      return res.json({ message: 'Patient not found' });
     }
     patient.healthPackage.status = "cancelled";
     await patient.save();
@@ -696,7 +696,7 @@ const CancelSubscription = async (req, res) => {
     res.json({ message: 'Subscription canceled successfully' });
   } catch (error) {
     console.error('Error canceling subscription:', error.message);
-    res.status(500).json({ message: 'Internal Server Error' });
+    res.json({ message: 'Internal Server Error' });
   }
 };
 
@@ -1211,8 +1211,8 @@ const cancelAppointment = async (req, res) => {
     const currentDate = new Date();
     const timeDifference = appointmentDate - currentDate;
     const isWithin24Hours = timeDifference < 24 * 60 * 60 * 1000;
-
-    if (!isWithin24Hours) {
+    const doctor = await doctorModel.findById(req.user_.id)
+    if (!isWithin24Hours || doctor) {
       const patientID = appointment.patient;
       const patient = await patientModel.findById(patientID);
       patient.wallet += appointment.price;
