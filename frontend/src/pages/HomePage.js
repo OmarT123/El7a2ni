@@ -17,6 +17,10 @@ import FunFact from '../components/FunFacts';
 import TopLeftIconHeaderText from '../components/TopLeftIconHeaderText';
 import React, { useState } from 'react';
 import Popup from '../components/Popup';
+import ServiceCard from '../components/ServiceCard';
+import HealingIcon from '@mui/icons-material/Healing'; 
+
+
 
 const traits1 = [
   {
@@ -135,6 +139,9 @@ const HomePage = ({ scrollToSection }) => {
                 {traits2.map(item => <TopLeftIconHeaderText icon={item.icon} title={item.title} text={item.text} />)}
               </Box>
             </Container>
+     
+
+
             
             
         </>
