@@ -2,7 +2,6 @@ const doctorModel = require('../Models/Doctor.js');
 const adminModel = require('../Models/Admin.js');
 const userModel = require('../Models/User.js');
 const patientModel = require('../Models/Patient.js');
-const pharmacistModel = require('../Models/Pharmacist.js');
 const bcrypt = require('bcrypt');
 const nodemailer = require('nodemailer');
 const otpGenerator = require('otp-generator');
@@ -49,9 +48,6 @@ const login = async (req, res) => {
         if (!user) {
             user = await doctorModel.findOne({ username: username });
         }
-        if(!user) {
-            user= await pharmacistModel.findOne({username:username});
-        }
         if (user) {
             const passwordMatched = await bcrypt.compare(password, user.password);
             if (passwordMatched) {
@@ -67,11 +63,6 @@ const login = async (req, res) => {
                     res.cookie('userToken', token, { httpOnly: true, maxAge: null});
 
                     return res.json({ success: true, user: user, message: "Doctor login successful" });
-                }
-                else if (user instanceof pharmacistModel){
-                    res.cookie('userToken', token, { httpOnly: true, maxAge: null});
-
-                    return res.json({ success: true, user: user, message: "Pharmacist login successful" });
                 }
             } else {
                 return res.json({ success: false, message: "Invalid Password" });
@@ -90,7 +81,6 @@ const logout = (req, res) => {
     res.clearCookie('userToken');
     res.json({ success: true, message: "Logout successful" });
 };
-
 const loginAuthentication = async (req, res) => {
     const token = req.headers.cookie?.split('; ').find(row => row.startsWith('userToken'))?.split('=')[1];
         if (!token) {
@@ -134,23 +124,9 @@ const loginAuthentication = async (req, res) => {
                       return res.json({ success: true, type: 'doctor', user: client, message: "User is authenticated" });
 
                 }
-                else if (!client){
-                    client = await pharmacistModel.findOne({ username: decodedToken.name });
-                    if(client){
-                        await userModel.findOneAndUpdate(
-                            { username: decodedToken.name },
-                            { $set: { type: 'pharmacist' } }, 
-                            { new: true } 
-                          );
-                          return res.json({ success: true, type: 'pharmacist', user: client, message: "User is authenticated" });
-    
-                    }
-                    else{
-                        return res.json({ success: false, message: "User not authenticated" });
-                    }
-                    
+                else{
+                    return res.json({ success: false, message: "User not authenticated" });
                 }
-             
 
             }
         }
@@ -178,7 +154,10 @@ const getUserFromTokenMiddleware = async (req, res, next) => {
                 { username: decodedToken.name },
                 { $set: { type: 'admin' } }, 
                 { new: true } 
-              ); 
+            
+              );
+
+        
         }
         else if (!client) {
             client = await patientModel.findOne({ username: decodedToken.name });
@@ -200,23 +179,9 @@ const getUserFromTokenMiddleware = async (req, res, next) => {
 
 
                 }
-                else if (!client){
-                    client = await pharmacistModel.findOne({ username: decodedToken.name });
-                    if(client){
-                        await userModel.findOneAndUpdate(
-                            { username: decodedToken.name },
-                            { $set: { type: 'pharmacist' } }, 
-                            { new: true } 
-                          );
-    
-    
-                    }
-                    else{
-                        return res.json({ success: false, message: "User not authenticated" });
-                    }
-
+                else{
+                    return res.json({ success: false, message: "User not authenticated" });
                 }
-               
 
             }
         }
@@ -267,10 +232,6 @@ const changePassword = async (req, res) => {
         } else if (user instanceof doctorModel) {
             await doctorModel.findByIdAndUpdate(user._id, { password: encryptedPassword });
         }
-        else if (user instanceof pharmacistModel) {
-            await pharmacistModel.findByIdAndUpdate(user._id, { password: encryptedPassword });
-        }
-
 
         return res.json({ success: true, message: "Password changed successfully" });
     }  catch (error) {
@@ -333,10 +294,6 @@ const resetPassword = async (req, res) => {
     else if (user.type==='doctor'){
         userData = await doctorModel.findOne({username : username});
     }
-    else if (user.type === 'pharmacist'){
-        userData = await pharmacistModel.findOne({username : username});
-
-    }
     if(userData){
     const otp = otpGenerator.generate(6, { digits: true, alphabets: false, upperCase: false, specialChars: false });
     saveOTPCookie(res, otp);
@@ -372,10 +329,6 @@ const resetPasswordWithOTP = async (req, res) => {
    else if (user.type==="doctorModel"){
        userData = await doctorModel.findOne({username : username});
    }
-   else if (user.type ==="pharmacist"){
-    userData = await pharmacistModel.findOne({username : username});
-
-   }
 
     const storedOTP = req.cookies.passwordResetOTP;
 
@@ -403,9 +356,6 @@ const resetPasswordWithOTP = async (req, res) => {
         await patientModel.findByIdAndUpdate(userData._id, { password: encryptedPassword });
     } else if (userData instanceof doctorModel) {
         await doctorModel.findByIdAndUpdate(userData._id, { password: encryptedPassword });
-    }
-    else if (userData instanceof pharmacistModel) {
-        await pharmacistModel.findByIdAndUpdate(userData._id, { password: encryptedPassword });
     }
 
     await userData.save();
