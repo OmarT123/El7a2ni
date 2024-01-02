@@ -7,8 +7,8 @@ const ServiceCard = ({ icon, title, price, services }) => {
     <Card sx={{ 
       maxWidth: 345, 
       m: 2, 
-      borderColor: '#1976D2', 
-      borderWidth: '2px', 
+      borderColor: '#EEEEEE', 
+      borderWidth: '1px', 
       borderStyle: 'solid',
       bgcolor: '#FFF' 
     }}>
