@@ -22,8 +22,20 @@ const {
   acceptContract,
   rejectContract
 } = require("./Routes/doctorController");
+
+
 const {
-  addPatient,
+  addPharmacist,
+  searchMedicinePharmacist,
+  addMedicine,
+  editMedicine,
+  filterByMedicinalUsePharmacist,
+  medicinequantityandsales,
+  viewMedicine,
+  uploadMedicineImage
+} = require("./Routes/pharmacistController");
+
+const {
   createFamilyMember,
   searchForDoctorByNameSpeciality,
   filterAppointmentsForPatient,
@@ -36,11 +48,8 @@ const {
   getDoctors,
   linkFamilyMemberAccount,
   viewPatientAppointments,
-  payWithCard,
-  payWithWallet,
   buyHealthPackage,
   reserveAppointment,
-  sendCheckoutMail,
   getHealthPackageForPatient,
   viewFreeAppointments,
   getAnAppointment,
@@ -50,8 +59,25 @@ const {
   CancelSubscription,
   ViewMyWallet,
   viewFreeAppointmentsByName,
-  getHealthPackageForFamily
+  getHealthPackageForFamily,
+  searchMedicinePatient,
+  filterByMedicinalUsePatient,
+  addPatient,
+  addToCart,
+  viewMyCart,
+  removeFromCart,
+  decreaseByOne,
+  increaseByOne,
+  payWithCard,
+  payWithWallet,
+  sendCheckoutMail,
+  getAllAddresses,
+  cashOnDelivery,
+  pastOrders,
+  cancelOrder
 } = require("./Routes/patientController");
+
+
 const {
   addAdmin,
   addHealthPackage,
@@ -69,6 +95,17 @@ const {
   acceptDoctor,
   rejectDoctor,
   getADoctor,
+  unapprovedPharmacists,
+  getPharmacist,
+  deletePharmacist,
+  filterByMedicinalUseAdmin,
+  searchMedicineAdmin,
+  getPatient,
+  getAllPharmacists,
+  viewAllPatients,
+  viewAllPharmacists,
+  rejectPharmacist,
+  acceptPharmacist
 } = require("./Routes/adminController.js");
 
 
@@ -77,8 +114,9 @@ const{ login, logout ,changePassword ,getUserFromTokenMiddleware ,resetPassword,
 
 const app = express();
 const port = process.env.PORT || "8000";
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use(express.json({ limit: '5000mb' }));
+app.use(express.urlencoded({ limit: '5000mb', extended: true }));
+
 
 mongoose
   .connect(MongoURI)
@@ -98,21 +136,33 @@ app.post("/addHealthPackage", getUserFromTokenMiddleware,addHealthPackage);
 app.put("/editHealthPackage",getUserFromTokenMiddleware, editHealthPackage);
 app.delete("/deleteHealthPackage",getUserFromTokenMiddleware, deleteHealthPackage);
 app.get("/viewDocInfo", getUserFromTokenMiddleware,viewDocInfo);
-app.delete("/deletePatient",getUserFromTokenMiddleware,deletePatient);
 app.delete("/deleteDoctor",getUserFromTokenMiddleware,deleteDoctor);
 app.delete("/deleteAdmin",getUserFromTokenMiddleware,deleteAdmin);
-app.post("/addAdmin",getUserFromTokenMiddleware,addAdmin);
 app.get("/getAllHealthPackages",getUserFromTokenMiddleware,getAllHealthPackages)
 app.get("/getHealthPackage",getUserFromTokenMiddleware,getHealthPackage)
 app.get("/getAllAdmins",getUserFromTokenMiddleware,getAllAdmins);
 app.get("/getAllDoctors",getUserFromTokenMiddleware,getAllDoctors);
-app.get("/getAllPatients",getUserFromTokenMiddleware,getAllPatients);
 app.put("/acceptDoctor",acceptDoctor);
 app.put("/rejectDoctor",rejectDoctor);
 app.get("/getADoctor", getADoctor);
+app.put("/rejectPharmacist",rejectPharmacist);
+app.put("/acceptPharmacist",acceptPharmacist);
+app.get("/getUnapprovedPharmacists", getUserFromTokenMiddleware,unapprovedPharmacists);
+app.get("/filterByMedicinalUseAdmin", getUserFromTokenMiddleware,filterByMedicinalUseAdmin);
+app.delete("/deletePharmacist", getUserFromTokenMiddleware,deletePharmacist);
+app.delete("/deletePatient",getUserFromTokenMiddleware, deletePatient);
+app.get("/searchMedicineAdmin", getUserFromTokenMiddleware,searchMedicineAdmin);
+app.post("/addAdmin", getUserFromTokenMiddleware,addAdmin);
+app.get("/getPatient",getUserFromTokenMiddleware ,getPatient);
+app.get("/getAllPatients",getUserFromTokenMiddleware,getAllPatients);
+app.get("/getAllPharmacists", getUserFromTokenMiddleware,getAllPharmacists);
+app.get("/viewAllPatients", getUserFromTokenMiddleware,viewAllPatients);
+app.get("/viewAllPharmacists", getUserFromTokenMiddleware,viewAllPharmacists);
+app.get("/viewPharmacist", getUserFromTokenMiddleware,getPharmacist);
+
+
 
 //Patient
-app.post("/addPatient", addPatient);
 app.post("/addFamilyMember",getUserFromTokenMiddleware, createFamilyMember);
 app.get("/searchDoctor",getUserFromTokenMiddleware, searchForDoctorByNameSpeciality);
 app.get("/filterAppointmentsForPatient",getUserFromTokenMiddleware, filterAppointmentsForPatient);
@@ -128,9 +178,6 @@ app.post("/linkFamilyMember", linkFamilyMemberAccount);
 app.get("/viewMySubscribedHealthPackage",getUserFromTokenMiddleware,viewMySubscribedHealthPackage);
 app.put("/CancelSubscription",getUserFromTokenMiddleware,CancelSubscription);
 app.get("/ViewMyWallet",getUserFromTokenMiddleware,ViewMyWallet)
-app.get("/viewPatientAppointments", viewPatientAppointments);
-app.get("/payWithCard",getUserFromTokenMiddleware, payWithCard)
-app.get("/payWithWallet", getUserFromTokenMiddleware, payWithWallet)
 app.put("/buyHealthPackage",getUserFromTokenMiddleware, buyHealthPackage)
 app.put("/reserveAppointment", getUserFromTokenMiddleware,reserveAppointment)
 app.get("/sendCheckoutMail", getUserFromTokenMiddleware,sendCheckoutMail)
@@ -140,8 +187,27 @@ app.get("/getAnAppointment", getAnAppointment)
 app.put("/uploadHealthRecord",getUserFromTokenMiddleware, uploadHealthRecord);
 app.get("/getHealthRecords",getUserFromTokenMiddleware, getHealthRecords);
 app.get("/viewFreeAppointmentsByName",getUserFromTokenMiddleware, viewFreeAppointmentsByName)
-
 app.get("/getHealthPackageForFamily",getUserFromTokenMiddleware, getHealthPackageForFamily)
+app.get("/searchMedicinePatient",getUserFromTokenMiddleware ,searchMedicinePatient);
+app.delete("/removePatient", getUserFromTokenMiddleware,deletePatient);
+app.get("/filterByMedicinalUsePatient",getUserFromTokenMiddleware,filterByMedicinalUsePatient);
+app.get("/viewMedicine",getUserFromTokenMiddleware,viewMedicine );
+app.post("/addPatient", addPatient);
+app.post("/addToCart",getUserFromTokenMiddleware,addToCart);
+app.get("/viewMyCart",getUserFromTokenMiddleware,viewMyCart);
+app.put("/removeFromCart",getUserFromTokenMiddleware,removeFromCart);
+app.put("/decreaseByOne",getUserFromTokenMiddleware,decreaseByOne);
+app.put("/increaseByOne",getUserFromTokenMiddleware,increaseByOne);
+app.get("/payWithCard",getUserFromTokenMiddleware, payWithCard);
+app.get("/payWithWallet",getUserFromTokenMiddleware, payWithWallet);
+app.get("/sendCheckoutMail", getUserFromTokenMiddleware,sendCheckoutMail);
+app.get("/getAllAddresses",getUserFromTokenMiddleware ,getAllAddresses);
+app.get("/cashOnDelivery",getUserFromTokenMiddleware, cashOnDelivery);
+app.get("/pastOrders",getUserFromTokenMiddleware,pastOrders);
+app.put("/cancelOrder",getUserFromTokenMiddleware,cancelOrder)
+
+
+
 //Doctor
 app.get("/filterAppointmentsForDoctor",getUserFromTokenMiddleware ,filterAppointmentsForDoctor);
 app.post("/addAppointment",getUserFromTokenMiddleware,createAppointment);
@@ -158,6 +224,18 @@ app.post("/addAppointmentSlots",getUserFromTokenMiddleware, addAppointmentSlots)
 app.get("/ViewDoctorWallet",getUserFromTokenMiddleware,ViewDoctorWallet)
 app.put("/acceptContract", getUserFromTokenMiddleware, acceptContract)
 app.put("/rejectContract", getUserFromTokenMiddleware, rejectContract)
+
+
+
+//Pharmacist
+app.post("/addPharmacist",addPharmacist);
+app.get("/searchMedicinePharmacist", getUserFromTokenMiddleware,searchMedicinePharmacist);
+app.get("/viewAPharmacist",getUserFromTokenMiddleware, getPharmacist);
+app.put("/editMedicine",getUserFromTokenMiddleware, editMedicine);
+app.post("/addMedicine", getUserFromTokenMiddleware,addMedicine);
+app.get("/filterByMedicinalUsePharmacist",getUserFromTokenMiddleware, filterByMedicinalUsePharmacist);
+app.get("/medicinequantityandsales",getUserFromTokenMiddleware, medicinequantityandsales);
+app.put("/uploadMedicineImage", uploadMedicineImage);
 
 //user 
 

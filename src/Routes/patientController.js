@@ -6,6 +6,8 @@ const medicineModel = require("../Models/Medicine.js")
 const prescriptionModel = require("../Models/Prescription.js");
 const healthPackageModel = require("../Models/HealthPackage.js");
 const userModel = require("../Models/User.js")
+const orderModel = require('../Models/Order.js')
+const adminModel = require('../Models/Admin');
 const mongoose = require("mongoose");
 const stripe = require("stripe")(process.env.STRIPE_PRIVATE_KEY)
 const nodemailer = require('nodemailer');
@@ -14,7 +16,6 @@ require("dotenv").config();
 
 
 const addPatient = async(req,res) => {
-
   const{username, name, email, password, birthDate, gender, mobileNumber,emergencyContact} = req.body;
   try{
     if (!username || !password || !name || !birthDate || !gender || !mobileNumber || !emergencyContact || !email) {
@@ -26,7 +27,7 @@ const addPatient = async(req,res) => {
     res.json("Username already exists")
   }
   else{
-    
+
     const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%^&*()?[\]{}|<>])[A-Za-z\d@$!%^&*()?[\]{}|<>]{10,}$/;
     if (!passwordRegex.test(password)) {
       return res.json({
@@ -34,24 +35,350 @@ const addPatient = async(req,res) => {
         message: "Password must contain at least 1 lowercase letter, 1 uppercase letter, 1 number, 1 special character, and be at least 10 characters long.",
       });
     }
+
     const salt = await bcrypt.genSalt();
     const encryptedPassword = await bcrypt.hash(password ,salt)
-    const patient = await patientModel.create({username,name,email, password :encryptedPassword,birthDate, gender, mobileNumber,emergencyContact});
+    const patient = await patientModel.create({username,name,email, password :encryptedPassword,birthDate, gender, mobileNumber,emergencyContact, cart: { items: [], amountToBePaid: 0 }});
     await patient.save();
 
    const user = await userModel.create({
       username, 
       userId : patient._id,
-      type : 'patient'
+      type : "patient"
     })
     await user.save();
 
-    res.json({message: "Registered Successfully !!"});
+    res.json("Registered Successfully !!");
   }
   }catch(error){
       res.json({error:error.message})
   }
 }
+
+const filterByMedicinalUsePatient = async(req,res) =>
+ {
+  const medUse = new RegExp(req.query.medicinalUse, "i")
+
+    try
+    {
+        const medicine = medicineModel.find({medicinalUse:medUse}).then((medicine) => res.json(medicine))
+    }
+    catch(err)
+    {
+        res.json({message:err.message})
+    }
+
+}
+
+
+const searchMedicinePatient = async (req, res) => {
+  const searchName = req.query.name;
+  const searchQuery = new RegExp(searchName, "i"); // 'i' flag makes it case-insensitive
+  try {
+
+    const results = await medicineModel.find({ name: searchQuery });
+    if(results.length == 0){
+      res.json("Medicine is not Found !!" );
+    }
+    else {
+      res.json(results);
+    }
+  } catch (error) {
+    res.status(500).json(error.message);
+}
+}
+
+
+const viewMyCart = async (req, res) => {
+  try {
+    const patientId = req.user._id; 
+    const patient = await patientModel.findById(patientId)
+    .populate({
+      path: 'cart.items.medicine',
+      model: 'Medicine'
+    });
+    if (!patient) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
+
+    const cart = patient.cart; 
+
+    res.status(200).json({ cart:cart ,wallet:patient.wallet});
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const cartvalue = async (patientId) => {
+  try {
+    const patient = await patientModel.findById(patientId)
+      .populate({
+        path: 'cart.items.medicine',
+        model: 'Medicine'
+      });
+
+    if (!patient) {
+      throw new Error("Patient not found");
+    }
+
+    const cart = patient.cart;
+    return cart;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
+const handleAfterBuy = async (cart,id) => {
+  try {
+      for (const item of cart.items) {
+          const medicineId = item.medicine;
+          const quantityBought = item.quantity;
+          const medicine = await medicineModel.findById(medicineId);
+          medicine.amountSold += quantityBought;
+          medicine.stockQuantity -= quantityBought;
+          await medicine.save();
+      }
+      const patient = await patientModel.findById(id);
+      patient.cart.items=[];
+      patient.cart.amountToBePaid=0;
+      await patient.save();
+
+  } catch (error) {
+      console.error('Error updating medicine quantities:', error.message);
+      throw error;
+  }
+};
+
+const handleAfterCancel = async (items) => {
+  try {
+      for (const item of items) {
+          const medicineId = item.medicine;
+          const quantityBought = item.quantity;
+          const medicine = await medicineModel.findById(medicineId);
+          medicine.amountSold -= quantityBought;
+          medicine.stockQuantity += quantityBought;
+          await medicine.save();
+      }
+
+  } catch (error) {
+      console.error('Error updating medicine quantities:', error.message);
+      throw error;
+  }
+};
+
+
+const cancelOrder = async (req, res) => {
+  try{ const orderId = req.body.orderId;
+   const patientId = req.user._id; 
+   const order = await orderModel.findById(orderId);
+   const patient= await patientModel.findById(patientId);
+   if(order.paymentMethod !== "cash On Delivery")
+    { patient.wallet+=order.total;
+    }
+   order.status="Cancelled"
+   await order.save();
+   await patient.save();
+   handleAfterCancel(order.items);
+   res.status(200).json({
+     message: 'order cancelled successfully',
+     order: order,
+   });
+ }
+ catch (error) {
+   res.status(500).json({ error: error.message });
+ }
+ };
+
+
+ 
+const addToCart = async (req, res) => { 
+  const stringMedicineId = req.body.medicineId
+  const  medicineId  = new mongoose.Types.ObjectId(stringMedicineId); 
+  const quantity= req.body.quantity;
+ 
+ try {
+  
+  
+   const medicine = await medicineModel.findById(stringMedicineId);
+   const patientId =req.user._id; // Replace with your method of obtaining the patient's ID
+   let oldcart = await cartvalue(patientId);
+   if (!medicine) {
+     return res.status(404).json({ message: "Medicine not found" });
+   } 
+
+   if (quantity > medicine.stockQuantity) {
+     return res.status(400).json({ message: "Requested quantity exceeds available stock", cart:oldcart});
+   
+    }
+ 
+   const patient = await patientModel.findById(patientId);
+   if (!patient) {
+     return res.status(404).json({ message: "Patient not found" });
+   }
+
+   const existingCartItemIndex = patient.cart.items.findIndex(item => item.medicine.toString() === medicineId.toString());
+   if (existingCartItemIndex !== -1) {
+     if (patient.cart.items[existingCartItemIndex].quantity + quantity> medicine.stockQuantity)
+       return res.status(400).json({ message: "Requested quantity exceeds available stock" , cart:oldcart});
+      else
+       patient.cart.items[existingCartItemIndex].quantity += quantity;
+  } else {
+    
+    patient.cart.items.push({ medicine: medicineId, quantity });
+  }
+     
+     let price = medicine.price;
+     let package_Id=null
+     if(patient.healthPackage)
+    {  package_Id = patient.healthPackage.healthPackageID;
+    }
+          
+
+     if(!package_Id)
+        patient.cart.amountToBePaid += price * quantity;
+     else{
+     let package= await healthPackageModel.findById(package_Id)
+     let ratio= package.medicineDiscount;
+     let percentage= 1 - ratio/100;
+     patient.cart.amountToBePaid += (((price) * quantity)*percentage);
+     }
+
+
+   await patient.save(); 
+   let modifiedcart = await cartvalue(patientId);
+
+   res.status(200).json({
+     message: 'Medicine added to cart successfully',
+     cart: modifiedcart
+   });
+ } catch (error) {
+   res.status(500).json({ error: error.message });
+ }
+};
+
+
+const removeFromCart = async (req, res) => {
+  const stringMedicineId = req.body.medicineId;
+  const medicineId = new mongoose.Types.ObjectId(stringMedicineId);
+
+  try {
+    const patientId = req.user._id; // Replace with your method of obtaining the patient's ID
+    const patient = await patientModel.findById(patientId);
+    let oldcart = await cartvalue(patientId);
+    const medicine = await medicineModel.findById(stringMedicineId);
+    const removedItem = patient.cart.items.find(item => item.medicine.toString() === medicineId.toString());
+    const quantity = removedItem.quantity;
+    
+    let price = medicine.price;
+    let package_Id=null
+    if(patient.healthPackage)
+    {  package_Id = patient.healthPackage.healthPackageID;
+    }
+      
+    if (!package_Id) {
+      patient.cart.amountToBePaid -= price * quantity;
+    } else {
+      let package= await healthPackageModel.findById(package_Id)
+      let ratio = package.medicineDiscount;
+      let percentage = 1 - ratio / 100;
+      patient.cart.amountToBePaid -= (price * quantity) * percentage;
+    }
+    patient.cart.items = patient.cart.items.filter(item => item.medicine.toString() !== medicineId.toString());
+    await patient.save();
+    let modifiedcart = await cartvalue(patientId);
+    res.status(200).json({ message: `Medicine removed from cart successfully`,cart:modifiedcart });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const increaseByOne = async (req, res) => {
+  const stringMedicineId = req.body.medicineId;
+  const medicineId = new mongoose.Types.ObjectId(stringMedicineId);
+  const patientId = req.user._id; // Replace with your method of obtaining the patient's ID
+  try {
+    const medicine = await medicineModel.findById(stringMedicineId);
+    const patient = await patientModel.findById(patientId);
+    let oldcart = await cartvalue(patientId);
+    const existingCartItemIndex = patient.cart.items.findIndex(item => item.medicine.toString() === medicineId.toString());
+      if (patient.cart.items[existingCartItemIndex].quantity + 1 > medicine.stockQuantity) {
+         res.status(200).json({ message: "Requested quantity exceeds available stock",cart:oldcart });
+         return;
+      } else {
+        patient.cart.items[existingCartItemIndex].quantity += 1;
+      }
+    
+    let price = medicine.price;
+    let package_Id=null
+    if(patient.healthPackage)
+    {  package_Id = patient.healthPackage.healthPackageID;
+    }
+      
+    
+    if (! package_Id) {
+      patient.cart.amountToBePaid += price;
+    } else {
+      let package= await healthPackageModel.findById(package_Id)
+      let ratio = package.medicineDiscount;
+      let percentage = 1 - ratio / 100;
+      patient.cart.amountToBePaid +=  (price * percentage);
+    }
+
+    await patient.save();
+    let modifiedcart = await cartvalue(patientId);
+    res.status(200).json({ message: `Medicine increased successfully` ,cart:modifiedcart});
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+const decreaseByOne = async (req, res) => {
+  const stringMedicineId = req.body.medicineId;
+  const medicineId = new mongoose.Types.ObjectId(stringMedicineId);
+  try {
+    const medicine = await medicineModel.findById(stringMedicineId);
+    const patientId = req.user._id; // Replace with your method of obtaining the patient's ID
+    const patient = await patientModel.findById(patientId);
+    let message="";
+    const existingCartItemIndex = patient.cart.items.findIndex(item => item.medicine.toString() === medicineId.toString());
+ 
+    if (patient.cart.items[existingCartItemIndex].quantity==1) 
+    {
+      patient.cart.items = patient.cart.items.filter(item => item.medicine.toString() !== medicineId.toString());
+      await patient.save();
+      msg= `Medicine removed from cart successfully` ;
+    }
+    else{
+      patient.cart.items[existingCartItemIndex].quantity-= 1; 
+      msg= `Medicine decreased successfully`;
+    }
+    let price = medicine.price;
+    let package_Id=null
+    if(patient.healthPackage)
+    {  package_Id = patient.healthPackage.healthPackageID;
+    }
+    if (!package_Id) {
+      patient.cart.amountToBePaid -= price;
+    } else {
+      let package= await healthPackageModel.findById(package_Id)
+      let ratio = package.medicineDiscount;
+      let percentage = 1 - ratio / 100;
+      patient.cart.amountToBePaid -= price * percentage;
+    }
+
+    await patient.save();
+    let modifiedcart = await cartvalue(patientId);
+
+    res.status(200).json({ message:msg ,cart:modifiedcart});
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+
+
 
 
 
@@ -465,6 +792,56 @@ const payWithWallet = async(req, res) => {
   }
 }
 
+const createOrder = async (firstName,lastName,patientId, address, items, total,method) => {
+  const order = await orderModel.create({
+    patient: patientId,
+    address: address,
+    items: items,
+    total: total,
+    paymentMethod:method,
+    status:"Preparing",
+    First_Name:firstName,
+    Last_Name:lastName
+  })
+  await order.save()
+}
+
+
+const pastOrders = async (req, res) => {
+  try {
+    const patientId = req.user._id; 
+
+    const orders = await orderModel.find({patient:patientId ,  status: { $ne: 'Cancelled' }})
+    .populate({
+      path: 'items.medicine',
+      model: 'Medicine'
+    });
+  
+    res.status(200).json({ orders });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+const cashOnDelivery = async(req, res) => {
+  const id = req.user._id;
+  const patient = await patientModel.findById(id)
+  const items = patient.cart.items
+  const address = req.query.address
+  const firstName = req.query.firstName
+  const lastName = req.query.lastName
+  if (address && !patient.deliveryAddress.includes(address))
+  {
+    patient.deliveryAddress.push(address)
+    await patient.save();
+  }
+  createOrder(firstName,lastName,id,address,items,patient.cart.amountToBePaid,"cash On Delivery")
+  handleAfterBuy(patient.cart,id)
+  res.json({success:true, url: '/SuccessfulCheckout'})
+}
+
+
 const buyHealthPackage = async (req, res) => {
   const patientId = req.user._id;
   const name = req.body.name
@@ -525,16 +902,18 @@ const reserveAppointment = async(req, res) => {
   }
 }
 
-const sendCheckoutMail = async (req, res) => {
-  const patientId = req.user._id
+const sendCheckoutMail = async (req,res) => {
+  const patientId = req.user._id;
   const patient = await patientModel.findById(patientId)
-  const message = req.query.message
-  
+  const message=req.query.message
   const transporter = nodemailer.createTransport({
     service: process.env.NODEMAILER_SERVICE,
     auth: {
       user: process.env.NODEMAILER_EMAIL,
       pass: process.env.NODEMAILER_PASSWORD,
+    },
+     tls: {
+      rejectUnauthorized: false,
     },
   });
   const mailOptions = {
@@ -543,12 +922,21 @@ const sendCheckoutMail = async (req, res) => {
     subject: 'Payment Confirmation',
     text: message,
   };
-  try {
-    const info = await transporter.sendMail(mailOptions);
-    res.json('done')
-  } catch (error) {
-    res.json('done')
-  }
+try{
+  const info = await transporter.sendMail(mailOptions);
+  res.json({message:"done"})
+}
+catch (error) {
+  console.error('Error sending email:', error);
+  res.status(500).json({ message: 'Error sending email' });
+}
+}
+
+
+const getAllAddresses = async(req, res) => {
+  const id = req.user._id;
+  const patient = await patientModel.findById(id)
+  res.json(patient.deliveryAddress)
 }
 
 const getHealthPackageForPatient = async (req,res) => {
@@ -699,9 +1087,7 @@ const uploadHealthRecord = async (req, res) =>{
 const getHealthRecords = async (req, res) =>{
   try{
   let id = req.query.id;
-  // console.log(id)
   const patient = await patientModel.findById(id);
-  // console.log(patient)
   const healthRecords = patient.HealthRecords;
   res.json( healthRecords );
 } catch (error) {
@@ -796,7 +1182,6 @@ function calculateAge(birthDate) {
 
 module.exports = {
   createFamilyMember,
-  addPatient,
   searchForDoctorByNameSpeciality,
   filterAppointmentsForPatient,
   getFamilyMembers,
@@ -808,11 +1193,8 @@ module.exports = {
   getDoctors,
   linkFamilyMemberAccount,
   viewPatientAppointments,
-  payWithCard,
-  payWithWallet,
   buyHealthPackage,
   reserveAppointment,
-  sendCheckoutMail,
   getHealthPackageForPatient,
   viewFreeAppointments,
   getAnAppointment,
@@ -822,5 +1204,21 @@ module.exports = {
   CancelSubscription,
   ViewMyWallet,
   viewFreeAppointmentsByName,
-  getHealthPackageForFamily
+  getHealthPackageForFamily,
+  searchMedicinePatient, 
+  filterByMedicinalUsePatient,
+  addPatient,
+  addToCart,
+  viewMyCart,
+  removeFromCart,
+  increaseByOne,
+  decreaseByOne,
+  payWithCard,
+  payWithWallet,
+  sendCheckoutMail,
+  getAllAddresses,
+  cashOnDelivery,
+  pastOrders,
+  cancelOrder
+
 };
