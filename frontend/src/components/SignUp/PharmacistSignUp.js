@@ -385,16 +385,13 @@ const PharmacistSignUp = () => {
         degreePDF,
         licensePDF,
       };
-      await axios.post('/addPharmacist', body)
-        .then(
-          (res) =>
-            setAlert({
-              title: res.data.title,
-              message: res.data.message,
-            }),
-          setTimeout(()=>window.location.href = "/login", 2000)
-        )
-        .catch((err) => console.log(err));
+      console.log('here')
+      const response = await axios.post('/addPharmacist', body)
+      setAlert({
+        title: response.data.title,
+        message: response.data.message,
+      })
+      setTimeout(()=>window.location.href='/login', 3000)
     }
   };
 
