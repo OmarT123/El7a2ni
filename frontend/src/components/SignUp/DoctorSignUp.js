@@ -406,7 +406,7 @@ const DoctorSignUp = () => {
             title: res.data.title,
             message: res.data.message,
           }),
-          setTimeout(()=>window.location.href='/login', 2000)
+          setTimeout(()=>window.location.href='/login', 3000)
         )
         .catch((err) => console.log(err));
     }
