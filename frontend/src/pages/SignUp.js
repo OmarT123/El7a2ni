@@ -20,24 +20,7 @@ import Face1Icon from "@mui/icons-material/Face4";
 import PatientSignUp from "../components/SignUp/PatientSignUp";
 import DoctorSignUp from "../components/SignUp/DoctorSignUp";
 import PharmacistSignUp from "../components/SignUp/PharmacistSignUp";
-
-function Copyright(props) {
-  return (
-    <Typography
-      variant="body2"
-      color="text.secondary"
-      align="center"
-      {...props}
-    >
-      {"Copyright © "}
-      <Link color="inherit" href="https://mui.com/">
-        El7a2ni.com
-      </Link>{" "}
-      {new Date().getFullYear()}
-      {"."}
-    </Typography>
-  );
-}
+import Copyright from "../components/Copyright";
 
 const defaultTheme = createTheme();
 

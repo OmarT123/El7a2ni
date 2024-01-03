@@ -321,7 +321,7 @@ const resetPassword = async (req, res) => {
     const user = await userModel.findOne({ username: username });
 
     if (!user) {
-        return res.json({ success: false, message: 'User not found ' });
+        return res.json({ success: false, title: 'User not found', message: 'Make sure to enter a valid username' });
       }
     else if(user.type==='admin'){
          userData = await adminModel.findOne({username : username});
@@ -342,10 +342,10 @@ const resetPassword = async (req, res) => {
     saveOTPCookie(res, otp);
     await sendOTPByEmail(userData.email, otp);
 
-    return res.json({ success: true, message: 'OTP sent successfully. Check your email.' });
+    return res.json({ success: true, title: 'OTP sent successfully.', message: 'Check your email.' });
     }
     else {
-        return res.json({ success: false, message: 'User data not found or user type not recognized' });
+        return res.json({ success: false, title: 'User not found' });
  
     }
   } catch (error) {
@@ -356,12 +356,12 @@ const resetPassword = async (req, res) => {
 
 const resetPasswordWithOTP = async (req, res) => {
   const { username, otp ,newPassword } = req.body;
-
+    console.log(username, otp, newPassword)
   try {
     const user = await userModel.findOne({ username :username });
 
     if (!user) {
-        return res.json({ success: false, message: 'User not found ' });
+        return res.json({ success: false, title: 'User not found', message: 'Make sure to enter a valid username' });
       }
       else if(user.type==="admin"){
         userData = await adminModel.findOne({username : username});
@@ -386,12 +386,12 @@ const resetPasswordWithOTP = async (req, res) => {
     res.clearCookie('passwordResetOTP');
 
     if (storedOTP !== otp) {
-      return res.json({ success: false, message: 'Invalid OTP' });
+      return res.json({ success: false, title: 'Invalid OTP', message:'Please check your Email for the OTP' });
     }
 
     const passwordMatchedOld = await bcrypt.compare(newPassword,userData.password);
     if(passwordMatchedOld){
-        return res.json({success:false , message : 'New Password can not be as same as Old Password '});
+        return res.json({success:false , title: 'Matching Passwords X', message : 'New Password can not be as same as Old Password '});
     }
 
     const salt = await bcrypt.genSalt();
@@ -410,7 +410,7 @@ const resetPasswordWithOTP = async (req, res) => {
 
     await userData.save();
 
-    return res.json({ success: true, message: 'Password reset successful' });
+    return res.json({ success: true, title: 'Password reset successful', message: 'Login to use the System' });
   } catch (error) {
     console.error('Password reset with OTP error:', error);
     return res.json({ success: false, error: 'Internal server error' });

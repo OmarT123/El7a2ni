@@ -14,24 +14,8 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import Copyright from "../components/Copyright";
 
-function Copyright(props) {
-  return (
-    <Typography
-      variant="body2"
-      color="text.secondary"
-      align="center"
-      {...props}
-    >
-      {"Copyright © "}
-      <Link color="inherit" href="/">
-        EL7a2ni.com
-      </Link>{" "}
-      {new Date().getFullYear()}
-      {"."}
-    </Typography>
-  );
-}
 
 const defaultTheme = createTheme();
 
@@ -41,6 +25,7 @@ const Login = () => {
   const [showContent, setShowContent] = useState(false);
 
   useEffect(() => {
+    // localStorage.clear()
     const userToken = localStorage.getItem("userToken");
 
     if (userToken) {

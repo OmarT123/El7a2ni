@@ -8,6 +8,7 @@ import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import HomePage from "./pages/HomePage";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
+import ResetPassword from './pages/ResetPassword';
 
 const ScrollTop = (props) => {
   const { children, window } = props;
@@ -55,6 +56,7 @@ const App = () => {
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
+          <Route path='/resetPassword' element={<ResetPassword />} />
         </Routes>
         <ScrollTop>
           <Fab color="primary" size="large" aria-label="scroll back to top">
