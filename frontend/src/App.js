@@ -1,25 +1,13 @@
+import { useState } from 'react'
 import { animateScroll as scroll } from "react-scroll";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-import {
-  Button,
-  Fab,
-  useScrollTrigger,
-  Fade,
-  Zoom,
-  Box,
-  Container,
-  CssBaseline,
-  Toolbar,
-  Typography,
-  Grid,
-} from "@mui/material";
+import { Fab, useScrollTrigger, Zoom, CssBaseline } from "@mui/material";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 
-import NavBar from "./components/NavBar";
-import Footer from "./components/Footer";
 import HomePage from "./pages/HomePage";
 import Login from "./pages/Login";
+import SignUp from "./pages/SignUp";
 
 const ScrollTop = (props) => {
   const { children, window } = props;
@@ -58,24 +46,22 @@ const scrollToSection = (id) => {
 };
 
 const App = () => {
+
   return (
     <>
       <CssBaseline />
-      <NavBar />
-
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<SignUp />} />
         </Routes>
+        <ScrollTop>
+          <Fab color="primary" size="large" aria-label="scroll back to top">
+            <KeyboardArrowUpIcon />
+          </Fab>
+        </ScrollTop>
       </BrowserRouter>
-
-      <ScrollTop>
-        <Fab color="primary" size="large" aria-label="scroll back to top">
-          <KeyboardArrowUpIcon />
-        </Fab>
-      </ScrollTop>
-      <Footer id="footer"/>
     </>
   );
 };

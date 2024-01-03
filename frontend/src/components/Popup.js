@@ -2,7 +2,7 @@ import React from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 
-const Popup = ({ title, message, onClose }) => {
+const Popup = ({ title, message, onClose, showButtons = true }) => {
   return (
     <Box
       sx={{
@@ -51,14 +51,14 @@ const Popup = ({ title, message, onClose }) => {
           <h2 style={{ color: '#4E4FEB', fontWeight: 'bold' }}>{title}</h2>
         </Box>
         <p>{message}</p>
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+        {showButtons && <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
           <Button variant="outlined" onClick={onClose} sx={{ marginRight: '10px' }}>
             No, thanks
           </Button>
           <Button variant="contained" color="primary" onClick={onClose}>
             Yes, sure
           </Button>
-        </Box>
+        </Box>}
       </Box>
     </Box>
   );

@@ -19,133 +19,38 @@ import React, { useState } from 'react';
 import Popup from '../components/Popup';
 import ServiceCard from '../components/ServiceCard';
 import HealingIcon from '@mui/icons-material/Healing'; 
-
-
-
-const traits1 = [
-  {
-    icon: EventNoteIcon,
-    title: 'General Treatment',
-    text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec luctus dictum eros ut imperdiet.'
-  },
-  {
-    icon: EventNoteIcon,
-    title: 'Tooth Whitening',
-    text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec luctus dictum eros ut imperdiet.'
-  },
-  {
-    icon: MonitorHeartIcon,
-    title: 'Heart Surgery',
-    text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec luctus dictum eros ut imperdiet.'
-  }
-]
-
-const traits2 = [
-  {
-    icon: HearingIcon,
-    title: 'Ear Treatment',
-    text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec luctus dictum eros ut imperdiet.'
-  },
-  {
-    icon: VisibilityIcon,
-    title: 'Vision Problems',
-    text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec luctus dictum eros ut imperdiet.'
-  },
-  {
-    icon: BloodtypeIcon,
-    title: 'Blood Transfusion',
-    text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec luctus dictum eros ut imperdiet.'
-  },
-]
+import Footer from "../components/Footer";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import GuestHomePage from "../components/HomePage/GuestHomePage";
 
 const HomePage = ({ scrollToSection }) => {
-  const [isPopupOpen, setIsPopupOpen] = useState(false);
-
-  const togglePopup = () => {
-    setIsPopupOpen(!isPopupOpen);
-  };
+  const [userType, setUserType] = useState("guest");
   
-    return (
-        <>
-            <ImageSlider scrollToSection={scrollToSection} />
+  useEffect(() => {
+    axios.get("/loginAuthentication").then((response) => {
+      const { success, type, user } = response.data;
+      setUserType(type);
+    });
+  }, []);
 
-            <Container 
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                textAlign: 'center',
-                lineHeight: '40px',
-                marginBottom: "50px"
-              }}
-              maxWidth='sm'
-            >
-                <Typography variant='h4'>We Are Always Ready To Help You & Your Family</Typography>
-                <Typography variant='p'>Lorem ipsum dolor sit amet consectetur adipiscing elit praesent aliquet. pretiumts</Typography>
-                <Icon
-                component={MonitorHeartOutlinedIcon}
-                fontSize="large"
-                />
-            </Container>
+  return (
+    <>
+      {userType === "guest" ? (
+        <GuestHomePage scrollToSection={scrollToSection} />
+      ) : userType === "patient" ? (
+        "patient page"
+      ) : userType === "doctor" ? (
+        "doctor page"
+      ) : userType === "pharmacist" ? (
+        "pharmacist page"
+      ) : (
+        "admin page"
+      )}
 
-            <Container
-              sx={{
-                display: 'flex',
-                flexDirection: 'row',
-                alignItems: 'flex-start',
-                justifyContent: 'space-between',
-                textAlign: 'center',
-                lineHeight: '30px',
-                marginBottom: '40px'
-              }}
-              maxWidth='lg'
-            >
-              <FeatureCard icon={LocalHospitalIcon} title="Emergency Help" message="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore"/>
-              <DotLine />
-              <FeatureCard icon={VaccinesIcon} title="Emergency Help" message="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore"/>
-              <DotLine />
-              <FeatureCard icon={MedicationIcon} title="Emergency Help" message="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore"/>
-            </Container>
+      <Footer />
+    </>
+  );
+};
 
-            <FunFact />
-            
-            <Container 
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                textAlign: 'center',
-                lineHeight: '40px',
-                marginY: "50px"
-              }}
-              maxWidth='sm'
-            >
-                <Typography variant='h4'>We Offer Different Services To Improve Your Health</Typography>
-                <Typography variant='p'>Lorem ipsum dolor sit amet consectetur adipiscing elit praesent aliquet. pretiumts</Typography>
-                <Icon
-                component={MonitorHeartOutlinedIcon}
-                fontSize="large"
-                />
-            </Container>
-
-            <Container sx={{display:'flex', flexDirection: 'column'}}>
-              <Box sx={{display: 'flex', flexDirection:'row'}}>
-                {traits1.map(item => <TopLeftIconHeaderText icon={item.icon} title={item.title} text={item.text} />)}
-              </Box>
-              <br></br>
-              <Box sx={{display: 'flex', flexDirection:'row'}}>
-                {traits2.map(item => <TopLeftIconHeaderText icon={item.icon} title={item.title} text={item.text} />)}
-              </Box>
-            </Container>
-     
-
-
-            
-            
-        </>
-    )
-}
-
-export default HomePage
+export default HomePage;
