@@ -3,21 +3,25 @@ const patientModel = require("../Models/Patient.js");
 const appointmentModel = require("../Models/Appointment.js");
 const adminModel = require("../Models/Admin.js");
 const prescriptionModel = require("../Models/Prescription.js");
-const userModel = require("../Models/User.js")
-const healthPackageModel = require("../Models/HealthPackage.js")
+const userModel = require("../Models/User.js");
+const healthPackageModel = require("../Models/HealthPackage.js");
 const { default: mongoose } = require("mongoose");
-const bcrypt = require('bcrypt');
+const bcrypt = require("bcrypt");
 
-const createPrescription = async(req,res)=>{
+const createPrescription = async (req, res) => {
   try {
-    let prescription = await prescriptionModel.create({filled:req.body.filled, patient:req.body.patient,doctor:req.body.doctor,medicines:req.body.medicines})
+    let prescription = await prescriptionModel.create({
+      filled: req.body.filled,
+      patient: req.body.patient,
+      doctor: req.body.doctor,
+      medicines: req.body.medicines,
+    });
     await prescription.save();
-    res.send(prescription)
-  }catch(err){
-    res.send(err.message)
+    res.send(prescription);
+  } catch (err) {
+    res.send(err.message);
   }
-}
-
+};
 
 const filterAppointmentsForDoctor = async (req, res) => {
   // Need login
@@ -25,11 +29,10 @@ const filterAppointmentsForDoctor = async (req, res) => {
   const statusToBeFiltered = req.query.status;
   const searchQuery = new RegExp(statusToBeFiltered, "i"); // 'i' flag makes it case-insensitive
 
-  
   const filterQuery = {};
 
   if (dateToBeFiltered) {
-    const dateParam = req.query.date
+    const dateParam = req.query.date;
     const startDate = new Date(dateParam);
     const endDate = new Date(dateParam);
     endDate.setDate(endDate.getDate() + 1);
@@ -61,10 +64,9 @@ const filterAppointmentsForDoctor = async (req, res) => {
       const filteredAppointments = await appointmentModel.find(filterQuery);
       if (filteredAppointments.length === 0) {
         return res.json([]);
-      } 
-      else{
+      } else {
         res.json(filteredAppointments);
-      }     
+      }
     } catch (err) {
       console.error(err);
       res
@@ -87,36 +89,48 @@ const addDoctor = async (req, res) => {
     speciality,
     idPDF,
     degreePDF,
-    licensePDF
+    licensePDF,
   } = req.body;
   try {
-    if (!username || !password || !name || !birthDate || !hourlyRate || !affiliation || !educationalBackground || !speciality || !email) {
-      return res.json({ success: false, message: "All fields are required. Please provide valid information for each field!" });
-    }
-
-
-    const user = await userModel.findOne({username})
-    if (user)
-    {
-      res.json("Username already exists")
-    }
-    else {
-      
-      
-      const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%^&*()?[\]{}|<>])[A-Za-z\d@$!%^&*()?[\]{}|<>]{10,}$/;
-    if (!passwordRegex.test(password)) {
+    if (
+      !username ||
+      !password ||
+      !name ||
+      !birthDate ||
+      !hourlyRate ||
+      !affiliation ||
+      !educationalBackground ||
+      !speciality ||
+      !email
+    ) {
       return res.json({
         success: false,
-        message: "Password must contain at least 1 lowercase letter, 1 uppercase letter, 1 number, 1 special character, and be at least 10 characters long.",
+        title: "Incomplete Data",
+        message: "Please fill all fields",
       });
     }
+
+    const user = await userModel.findOne({ username });
+    if (user) {
+      res.json({ title: "Username already exists" });
+    } else {
+      const passwordRegex =
+        /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%^&*()?[\]{}|<>])[A-Za-z\d@$!%^&*()?[\]{}|<>]{10,}$/;
+      if (!passwordRegex.test(password)) {
+        return res.json({
+          success: false,
+          title: "Invalid Password",
+          message:
+            "Password must contain at least 1 lowercase letter, 1 uppercase letter, 1 number, 1 special character, and be at least 10 characters long.",
+        });
+      }
       const salt = await bcrypt.genSalt();
-      const encryptedPassword = await bcrypt.hash(password ,salt );
+      const encryptedPassword = await bcrypt.hash(password, salt);
       const doctor = await doctorModel.create({
         username,
         name,
         email,
-        password :encryptedPassword,
+        password: encryptedPassword,
         birthDate,
         hourlyRate,
         affiliation,
@@ -124,16 +138,20 @@ const addDoctor = async (req, res) => {
         speciality,
         idPDF,
         degreePDF,
-        licensePDF
+        licensePDF,
       });
       await doctor.save();
       const userC = await userModel.create({
-        username, 
-        userId : doctor._id,
-        type :'doctor'
-      })
+        username,
+        userId: doctor._id,
+        type: "doctor",
+      });
       await userC.save();
-      res.json("Applied Successfully");
+      res.json({
+        title: "Successfully Registered",
+        message:
+          "We will be back with you in 2-3 working days to verify your application",
+      });
     }
   } catch (error) {
     res.json({ error: error.message });
@@ -165,12 +183,13 @@ const myPatients = async (req, res) => {
     let allMyAppointments = await appointmentModel
       .find({ doctor: id })
       .populate({ path: "patient" });
-    
 
     let uniquePatientsSet = new Set();
 
     let patients = allMyAppointments
-      .map((appointment) => (appointment.patient !== null ? appointment.patient : undefined))
+      .map((appointment) =>
+        appointment.patient !== null ? appointment.patient : undefined
+      )
       .filter((patient) => {
         if (patient !== undefined && !uniquePatientsSet.has(patient._id)) {
           uniquePatientsSet.add(patient._id);
@@ -187,19 +206,21 @@ const myPatients = async (req, res) => {
 
 const viewPatient = async (req, res) => {
   try {
-    let patientID =new mongoose.Types.ObjectId(req.query.id);
-    const patient = await patientModel.findById(patientID).populate({path: 'healthPackage'});
+    let patientID = new mongoose.Types.ObjectId(req.query.id);
+    const patient = await patientModel
+      .findById(patientID)
+      .populate({ path: "healthPackage" });
     const packageID = patient.healthPackage.healthPackageID;
     const healthPackage = await healthPackageModel.findById(packageID);
     console.log(healthPackage);
     const extendedPatient = {
       ...patient.toObject(),
       healthPackage,
-    }
+    };
     if (extendedPatient) {
       res.json(extendedPatient);
     } else {
-      res.json('');
+      res.json("");
     }
   } catch (err) {
     res.json(err.message);
@@ -210,14 +231,20 @@ const exactPatients = async (req, res) => {
   try {
     let id = req.user._id;
     const { name } = req.query;
-    const searchName = new RegExp(name, "i")
+    const searchName = new RegExp(name, "i");
 
-    let allMyAppointments = await appointmentModel.find({ doctor: id }).populate({ path: 'patient' });
-    let patients = allMyAppointments.map(appointment => appointment.patient);
+    let allMyAppointments = await appointmentModel
+      .find({ doctor: id })
+      .populate({ path: "patient" });
+    let patients = allMyAppointments.map((appointment) => appointment.patient);
 
     let uniquePatientsSet = new Set();
-    let filteredPatients = patients.filter(patient => {
-      if (patient && searchName.test(patient.name) && !uniquePatientsSet.has(patient._id)) {
+    let filteredPatients = patients.filter((patient) => {
+      if (
+        patient &&
+        searchName.test(patient.name) &&
+        !uniquePatientsSet.has(patient._id)
+      ) {
         uniquePatientsSet.add(patient._id);
         return true;
       }
@@ -230,16 +257,18 @@ const exactPatients = async (req, res) => {
   }
 };
 
-
-
 const filterPatientsByAppointments = async (req, res) => {
   let doctorID = req.user._id;
   try {
     const appointments = await appointmentModel
-      .find({ doctor: doctorID})
-      .populate({path:"patient"}).exec();
+      .find({ doctor: doctorID })
+      .populate({ path: "patient" })
+      .exec();
     const patients = appointments
-      .filter((appointment) => appointment.status !== "canceled" && appointment.patient !== null)
+      .filter(
+        (appointment) =>
+          appointment.status !== "canceled" && appointment.patient !== null
+      )
       .map((appointment) => appointment.patient);
     res.json(patients);
   } catch (error) {
@@ -249,18 +278,16 @@ const filterPatientsByAppointments = async (req, res) => {
 const ViewDoctorWallet = async (req, res) => {
   try {
     const DoctorId = req.user._id;
-    const Doctor = await doctorModel.findById(DoctorId)
-   
+    const Doctor = await doctorModel.findById(DoctorId);
+
     if (!Doctor) {
-      console.log('Doctor not found');
+      console.log("Doctor not found");
       return;
     }
     const wallet = Doctor.wallet;
     res.json(wallet);
-  }
-  catch (err) {
+  } catch (err) {
     res.json(err.message);
-
   }
 };
 
@@ -295,63 +322,54 @@ const viewDoctorAppointments = async (req, res) => {
   }
 };
 
-const addHealthRecord = async (req, res) =>{
-  try{
-  let id = req.body.id;
-  let healthRecord = req.body.base64;
+const addHealthRecord = async (req, res) => {
+  try {
+    let id = req.body.id;
+    let healthRecord = req.body.base64;
 
-  const patient = await patientModel.findById(id);
-  patient.HealthRecords.push(healthRecord);
-  await patient.save();
-  res.status(200).json({ message: 'Health record added successfully'});
-  }catch (error) {
+    const patient = await patientModel.findById(id);
+    patient.HealthRecords.push(healthRecord);
+    await patient.save();
+    res.status(200).json({ message: "Health record added successfully" });
+  } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: "Internal server error" });
   }
-}
+};
 
-
-
-const addAppointmentSlots = async (req,res) => {
+const addAppointmentSlots = async (req, res) => {
   const doctorID = req.user._id;
   const doctor = await doctorModel.findById(doctorID);
-  if(doctor.status === "accepted")
-  {
+  if (doctor.status === "accepted") {
     const combinedDateTimeString = `${req.body.date}T${req.body.time}`;
     const date = new Date(combinedDateTimeString);
-    const minTime = new Date(date.getTime()- 60 * 60 * 1000)
-    const maxTime = new Date(date.getTime() + 60 * 60 * 1000)
+    const minTime = new Date(date.getTime() - 60 * 60 * 1000);
+    const maxTime = new Date(date.getTime() + 60 * 60 * 1000);
     const existingAppointment = await appointmentModel.findOne({
-      doctor:doctor._id,
+      doctor: doctor._id,
       date: { $gt: minTime, $lt: maxTime },
     });
-    if (existingAppointment)
-    {
-      res.json("There is already an appointment at this time")
-    }
-    else {
-      if(req.body.patientID){
+    if (existingAppointment) {
+      res.json("There is already an appointment at this time");
+    } else {
+      if (req.body.patientID) {
         await appointmentModel.create({
           doctor: doctor._id,
           date,
-          status: 'upcoming',
-          patient: new mongoose.Types.ObjectId(req.body.patientID)
-        })
+          status: "upcoming",
+          patient: new mongoose.Types.ObjectId(req.body.patientID),
+        });
+      } else {
+        await appointmentModel.create({
+          doctor: doctor._id,
+          date,
+          status: "free",
+        });
       }
-      else{
-      await appointmentModel.create({
-        doctor: doctor._id,
-        date,
-        status: 'free'
-      })}
-      res.send("Appointment created successfully")
+      res.send("Appointment created successfully");
     }
-  }
-  else
-    res.json("Please review your employment contract.")
-
-}
-
+  } else res.json("Please review your employment contract.");
+};
 
 const createAppointment = async (req, res) => {
   try {
@@ -368,27 +386,25 @@ const createAppointment = async (req, res) => {
   }
 };
 
-const acceptContract = async(req, res) => {
+const acceptContract = async (req, res) => {
   try {
-    let doctorId = req.user._id
-    await doctorModel.findByIdAndUpdate(doctorId, {status: "accepted"})
-    res.json('The contract has been accepted')
-  }catch (err) {
-    res.json(err.message)
+    let doctorId = req.user._id;
+    await doctorModel.findByIdAndUpdate(doctorId, { status: "accepted" });
+    res.json("The contract has been accepted");
+  } catch (err) {
+    res.json(err.message);
   }
-}
+};
 
-const rejectContract = async(req, res) => {
+const rejectContract = async (req, res) => {
   try {
-    let doctorId = req.user._id
-    await doctorModel.findByIdAndUpdate(doctorId, {status: "rejected"})
-    res.json('The contract has been rejected')
-  }catch (err) {
-    res.json(err.message)
+    let doctorId = req.user._id;
+    await doctorModel.findByIdAndUpdate(doctorId, { status: "rejected" });
+    res.json("The contract has been rejected");
+  } catch (err) {
+    res.json(err.message);
   }
-}
-
-
+};
 
 module.exports = {
   addDoctor,
@@ -405,5 +421,5 @@ module.exports = {
   viewDoctorAppointments,
   addHealthRecord,
   acceptContract,
-  rejectContract
+  rejectContract,
 };
