@@ -36,6 +36,8 @@ import ViewMyWallet from './pages/patient/ViewMyWallet';
 import ViewDoctorWallet from './pages/doctor/ViewDoctorWallet';
 import DoctorApplication from './pages/admin/DoctorApplication';
 import DoctorContract from './pages/doctor/DoctorContract';
+import ViewPatientPrescriptions from './pages/doctor/ViewPatientPrescriptions';
+import SelectedPrescriptionDoctor from './pages/doctor/SelectedPrescriptionDoctor';
 
 // imported from the pharamcy : 
 import UnApprovedPharmacists from './pages/admin/UnApprovedPharmacists'
@@ -142,6 +144,8 @@ function App() {
             <Route path="/ViewDoctorWallet" element={<ViewDoctorWallet/>}/>
             <Route path="/DoctorApplication" element={<DoctorApplication/>}/>
             <Route path="/doctorContract" element={<DoctorContract />} />
+            <Route path='/ViewPatientsPrescriptions' element={<ViewPatientPrescriptions/>}/>
+            <Route path='/SelectedPrescriptionDoctor' element={<SelectedPrescriptionDoctor/>}/>
 
             {/*User Routing */}
             <Route path="/login" element ={<Login />}/>

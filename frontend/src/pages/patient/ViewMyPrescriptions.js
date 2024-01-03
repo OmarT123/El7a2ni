@@ -106,6 +106,7 @@ const ViewMyPrescriptions = ({user}) => {
                             ))}
                           </ul>
                           <p>Prescription Date: {prescription.createdAt.substr(0, 10)}</p>
+                          {!prescription.filled && <p>Filled: {prescription.filled? "" : "No"}</p>}
                           <Link to={`/SelectedPrescription?id=${prescription._id}`}>View Prescription</Link>
                         </div>
                       ))}
