@@ -491,7 +491,6 @@ const filterPrescriptionByDateDoctorStatus = async (req, res) => {
 
 
 const filterAppointmentsForPatient = async (req, res) => {
-  // Need login
   const dateToBeFiltered = req.query.date;
   const statusToBeFiltered = req.query.status;
   const filterQuery = {};
@@ -507,7 +506,6 @@ const filterAppointmentsForPatient = async (req, res) => {
   if (statusToBeFiltered) {
     filterQuery["status"] = statusToBeFiltered;
   }
-  if (req.user._id) {
     const id = req.user._id;
     filterQuery["patient"] = new mongoose.Types.ObjectId(id);
     try {
@@ -517,29 +515,25 @@ const filterAppointmentsForPatient = async (req, res) => {
       if (filteredAppointments.length === 0) {
         return res.json("No matching appointments found for the Patient.");
       }
-      res.json(filteredAppointments);
+      const currentDate = new Date();
+      let upcomingAppointments = [];
+      let pastAppointments = [];
+      for(appointment of filteredAppointments)
+      {
+        if (appointment.date < currentDate)
+          pastAppointments.push(appointment)
+        else
+          upcomingAppointments.push(appointment)
+      }
+      const appointmentData = {
+        upcomingAppointments,
+        pastAppointments,
+      };
+      res.json(appointmentData);
     } catch (err) {
       console.error(err);
-      res
-        .status(500)
-        .json({ error: "An error occurred while retrieving appointments." });
+      res.json({ error: "An error occurred while retrieving appointments." });
     }
-  } else {
-    try {
-      const filteredAppointments = await appointmentModel.find(filterQuery);
-      if (filteredAppointments.length === 0) {
-        return res.json("No matching appointments found for the Patient.");
-      }
-      else {
-        res.json(filteredAppointments);
-      }
-    } catch (err) {
-      console.error(err);
-      res
-        .status(500)
-        .json({ error: "No matching appointments found for the Patient." });
-    }
-  }
 };
 
 const selectDoctorFromFilterSearch = async (req, res) => {
@@ -694,7 +688,7 @@ const CancelSubscription = async (req, res) => {
     const patientId = req.user._id;
     const patient = await patientModel.findById(patientId);
     if (!patient) {
-      return res.status(404).json({ message: 'Patient not found' });
+      return res.json({ message: 'Patient not found' });
     }
     patient.healthPackage.status = "cancelled";
     await patient.save();
@@ -702,7 +696,7 @@ const CancelSubscription = async (req, res) => {
     res.json({ message: 'Subscription canceled successfully' });
   } catch (error) {
     console.error('Error canceling subscription:', error.message);
-    res.status(500).json({ message: 'Internal Server Error' });
+    res.json({ message: 'Internal Server Error' });
   }
 };
 
@@ -907,9 +901,19 @@ const reserveAppointment = async (req, res) => {
   const patientId = req.user._id
   const appointmentId = req.body.appointmentId
   const name = req.body.name
-  console.log(name)
+  const app = await appointmentModel.findById(appointmentId)
+  const doctorID = app.doctor
+  const doctor = await doctorModel.findById(doctorID);
+  const clinicMarkup = process.env.CLINIC_MARKUP
+  let discount = 1;
+  const patient = await patientModel.findById(patientId);
+  if(patient.healthPackage){
+    const healthPackageID = patient.healthPackage.healthPackageID.toString()
+    const healthPackage = await healthPackageModel.findById(healthPackageID).catch(err => console.log(err.message))
+    discount = 1 - healthPackage.doctorDiscount / 100;
+    }
   try {
-    const appointment = await appointmentModel.findByIdAndUpdate(appointmentId, { patient: new mongoose.Types.ObjectId(patientId), status: "upcoming", attendantName: name }, { new: true })
+    const appointment = await appointmentModel.findByIdAndUpdate(appointmentId, { patient: new mongoose.Types.ObjectId(patientId), status: "upcoming", attendantName: name, price: (doctor.hourlyRate + 10 / 100 * clinicMarkup) * discount }, { new: true })
     res.json('updated Successfully')
   } catch (err) {
     res.json(err.message)
@@ -1196,6 +1200,32 @@ const linkFamilyMemberAccount = async (req, res) => {
   }
 };
 
+const cancelAppointment = async (req, res) => {
+  try {
+    const appointmentID = req.body.appointmentID;
+    const appointment = await appointmentModel.findById(appointmentID);
+    appointment.status = 'cancelled';
+    await appointment.save();
+
+    const appointmentDate = new Date(appointment.date);
+    const currentDate = new Date();
+    const timeDifference = appointmentDate - currentDate;
+    const isWithin24Hours = timeDifference < 24 * 60 * 60 * 1000;
+    const doctor = await doctorModel.findById(req.user_.id)
+    if (!isWithin24Hours || doctor) {
+      const patientID = appointment.patient;
+      const patient = await patientModel.findById(patientID);
+      patient.wallet += appointment.price;
+      await patient.save();
+    } 
+
+    return res.json('Appointment cancelled successfully');
+  } catch (error) {
+    return res.json();
+  }
+};
+
+
 function calculateAge(birthDate) {
   const today = new Date();
   const birthDateObj = new Date(birthDate);
@@ -1250,5 +1280,6 @@ module.exports = {
   cashOnDelivery,
   pastOrders,
   cancelOrder,
-  deleteHealthRecord
+  deleteHealthRecord,
+  cancelAppointment
 };

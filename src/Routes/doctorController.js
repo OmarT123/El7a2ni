@@ -40,7 +40,6 @@ const filterAppointmentsForDoctor = async (req, res) => {
   if (searchQuery) {
     filterQuery["status"] = searchQuery;
   }
-  if (req.user._id) {
     const id = req.user._id;
     filterQuery["doctor"] = id;
     try {
@@ -50,28 +49,25 @@ const filterAppointmentsForDoctor = async (req, res) => {
       if (filteredAppointments.length === 0) {
         return res.json([]);
       }
-      res.json(filteredAppointments);
+      const currentDate = new Date();
+      let upcomingAppointments = [];
+      let pastAppointments = [];
+      for(appointment of filteredAppointments)
+      {
+        if (appointment.date < currentDate)
+          pastAppointments.push(appointment)
+        else
+          upcomingAppointments.push(appointment)
+      }
+      const appointmentData = {
+        upcomingAppointments,
+        pastAppointments,
+      };
+      res.json(appointmentData);
     } catch (err) {
       console.error(err);
-      res
-        .status(500)
-        .json({ error: "An error occurred while retrieving appointments." });
+      res.json({ error: "An error occurred while retrieving appointments." });
     }
-  } else {
-    try {
-      const filteredAppointments = await appointmentModel.find(filterQuery);
-      if (filteredAppointments.length === 0) {
-        return res.json([]);
-      } 
-      else{
-        res.json(filteredAppointments);
-      }     
-    } catch (err) {
-      console.error(err);
-      res
-        .json({ error: "No matching appointments found for the Doctor." });
-    }
-  }
 };
 
 const addDoctor = async (req, res) => {
@@ -266,7 +262,7 @@ const ViewDoctorWallet = async (req, res) => {
 //new Req.45//
 const viewDoctorAppointments = async (req, res) => {
   try {
-    const doctorID = req.query.id;
+    const doctorID = req.user._id;
     const currentDate = new Date();
 
     const upcomingAppointments = await appointmentModel
@@ -313,11 +309,20 @@ const addAppointmentSlots = async (req,res) => {
     }
     else {
       if(req.body.patientID){
+        const clinicMarkup = process.env.CLINIC_MARKUP
+        let discount = 1;
+        const patient = await patientModel.findById(req.body.patientID);
+        if(patient.healthPackage){
+          const healthPackageID = patient.healthPackage.healthPackageID.toString()
+          const healthPackage = await healthPackageModel.findById(healthPackageID).catch(err => console.log(err.message))
+          discount = 1 - healthPackage.doctorDiscount / 100;
+        }           
         await appointmentModel.create({
           doctor: doctor._id,
           date,
           status: 'upcoming',
-          patient: new mongoose.Types.ObjectId(req.body.patientID)
+          patient: new mongoose.Types.ObjectId(req.body.patientID),
+          price: (doctor.hourlyRate + 10 / 100 * clinicMarkup) * discount
         })
       }
       else{
