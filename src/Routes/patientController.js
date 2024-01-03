@@ -573,10 +573,10 @@ const viewMyPrescriptions = async (req, res) => {
 const selectPrescription = async (req, res) => {
   try {
     const prescriptionId = req.query.id;
-    const prescription = await prescriptionModel.findById(prescriptionId).populate({ path: 'medicines.medId' }).exec();
-    res.status(200).json(prescription);
+    const prescription = await prescriptionModel.findById(prescriptionId).populate({ path: 'medicines.medId' }).populate({ path: 'doctor' }).exec();
+    res.json(prescription);
   } catch (error) {
-    res.status(404).json({ error: error.message });
+    res.json({ error: error.message });
   }
 };
 

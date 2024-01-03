@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { useState, useEffect } from 'react';
-import PatientAuthorization from '../../components/PatientAuthorization';
+import DoctorAuthorization from '../../components/DoctorAuthorization';
 import html2pdf from 'html2pdf.js';
 
 const SelectedPrescription = ({ user }) => {
@@ -12,7 +12,7 @@ const SelectedPrescription = ({ user }) => {
       const queryParams = new URLSearchParams(window.location.search);
       const id = queryParams.get('id');
       try {
-        const response = await axios.get('/selectPrescription?id=' + id);
+        const response = await axios.get('/selectPrescriptionDoctor?id=' + id);
         setPrescription(response.data);
       } catch (error) {
         console.log(error.message);
@@ -54,7 +54,7 @@ const SelectedPrescription = ({ user }) => {
             {prescription && prescription.doctor && (
               <>
               <h1 style={{ textAlign: 'center' }}>Prescription</h1>
-              <p><strong>Doctor: </strong>{prescription.doctor.name}</p>
+              <p><strong>Patient: </strong>{prescription.patient.name}</p>
               <p><strong>Prescription Date: </strong>{prescription.createdAt.substr(0, 10)}</p>
               </>
             )}
@@ -89,4 +89,4 @@ const SelectedPrescription = ({ user }) => {
   );
 };
 
-export default PatientAuthorization(SelectedPrescription);
+export default DoctorAuthorization(SelectedPrescription);

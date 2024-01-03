@@ -105,6 +105,8 @@ const ViewMyPrescriptions = ({user}) => {
                               </li>
                             ))}
                           </ul>
+                          <p>Prescription Date: {prescription.createdAt.substr(0, 10)}</p>
+                          {!prescription.filled && <p>Filled: {prescription.filled? "" : "No"}</p>}
                           <Link to={`/SelectedPrescription?id=${prescription._id}`}>View Prescription</Link>
                         </div>
                       ))}
@@ -114,7 +116,6 @@ const ViewMyPrescriptions = ({user}) => {
                     <div>
                       {prescriptionsFilter.map((prescription) => (
                         <div key={prescription._id} className="prescription-card">
-                          {/* Assuming DisplayPrescription is a component that displays prescription details */}
                           <h4>Prescription Details:</h4>
                           <p>Doctor: {prescription.doctor}</p>
                           <p>Medicines:</p>

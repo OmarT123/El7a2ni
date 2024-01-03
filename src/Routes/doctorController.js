@@ -375,7 +375,26 @@ const rejectContract = async(req, res) => {
   }
 }
 
+const viewPatientPrescriptions = async (req, res) => {
+  try {
+    const doctorId = req.user._id;
+    const prescriptions = await prescriptionModel.find({ doctor: doctorId }).populate({ path: 'medicines.medId' }).populate({ path: 'patient' }).exec();
+    res.json(prescriptions);
+  }
+  catch (err) {
+    res.json(err.message);
+  }
+};
 
+const selectPrescriptionDoctor = async (req, res) => {
+  try {
+    const prescriptionId = req.query.id;
+    const prescription = await prescriptionModel.findById(prescriptionId).populate({ path: 'medicines.medId' }).populate({ path: 'patient' }).exec();
+    res.json(prescription);
+  } catch (error) {
+    res.json({ error: error.message });
+  }
+};
 
 module.exports = {
   addDoctor,
@@ -391,5 +410,7 @@ module.exports = {
   ViewDoctorWallet,
   viewDoctorAppointments,
   acceptContract,
-  rejectContract
+  rejectContract,
+  viewPatientPrescriptions,
+  selectPrescriptionDoctor
 };
