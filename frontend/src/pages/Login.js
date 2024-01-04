@@ -16,7 +16,6 @@ import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import Copyright from "../components/Copyright";
 
-
 const defaultTheme = createTheme();
 
 const Login = () => {
@@ -24,8 +23,9 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [showContent, setShowContent] = useState(false);
 
-  useEffect(() => {
+  useEffect(async () => {
     // localStorage.clear()
+    // await axios.get('/logout')
     const userToken = localStorage.getItem("userToken");
 
     if (userToken) {
@@ -75,7 +75,29 @@ const Login = () => {
                 alignItems: "center",
               }}
             >
-              <img src="logo.png" width="100px" height="100px"></img>
+              <Avatar
+                sx={{
+                  width: 60,
+                  height: 60,
+                  backgroundColor: "#fff",
+                  margin: "20px auto",
+                  border: "1px solid #bbb",
+                  transition: "background-color 0.3s ease-in-out",
+                  "&:hover": {
+                    backgroundColor: "primary.main",
+                    cursor: "pointer",
+                  },
+                }}
+                onClick={() => {
+                  window.location.href = "/";
+                }}
+              >
+                <img
+                  src="logo.png"
+                  width="100px"
+                  height="100px"
+                />
+              </Avatar>
               <Typography component="h1" variant="h5">
                 Sign in
               </Typography>

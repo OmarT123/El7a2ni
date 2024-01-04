@@ -57,9 +57,28 @@ const SignUp = () => {
           <Container
             component="main"
             maxWidth="xs"
-            sx={{ textAlign: "center" }}
+            sx={{ textAlign: "center", marginY: "60px" }}
           >
             <CssBaseline />
+            <Avatar
+              sx={{
+                width: 60,
+                height: 60,
+                backgroundColor: "#fff",
+                margin: "0 auto",
+                border: "1px solid #bbb",
+                transition: "background-color 0.3s ease-in-out",
+                "&:hover": {
+                  backgroundColor: "primary.main",
+                  cursor: "pointer",
+                },
+              }}
+              onClick={() => {
+                window.location.href = "/";
+              }}
+            >
+              <img src="logo.png" width="100px" height="100px" />
+            </Avatar>
             <Box
               sx={{
                 marginTop: 8,
@@ -86,7 +105,7 @@ const SignUp = () => {
                     transition: "background-color 0.3s ease-in-out",
                     "&:hover": {
                       backgroundColor: "primary.main",
-                      cursor: 'pointer'
+                      cursor: "pointer",
                     },
                   }}
                   onMouseEnter={handleHover}
@@ -113,7 +132,7 @@ const SignUp = () => {
                     transition: "background-color 0.3s ease-in-out",
                     "&:hover": {
                       backgroundColor: "primary.main",
-                      cursor: 'pointer'
+                      cursor: "pointer",
                     },
                   }}
                   onMouseEnter={handleHover}
@@ -140,7 +159,7 @@ const SignUp = () => {
                     transition: "background-color 0.3s ease-in-out",
                     "&:hover": {
                       backgroundColor: "primary.main",
-                      cursor: 'pointer'
+                      cursor: "pointer",
                     },
                   }}
                   onMouseEnter={handleHover}

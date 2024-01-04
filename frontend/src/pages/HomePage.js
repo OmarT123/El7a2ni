@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import Footer from "../components/Footer";
 import axios from "axios";
 import GuestHomePage from "../components/HomePage/GuestHomePage";
+import AdminHomePage from "../components/HomePage/Admin/AdminHomePage";
+
 
 const HomePage = ({ scrollToSection }) => {
   const [userType, setUserType] = useState("guest");
@@ -10,7 +12,8 @@ const HomePage = ({ scrollToSection }) => {
   useEffect(() => {
     axios.get("/loginAuthentication").then((response) => {
       const { success, type, user } = response.data;
-      setUserType(type);
+      if (success)
+        setUserType(type);
     });
   }, []);
 
@@ -25,7 +28,7 @@ const HomePage = ({ scrollToSection }) => {
       ) : userType === "pharmacist" ? (
         "pharmacist page"
       ) : (
-        "admin page"
+        <AdminHomePage scrollToSection={scrollToSection} />
       )}
 
       <Footer />

@@ -12,6 +12,7 @@ import { Fab, Input, Typography } from "@mui/material";
 import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
+import Avatar from "@mui/material/Avatar";
 
 import Copyright from "../components/Copyright";
 
@@ -83,6 +84,32 @@ const ResetPassword = () => {
           sx={{ marginY: "12%", textAlign: "center" }}
         >
           <CssBaseline />
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "space-between",
+              width: "100%",
+            }}
+          >
+            <Avatar
+              sx={{
+                width: 60,
+                height: 60,
+                backgroundColor: "#fff",
+                margin: "0 auto",
+                border: "1px solid #bbb",
+                transition: "background-color 0.3s ease-in-out",
+                "&:hover": {
+                  backgroundColor: "primary.main",
+                  cursor: "pointer",
+                },
+              }}
+              onClick={()=>{window.location.href='/'}}
+            >
+              <img src="logo.png" width="100px" height="100px" />
+            </Avatar>
+          </Box>
           {stage === "first" ? (
             <Box component="form" noValidate onSubmit={sendOTP} sx={{ mt: 3 }}>
               <Typography variant="h5">Reset Password</Typography>
