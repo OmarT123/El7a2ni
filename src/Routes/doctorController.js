@@ -18,7 +18,30 @@ const createPrescription = async(req,res)=>{
     res.send(err.message)
   }
 }
-
+//add/update dosage for each medicine added to the prescription
+const addDosage = async (req, res) => {
+  try {
+    let prescriptionId = req.body.prescriptionId;
+    let prescription = await prescriptionModel.findById(prescriptionId);
+    if (prescription) {
+      let medicineId = req.body.medicineId;
+      let dosage = req.body.dosage;
+      for(medicine of prescription.medicines){
+        if(medicine._id.equals(new mongoose.Types.ObjectId(medicineId))){
+          medicine.dosage = dosage;
+          await prescription.save();
+          return res.json(prescription);
+        }
+      }
+        res.json("Medicine not found");
+      
+    } else {
+      res.json("Prescription not found");
+    }
+  } catch (err) {
+    res.json(err.message);
+  }
+};
 
 const filterAppointmentsForDoctor = async (req, res) => {
   // Need login
@@ -412,5 +435,6 @@ module.exports = {
   acceptContract,
   rejectContract,
   viewPatientPrescriptions,
-  selectPrescriptionDoctor
+  selectPrescriptionDoctor,
+  addDosage
 };

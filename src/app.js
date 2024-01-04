@@ -25,7 +25,8 @@ const {
   acceptContract,
   rejectContract,
   viewPatientPrescriptions,
-  selectPrescriptionDoctor
+  selectPrescriptionDoctor,
+  addDosage
 } = require("./Routes/doctorController");
 
 
@@ -235,6 +236,7 @@ app.put("/acceptContract", getUserFromTokenMiddleware, acceptContract);
 app.put("/rejectContract", getUserFromTokenMiddleware, rejectContract);
 app.get("/viewPatientPrescriptions",getUserFromTokenMiddleware,viewPatientPrescriptions);
 app.get("/selectPrescriptionDoctor",getUserFromTokenMiddleware,selectPrescriptionDoctor);
+app.put("/addDosage",addDosage)
 
 
 

@@ -6,6 +6,8 @@ import html2pdf from 'html2pdf.js';
 const SelectedPrescription = ({ user }) => {
   const [prescription, setPrescription] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [updatedDosage, setUpdatedDosage] = useState('');
+
 
   useEffect(() => {
     const getPrescription = async () => {
@@ -43,6 +45,17 @@ const SelectedPrescription = ({ user }) => {
     html2pdf().from(content).set(pdfOptions).save();
   };  
   
+  const handleDosageUpdate = async (medicineId) => {
+    const newDosage = {
+      dosage: updatedDosage,
+      medicineId,
+      prescriptionId: prescription._id,
+    };
+
+    const response = await axios.put("/addDosage", newDosage);
+    window.location.reload();
+    //console.log(`Updating dosage for medicine with ID: ${medicineId}, New Dosage: ${updatedDosage}`);
+  };
 
   return (
     <div>
@@ -75,6 +88,15 @@ const SelectedPrescription = ({ user }) => {
                     )}
                     <strong>Dosage: </strong>{medicine.dosage}
                   </div>
+                  <div>
+              <input
+                type="text"
+                placeholder="New Dosage"
+                value={updatedDosage}
+                onChange={(e) => setUpdatedDosage(e.target.value)}
+              />
+              <button onClick={() => handleDosageUpdate(medicine._id)}>Update Dosage</button>
+            </div>
                 </div>
               ))
             ) : (
