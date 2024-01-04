@@ -6,8 +6,7 @@ import html2pdf from 'html2pdf.js';
 const SelectedPrescription = ({ user }) => {
   const [prescription, setPrescription] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [updatedDosage, setUpdatedDosage] = useState('');
-
+  const [dosages, setDosages] = useState({});
 
   useEffect(() => {
     const getPrescription = async () => {
@@ -28,7 +27,7 @@ const SelectedPrescription = ({ user }) => {
 
   const downloadPrescription = async () => {
     const content = document.getElementById('prescription-content');
-  
+
     const pdfOptions = {
       margin: 10,
       filename: 'Prescription.pdf',
@@ -36,25 +35,19 @@ const SelectedPrescription = ({ user }) => {
       html2canvas: { scale: 2 },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
     };
-  
-    // const title = document.createElement('h1');
-    // title.innerText = 'Prescription'; // You can customize the title here
-    // title.style.textAlign = 'centre';
-  
-    // content.insertBefore(title, content.firstChild);
+
     html2pdf().from(content).set(pdfOptions).save();
-  };  
-  
+  };
+
   const handleDosageUpdate = async (medicineId) => {
     const newDosage = {
-      dosage: updatedDosage,
+      dosage: dosages[medicineId] || '', // Retrieve dosage from dosages object
       medicineId,
       prescriptionId: prescription._id,
     };
 
-    const response = await axios.put("/addDosage", newDosage);
+    const response = await axios.put('/addDosage', newDosage);
     window.location.reload();
-    //console.log(`Updating dosage for medicine with ID: ${medicineId}, New Dosage: ${updatedDosage}`);
   };
 
   return (
@@ -66,9 +59,9 @@ const SelectedPrescription = ({ user }) => {
           <div id="prescription-content">
             {prescription && prescription.doctor && (
               <>
-              <h1 style={{ textAlign: 'center' }}>Prescription</h1>
-              <p><strong>Patient: </strong>{prescription.patient.name}</p>
-              <p><strong>Prescription Date: </strong>{prescription.createdAt.substr(0, 10)}</p>
+                <h1 style={{ textAlign: 'center' }}>Prescription</h1>
+                <p><strong>Patient: </strong>{prescription.patient.name}</p>
+                <p><strong>Prescription Date: </strong>{prescription.createdAt.substr(0, 10)}</p>
               </>
             )}
             {prescription && prescription.medicines && prescription.medicines.length > 0 ? (
@@ -89,14 +82,14 @@ const SelectedPrescription = ({ user }) => {
                     <strong>Dosage: </strong>{medicine.dosage}
                   </div>
                   <div>
-              <input
-                type="text"
-                placeholder="New Dosage"
-                value={updatedDosage}
-                onChange={(e) => setUpdatedDosage(e.target.value)}
-              />
-              <button onClick={() => handleDosageUpdate(medicine._id)}>Update Dosage</button>
-            </div>
+                    <input
+                      type="text"
+                      placeholder="New Dosage"
+                      value={dosages[medicine._id] || ''}
+                      onChange={(e) => setDosages({ ...dosages, [medicine._id]: e.target.value })}
+                    />
+                    <button onClick={() => handleDosageUpdate(medicine._id)}>Update Dosage</button>
+                  </div>
                 </div>
               ))
             ) : (
