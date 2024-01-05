@@ -17,13 +17,15 @@ import SupervisorAccountIcon from "@mui/icons-material/SupervisorAccount";
 import Inventory2Icon from "@mui/icons-material/Inventory2";
 import NotificationBoard from "../../NotificationBoard";
 import SideBar from "../../SideBar";
+import MedicineView from "../../MedicineView";
 
 const ImageStyle = {
   width: "100px",
   height: "90px",
+  cursor: 'pointer'
 };
 
-const NavBar = (scrollToSection) => {
+const NavBar = ({homeButton}) => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
@@ -49,7 +51,7 @@ const NavBar = (scrollToSection) => {
           }}
         >
           <Toolbar sx={{ alignItems: "center" }}>
-            <img style={ImageStyle} src="logo.png" alt="logo.png" />
+            <img style={ImageStyle} src="logo.png" alt="logo.png" onClick={homeButton} />
             <Box
               sx={{ display: "flex", alignItems: "center", marginLeft: "auto" }}
             >
@@ -153,23 +155,17 @@ const AdminHomePage = () => {
     );
   };
 
-  const Medicine = () => {};
-  const Employees = () => {};
-  const Patients = () => {};
-  const Admins = () => {};
-  const HealthPackages = () => {};
-
 
   return (
     <>
-      <NavBar />
+      <NavBar homeButton={() => setStage('home')} />
 
       <Container sx={{ mt: 3 }}>
         <Grid container spacing={5}>
           {stage === "home" ? (
             <Home />
           ) : stage === "medicine" ? (
-            "medicine"
+            <MedicineView />
           ) : stage === "employees" ? (
             "employees"
           ) : stage === "patients" ? (

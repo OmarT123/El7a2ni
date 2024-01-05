@@ -11,7 +11,24 @@ import {
   ListItemText,
 } from "@mui/material";
 
+import axios from 'axios'
+
 const SideBar = ({ isSidebarOpen, handleSidebarToggle, handleBackButton }) => {
+
+
+  const handleLogout = async () => {
+    try {
+      const response = await axios.get('/logout');
+
+      if (response.data.success) {
+        localStorage.removeItem('userToken');
+        window.location.href = '/login';
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
   return (
     <Drawer
       anchor="right"
@@ -43,7 +60,7 @@ const SideBar = ({ isSidebarOpen, handleSidebarToggle, handleBackButton }) => {
           </ListItemIcon>
           <ListItemText primary="Give Feedback" />
         </ListItem>
-        <ListItem button>
+        <ListItem button onClick={handleLogout}>
           <ListItemIcon>
             <LogoutIcon />
           </ListItemIcon>

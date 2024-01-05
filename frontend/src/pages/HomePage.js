@@ -17,6 +17,7 @@ const HomePage = ({ scrollToSection }) => {
     });
   }, []);
 
+
   return (
     <>
       {userType === "guest" ? (

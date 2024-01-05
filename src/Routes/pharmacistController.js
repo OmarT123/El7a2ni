@@ -161,15 +161,7 @@ const medicinequantityandsales = async (req, res) => {
     res.json({ message: err.message });
   }
 };
-const viewMedicine = async (req, res) => {
-  try {
-    const medicine = await medicineModel.find({});
-    res.status(200).json(medicine);
-    return medicine;
-  } catch (err) {
-    res.json({ message: err.message });
-  }
-};
+
 
 const uploadMedicineImage = async (req, res) => {
   const medicineID = req.body.id;
@@ -192,6 +184,5 @@ module.exports = {
   addMedicine,
   medicinequantityandsales,
   filterByMedicinalUsePharmacist,
-  viewMedicine,
   uploadMedicineImage,
 };
