@@ -235,7 +235,7 @@ const addHealthPackage = async (req, res) => {
       familyDiscount,
     });
     await healthPackage.save();
-    res.send(healthPackage);
+    res.send({success:true, title: 'Health Package Created Successfully'});
   } catch (err) {
     res.send(err);
   }
@@ -265,7 +265,7 @@ const deleteHealthPackage = async (req, res) => {
   let id = req.query.id;
   try {
     await healthPackageModel.findByIdAndDelete(id);
-    res.json("Deleted Successfully");
+    res.json({success:true, title:"Deleted Successfully"});
   } catch (err) {
     res.json(err.message);
   }

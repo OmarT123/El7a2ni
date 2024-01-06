@@ -95,48 +95,37 @@ const HealthPackagesView = ({ userType }) => {
         medicineDiscount,
         familyDiscount,
       };
-      await axios
-        .post("/addHealthPackage", body)
-        .then((res) => alert(res.data))
-        .catch((err) => console.log(err.message));
-      fetchHealthPackages();
+      try {
+        const response = await axios.post("/addHealthPackage", body);
+        if (response.data.success) {
+          setAlert(response.data);
+          setName('')
+          setPrice('')
+          setDoctorDiscount('')
+          setMedicineDiscount('')
+          setFamilyDiscount('')
+          setAddPackageExpanded(false)
+          fetchHealthPackages();
+        }
+      } catch (error) {
+        console.error( error);
+      }
     }
   };
-  const deleteHealthPackage = () => {};
-
-  //   const addAdmin = async (e) => {
-  //     e.preventDefault();
-  //     const newAdminData = {};
-  //     if (newName !== "") newAdminData["username"] = newName;
-  //     if (newPassword !== "") newAdminData["password"] = newPassword;
-
-  //     try {
-  //       const response = await axios.post("/addAdmin", newAdminData);
-  //       setAlert(response.data);
-  //       console.log(response.data);
-  //       if (response.data.success) {
-  //         console.log("here");
-  //         setNewName("");
-  //         setNewPassword("");
-  //         setAddAdminExpanded(false);
-  //         fetchAdmins();
-  //       }
-  //     } catch (error) {
-  //       console.error("Add Admin error:", error);
-  //     }
-  //   };
-
-  //   const removeAdmin = async (adminId) => {
-  //     try {
-  //       const response = await axios.delete("/deleteAdmin?id=" + adminId);
-  //       setAlert(response.data);
-  //       if (response.data.success) {
-  //         fetchAdmins();
-  //       }
-  //     } catch (error) {
-  //       console.error("Add Admin error:", error);
-  //     }
-  //   };
+  
+  const deleteHealthPackage = async(id) => {
+    try{
+      const response = await axios.delete("/deleteHealthPackage?id="+id)
+      if (response.data.success)
+      {
+        setAlert(response.data)
+        fetchHealthPackages()
+      }
+    }catch(error)
+    {
+      console.error(error)
+    }
+}
 
   useEffect(() => {
     fetchHealthPackages();
@@ -225,38 +214,46 @@ const HealthPackagesView = ({ userType }) => {
             </Button>
           </Box>
         </Collapse>
-        <Grid container spacing={1} sx={{mt:'12px'}}>
-          <Grid xs={0.7}></Grid>
-          <Grid item>
-            <Typography>Name</Typography>
-          </Grid>
-          <Grid xs={2}></Grid>
-          <Grid item>
-            <Typography>Price</Typography>
-          </Grid>
-          <Grid xs={1.3}></Grid>
-          <Grid item>
-            <Typography>Family Discount</Typography>
-          </Grid>
-          <Grid xs={0.7}></Grid>
-          <Grid item>
-            <Typography>Medicine Discount</Typography>
-          </Grid>
-          <Grid xs={0.7}></Grid>
-          <Grid item>
-            <Typography>Doctor Discount</Typography>
-          </Grid>
-        </Grid>
         <List style={listStyle}>
           {healthPackages.map((item, index) => (
             <React.Fragment key={index}>
               <ListItem button onClick={() => handleItemExpand(item)}>
-                <HealthAndSafetyIcon sx={{ mr: "15px" }} />
-                <ListItemText primary={item.name} />
-                <ListItemText primary={item.price} />
-                <ListItemText primary={item.familyDiscount} />
-                <ListItemText primary={item.medicineDiscount} />
-                <ListItemText primary={item.doctorDiscount} />
+                <HealthAndSafetyIcon
+                  sx={{ mr: "15px", width: "50px", height: "50px" }}
+                />
+                <Container maxWidth="md" sx={{ marginTop: 2, padding: "5px" }}>
+                  <Typography variant="h5" sx={{ marginBottom: 2 }}>
+                    {item.name}
+                  </Typography>
+                  <Grid container spacing={3}>
+                    <Grid item xs={6}>
+                      <List>
+                        <ListItem>
+                          <ListItemText primary={`Price: ${item.price}`} />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText
+                            primary={`Doctor Discount: ${item.doctorDiscount} %`}
+                          />
+                        </ListItem>
+                      </List>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <List>
+                        <ListItem>
+                          <ListItemText
+                            primary={`Medicine Discount: ${item.medicineDiscount}`}
+                          />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText
+                            primary={`Family Discount: ${item.familyDiscount}`}
+                          />
+                        </ListItem>
+                      </List>
+                    </Grid>
+                  </Grid>
+                </Container>
               </ListItem>
               <Collapse
                 in={item.name === expandedItem}
