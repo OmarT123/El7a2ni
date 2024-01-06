@@ -36,6 +36,9 @@ const medicineSchema = new Schema(
     picture: {
       type: String,
     },
+    prescriptionMedicine: {
+      type: Boolean,
+    }
   },
   { timestamps: true }
 );

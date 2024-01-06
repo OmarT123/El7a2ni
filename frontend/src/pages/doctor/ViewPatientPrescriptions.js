@@ -46,23 +46,25 @@ const ViewMyPrescriptions = ({ user }) => {
               <div key={prescription._id} className="prescription-card">
                 <h4>Prescription Details:</h4>
                 <p>Patient: {prescription.patient.name}</p>
-                <p>Medicines:</p>
-                <ul>
+                {prescription.filled && <><p>Medicines:</p><ul>
                   {prescription.medicines.map((medicine) => (
                     <li key={medicine._id}>
                       {medicine.medId.name} - {medicine.dosage}
-                      <button onClick={() => handleDeleteMedicine(prescription._id, medicine.medId._id)}>
+                      <button style={{ marginLeft: '5px' }} onClick={() => handleDeleteMedicine(prescription._id, medicine.medId._id)}>
                         Delete Medicine
                       </button>
                     </li>
                   ))}
-                </ul>
+                </ul></>}
                 <p>Prescription Date: {prescription.createdAt.substr(0, 10)}</p>
                 {!prescription.filled && <p>Filled: {prescription.filled ? "" : "No"}</p>}
                 <Link to={`/SelectedPrescriptionDoctor?id=${prescription._id}`}>View Prescription</Link>
-                <Link to={`/addToPrescription?id=${prescription._id}`}>
-                  <button>Add Medicine</button>
-                </Link>
+                {prescription.filled && <Link to={`/addToPrescription?id=${prescription._id}`}>
+                  <button style={{ marginLeft: '5px' }}>Add Medicine</button>
+                </Link>}
+                {!prescription.filled && <Link to={`/addToPrescription?id=${prescription._id}`}>
+                <button style={{ marginLeft: '5px' }}>Fill Prescription</button>
+                </Link>}
               </div>
             ))}
           </div>
