@@ -4,10 +4,13 @@ import SquareCard from "../SquareCard";
 import MedicationIcon from "@mui/icons-material/Medication";
 import PersonIcon from "@mui/icons-material/Person";
 import SupervisorAccountIcon from "@mui/icons-material/SupervisorAccount";
-import Inventory2Icon from "@mui/icons-material/Inventory2";
+import HealthAndSafetyIcon from "@mui/icons-material/HealthAndSafety";
+import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
 import MedicineView from "../MedicineView";
 import HomeNavBar from "./HomeNavBar";
 import AdminsView from "../AdminsView";
+import PatientsView from "../PatientsView";
+import HealthPackagesView from "../HealthPackagesView";
 
 const AdminHomePage = () => {
   const [stage, setStage] = useState("home");
@@ -29,7 +32,7 @@ const AdminHomePage = () => {
           <SquareCard
             title="EMPLOYEES"
             body="Lorem ipsum sit amet consectetur adipiscing elit. Vivamus et erat in lacus convallis sodales."
-            icon={PersonIcon}
+            icon={LocalHospitalIcon}
             isLearnMore={false}
             changeFunction={() => setStage("employees")}
             closeFunction={() => setStage("home")}
@@ -60,7 +63,7 @@ const AdminHomePage = () => {
           <SquareCard
             title="HEALTH PACKAGES"
             body="Lorem ipsum sit amet consectetur adipiscing elit. Vivamus et erat in lacus convallis sodales."
-            icon={Inventory2Icon}
+            icon={HealthAndSafetyIcon}
             isLearnMore={false}
             changeFunction={() => setStage("healthPackages")}
             closeFunction={() => setStage("home")}
@@ -83,11 +86,11 @@ const AdminHomePage = () => {
           ) : stage === "employees" ? (
             "employees"
           ) : stage === "patients" ? (
-            "patient"
+            <PatientsView userType={"admin"} />
           ) : stage === "admins" ? (
             <AdminsView />
           ) : (
-            "healthPackages"
+            <HealthPackagesView userType={"admin"} />
           )}
         </Grid>
       </Container>

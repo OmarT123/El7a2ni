@@ -275,8 +275,8 @@ const deleteHealthPackage = async (req, res) => {
 const deletePatient = async (req, res) => {
   let patientId = req.query.id;
   try {
-    await patientModel.findByIdAndDelete(patientId);
-    res.json("Deleted Patient Successfully from Database");
+    await patientModel.findByIdAndDelete(patientId)
+    res.json({success: true, title:"Patient Deleted"});
   } catch (err) {
     res.send(err);
   }
@@ -345,7 +345,7 @@ const getAllPatients = async (req,res) => {
 
   try {
     const allPatient = await patientModel.find({}).populate({path:'familyMembers'}).populate({path:'healthPackage'}).exec();
-    res.json(allPatient);
+      res.json(allPatient);
   }
   catch(error){
     res.json({ error: error.message });
@@ -365,10 +365,11 @@ const getAllDoctors = async (req,res) => {
 }
 
 const getAllAdmins = async (req,res) => {
-
+  const id = req.user._id
   try {
     const allAdmins = await adminModel.find({});
-    res.json(allAdmins);
+    const filteredAdmins = allAdmins.filter(admin => admin._id.toString() !== id.toString())
+    res.json(filteredAdmins);
   }
   catch(error){
     res.status(500).json({ error: error.message });

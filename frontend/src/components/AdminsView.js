@@ -3,7 +3,6 @@ import Paper from "@mui/material/Paper";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
-import SearchBar from "./SearchBar";
 import axios from "axios";
 import Collapse from "@mui/material/Collapse";
 import Typography from "@mui/material/Typography";
@@ -12,7 +11,6 @@ import SupervisorAccountIcon from "@mui/icons-material/SupervisorAccount";
 import Fab from "@mui/material/Fab";
 import AddIcon from "@mui/icons-material/Add";
 import ClearIcon from "@mui/icons-material/Clear";
-import { AirlineSeatLegroomNormalTwoTone } from "@mui/icons-material";
 import Popup from "./Popup";
 import InputAdornment from "@mui/material/InputAdornment";
 import IconButton from "@mui/material/IconButton";
@@ -61,7 +59,7 @@ const AdminsView = ({ userType }) => {
   };
 
   const handleAddAdminClick = () => {
-    setAddAdminExpanded(!isAddAdminExpanded);
+    setAddAdminExpanded((prev) => !prev);
   };
 
   const fetchAdmins = async () => {
@@ -77,22 +75,26 @@ const AdminsView = ({ userType }) => {
   const addAdmin = async (e) => {
     e.preventDefault();
     const newAdminData = {};
-    if (newName !== "") newAdminData["username"] = newName;
-    if (newPassword !== "") newAdminData["password"] = newPassword;
+    if (newName === "" || newPassword === "") {
+      setAlert({ title: "Incomplete Data", message: "Please fill all fields" });
+    } else {
+      if (newName !== "") newAdminData["username"] = newName;
+      if (newPassword !== "") newAdminData["password"] = newPassword;
 
-    try {
-      const response = await axios.post("/addAdmin", newAdminData);
-      setAlert(response.data);
-      console.log(response.data);
-      if (response.data.success) {
-        console.log("here");
-        setNewName("");
-        setNewPassword("");
-        setAddAdminExpanded(false);
-        fetchAdmins();
+      try {
+        const response = await axios.post("/addAdmin", newAdminData);
+        setAlert(response.data);
+        //   console.log(response.data);
+        if (response.data.success) {
+          console.log("here");
+          setNewName("");
+          setNewPassword("");
+          setAddAdminExpanded(false);
+          fetchAdmins();
+        }
+      } catch (error) {
+        console.error("Add Admin error:", error);
       }
-    } catch (error) {
-      console.error("Add Admin error:", error);
     }
   };
 
