@@ -3,6 +3,7 @@ const patientModel = require("../Models/Patient.js");
 const appointmentModel = require("../Models/Appointment.js");
 const adminModel = require("../Models/Admin.js");
 const prescriptionModel = require("../Models/Prescription.js");
+const medicineModel = require("../Models/Medicine.js");
 const userModel = require("../Models/User.js")
 const healthPackageModel = require("../Models/HealthPackage.js")
 const doctorDocuments = require("../Models/DoctorDocuments.js");
@@ -395,6 +396,59 @@ const selectPrescriptionDoctor = async (req, res) => {
     res.json({ error: error.message });
   }
 };
+const addToPrescription = async (req, res) => {
+  try {
+    const { prescriptionId, medId, dosage } = req.body;
+
+    const prescription = await prescriptionModel.findById(prescriptionId);
+    prescription.medicines.push({ medId, dosage });
+    await prescription.save();
+
+    res.json({ message: 'Medicine added to prescription successfully' });
+  } catch (error) {
+    console.error(error);
+    res.json({ error: 'Internal Server Error' });
+  }
+}
+const viewAllMedicines= async (req, res) => {
+
+  try {
+    const medicines = await medicineModel.find();
+    res.json(medicines);
+  } catch (error) {
+    console.error('Error fetching medicines:', error.message);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+}
+const deleteFromPrescription=async(req,res) =>{
+  try {
+    const { prescriptionId, medId } = req.body;
+    //console.log("prescriptionId);
+   // console.log(medId);
+    console.log('mypres:', prescriptionId);
+    console.log('mymedId:', medId);
+    const prescription = await prescriptionModel.findById(prescriptionId);
+    const medicineIndex = prescription.medicines.findIndex(medicine => medicine.medId.toString() === medId);
+
+    if (medicineIndex !== -1) {
+
+      prescription.medicines.splice(medicineIndex, 1);
+
+      await prescription.save();
+
+      res.status(200).json({ message: 'Medicine deleted from prescription successfully' });
+    } else {
+      res.status(404).json({ error: 'Medicine not found in prescription' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+}
+
+
+
+
 
 module.exports = {
   addDoctor,
@@ -412,5 +466,8 @@ module.exports = {
   acceptContract,
   rejectContract,
   viewPatientPrescriptions,
-  selectPrescriptionDoctor
+  selectPrescriptionDoctor,
+  addToPrescription,
+  viewAllMedicines,
+  deleteFromPrescription
 };

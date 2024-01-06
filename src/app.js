@@ -25,7 +25,10 @@ const {
   acceptContract,
   rejectContract,
   viewPatientPrescriptions,
-  selectPrescriptionDoctor
+  selectPrescriptionDoctor,
+  addToPrescription,
+  viewAllMedicines,
+  deleteFromPrescription
 } = require("./Routes/doctorController");
 
 
@@ -235,8 +238,9 @@ app.put("/acceptContract", getUserFromTokenMiddleware, acceptContract);
 app.put("/rejectContract", getUserFromTokenMiddleware, rejectContract);
 app.get("/viewPatientPrescriptions",getUserFromTokenMiddleware,viewPatientPrescriptions);
 app.get("/selectPrescriptionDoctor",getUserFromTokenMiddleware,selectPrescriptionDoctor);
-
-
+app.post("/addToPrescription",getUserFromTokenMiddleware,addToPrescription)
+app.get("/viewAllMedicines",getUserFromTokenMiddleware,viewAllMedicines);
+app.post("/deleteFromPrescription",getUserFromTokenMiddleware,deleteFromPrescription)
 
 //Pharmacist
 app.post("/addPharmacist",addPharmacist);
