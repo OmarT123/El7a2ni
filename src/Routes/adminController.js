@@ -255,7 +255,7 @@ const editHealthPackage = async (req, res) => {
       },
       { new: true }
     );
-    res.json("Updated Successully");
+    res.json({success: true, title:"Updated Successully"});
   } catch (err) {
     res.json(err.message);
   }

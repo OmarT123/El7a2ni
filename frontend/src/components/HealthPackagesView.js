@@ -55,6 +55,11 @@ const HealthPackagesView = ({ userType }) => {
   const [medicineDiscount, setMedicineDiscount] = useState("");
   const [familyDiscount, setFamilyDiscount] = useState("");
   const [alert, setAlert] = useState(null);
+  const [updateExpanded, setUpdateExpanded] = useState("");
+  const [updatePrice, setUpdatePrice] = useState("");
+  const [updateDoctorDiscount, setUpdateDoctorDiscount] = useState("");
+  const [updateFamilyDiscount, setUpdateFamilyDiscount] = useState("");
+  const [updateMedicineDiscount, setUpdateMedicineDiscount] = useState("");
 
   const handleItemExpand = (item) => {
     setExpandedItem(item.name === expandedItem ? null : item.name);
@@ -99,33 +104,64 @@ const HealthPackagesView = ({ userType }) => {
         const response = await axios.post("/addHealthPackage", body);
         if (response.data.success) {
           setAlert(response.data);
-          setName('')
-          setPrice('')
-          setDoctorDiscount('')
-          setMedicineDiscount('')
-          setFamilyDiscount('')
-          setAddPackageExpanded(false)
+          setName("");
+          setPrice("");
+          setDoctorDiscount("");
+          setMedicineDiscount("");
+          setFamilyDiscount("");
+          setAddPackageExpanded(false);
           fetchHealthPackages();
         }
       } catch (error) {
-        console.error( error);
+        console.error(error);
       }
     }
   };
-  
-  const deleteHealthPackage = async(id) => {
-    try{
-      const response = await axios.delete("/deleteHealthPackage?id="+id)
-      if (response.data.success)
-      {
-        setAlert(response.data)
-        fetchHealthPackages()
+
+  const deleteHealthPackage = async (id) => {
+    try {
+      const response = await axios.delete("/deleteHealthPackage?id=" + id);
+      if (response.data.success) {
+        setAlert(response.data);
+        fetchHealthPackages();
       }
-    }catch(error)
-    {
-      console.error(error)
+    } catch (error) {
+      console.error(error);
     }
-}
+  };
+
+  const enableUpdate = () => {
+    setUpdateExpanded((prev) => !prev);
+  };
+
+  const updateHealthPackage = async (e, id) => {
+    e.preventDefault();
+
+    const body = {};
+    if (updatePrice !== "") body["price"] = updatePrice;
+    if (updateDoctorDiscount !== "")
+      body["doctorDiscount"] = updateDoctorDiscount;
+    if (updateMedicineDiscount !== "")
+      body["medicineDiscount"] = updateMedicineDiscount;
+    if (updateFamilyDiscount !== "")
+      body["familyDiscount"] = updateFamilyDiscount;
+
+    try {
+      const response = await axios.put("/editHealthPackage?id=" + id, body);
+      if (response.data.success) {
+        setAlert(response.data);
+        setUpdatePrice("");
+        setUpdateDoctorDiscount("");
+        setUpdateFamilyDiscount("");
+        setUpdateMedicineDiscount("");
+        setUpdateExpanded(false);
+        setExpandedItem(null);
+        fetchHealthPackages();
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   useEffect(() => {
     fetchHealthPackages();
@@ -161,7 +197,7 @@ const HealthPackagesView = ({ userType }) => {
             <Box sx={{ display: "flex", flexDirection: "column" }}>
               <Box sx={{ display: "flex", flexDirection: "row" }}>
                 <TextField
-                  label="Username"
+                  label="Name"
                   variant="outlined"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -183,6 +219,7 @@ const HealthPackagesView = ({ userType }) => {
                   label="Doctor Discount"
                   variant="outlined"
                   value={doctorDiscount}
+                  type="number"
                   onChange={(e) => setDoctorDiscount(e.target.value)}
                   sx={{ marginBottom: "10px", width: "33%" }}
                 />
@@ -191,6 +228,7 @@ const HealthPackagesView = ({ userType }) => {
                   label="Medicine Discount"
                   variant="outlined"
                   value={medicineDiscount}
+                  type="number"
                   onChange={(e) => setMedicineDiscount(e.target.value)}
                   sx={{ marginBottom: "10px", width: "33%" }}
                 />
@@ -199,6 +237,7 @@ const HealthPackagesView = ({ userType }) => {
                   label="Family Member Discount"
                   variant="outlined"
                   value={familyDiscount}
+                  type="number"
                   onChange={(e) => setFamilyDiscount(e.target.value)}
                   sx={{ marginBottom: "10px", width: "33%" }}
                 />
@@ -233,7 +272,7 @@ const HealthPackagesView = ({ userType }) => {
                         </ListItem>
                         <ListItem>
                           <ListItemText
-                            primary={`Doctor Discount: ${item.doctorDiscount} %`}
+                            primary={`Medicine Discount: ${item.medicineDiscount}%`}
                           />
                         </ListItem>
                       </List>
@@ -242,12 +281,12 @@ const HealthPackagesView = ({ userType }) => {
                       <List>
                         <ListItem>
                           <ListItemText
-                            primary={`Medicine Discount: ${item.medicineDiscount}`}
+                            primary={`Doctor Discount: ${item.doctorDiscount}%`}
                           />
                         </ListItem>
                         <ListItem>
                           <ListItemText
-                            primary={`Family Discount: ${item.familyDiscount}`}
+                            primary={`Family Discount: ${item.familyDiscount}%`}
                           />
                         </ListItem>
                       </List>
@@ -262,11 +301,85 @@ const HealthPackagesView = ({ userType }) => {
               >
                 <Button
                   variant="contained"
+                  onClick={() => enableUpdate(item._id)}
+                  sx={{ m: "30px" }}
+                >
+                  Update Health Package
+                </Button>
+                <Button
+                  variant="contained"
                   onClick={() => deleteHealthPackage(item._id)}
                   sx={{ m: "30px" }}
                 >
                   Delete Health Package
                 </Button>
+                <Collapse in={updateExpanded} timeout="auto" unmountOnExit>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "stretch",
+                    }}
+                  >
+                    <Box sx={{ display: "flex", flexDirection: "column" }}>
+                      <Box sx={{ display: "flex", flexDirection: "row" }}>
+                        <Box sx={{ width: "1%" }} />
+                        <TextField
+                          label="Price"
+                          variant="outlined"
+                          value={updatePrice}
+                          onChange={(e) => setUpdatePrice(e.target.value)}
+                          type="number"
+                          min={0}
+                          sx={{ marginBottom: "10px", width: "49.5%" }}
+                        />
+                        <Box sx={{ width: "1%" }} />
+                        <TextField
+                          label="Doctor Discount"
+                          variant="outlined"
+                          value={updateDoctorDiscount}
+                          type="number"
+                          onChange={(e) =>
+                            setUpdateDoctorDiscount(e.target.value)
+                          }
+                          sx={{ marginBottom: "10px", width: "49.5%" }}
+                        />
+                      </Box>
+                      <Box
+                        sx={{ display: "flex", flexDirection: "row", ml:1.5 }}
+                      >
+                        <TextField
+                          label="Medicine Discount"
+                          variant="outlined"
+                          value={updateMedicineDiscount}
+                          type="number"
+                          onChange={(e) =>
+                            setUpdateMedicineDiscount(e.target.value)
+                          }
+                          sx={{ marginBottom: "10px", width: "49.5%" }}
+                        />
+                        <Box sx={{ width: "1%" }} />
+                        <TextField
+                          label="Family Member Discount"
+                          variant="outlined"
+                          value={updateFamilyDiscount}
+                          type="number"
+                          onChange={(e) =>
+                            setUpdateFamilyDiscount(e.target.value)
+                          }
+                          sx={{ marginBottom: "10px", width: "49.5%" }}
+                        />
+                      </Box>
+                    </Box>
+                    <Button
+                      variant="contained"
+                      onClick={(e) => updateHealthPackage(e, item._id)}
+                      sx={{ width: "100%" }}
+                    >
+                      Update Health Package
+                    </Button>
+                  </Box>
+                </Collapse>
               </Collapse>
             </React.Fragment>
           ))}
