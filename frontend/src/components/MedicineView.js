@@ -5,8 +5,9 @@ import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
 import SearchBar from "./SearchBar";
 import axios from "axios";
-import ListItemAvatar from "@mui/material/ListItemAvatar";
-import Avatar from "@mui/material/Avatar";
+import Collapse from "@mui/material/Collapse";
+import Typography from "@mui/material/Typography";
+import { Button } from "@mui/material";
 
 const paperStyle = {
   width: "1200px",
@@ -18,17 +19,13 @@ const listStyle = {
   marginTop: 16,
 };
 
-const MedicineView = () => {
-  const [items, setItems] = useState([
-    "Medicine 1",
-    "Medicine 2",
-    "Medicine 3",
-    "Medicine 4",
-    "Medicine 5",
-    "Medicine 6",
-  ]);
+const MedicineView = ({ userType }) => {
   const [medicine, setMedicine] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [expandedItem, setExpandedItem] = useState(null);
+
+  const handleItemExpand = (item) => {
+    setExpandedItem(item.name === expandedItem ? null : item.name);
+  };
 
   const fetchMedicines = async () => {
     try {
@@ -49,8 +46,8 @@ const MedicineView = () => {
   };
 
   const updateMedicine = (newMed) => {
-    setMedicine(newMed)
-  }
+    setMedicine(newMed);
+  };
 
   return (
     <>
@@ -58,25 +55,46 @@ const MedicineView = () => {
       <Paper style={paperStyle} elevation={3}>
         <List style={listStyle}>
           {medicine.map((item, index) => (
-            <ListItem key={index} button onClick={() => handleItemClick(item)}>
-              <ListItemText
-                primary={`${item.name.toUpperCase()}`}
-                secondary={
-                  <React.Fragment>
-                    <p>Active Ingredient: {item.activeIngredient}</p>
-                    <p>Amount Sold: {item.amountSold}</p>
-                    <p>Archived: {item.archived.toString()}</p>
-                    {/* <p>Created At: {item.createdAt}</p> */}
-                    <p>Medicinal Use: {item.medicinalUse}</p>
-                    <p>Price: {item.price}</p>
-                    <p>Stock Quantity: {item.stockQuantity}</p>
-                  </React.Fragment>
-                }
-              />
-              {/* {item.picture && ( */}
-              <img src={"med.jpg"} width="230px" height="230px" />
-              {/* )} */}
-            </ListItem>
+            <React.Fragment key={index}>
+              <ListItem button onClick={() => handleItemExpand(item)}>
+                <ListItemText
+                  primary={`${item.name.toUpperCase()}`}
+                  secondary={
+                    <React.Fragment>
+                      <p>Active Ingredient: {item.activeIngredient}</p>
+                      {userType === "pharmacist" && (
+                        <p>Amount Sold: {item.amountSold}</p>
+                      )}
+                      {userType !== "patient" && (
+                        <p>Archived: {item.archived.toString()}</p>
+                      )}
+                      {/* <p>Created At: {item.createdAt}</p> */}
+                      <p>Medicinal Use: {item.medicinalUse}</p>
+                      <p>Price: {item.price}</p>
+                      {userType === "pharmacist" && (
+                        <p>Stock Quantity: {item.stockQuantity}</p>
+                      )}
+                    </React.Fragment>
+                  }
+                />
+                {item.picture && (
+                  <img
+                    src={"med.jpg"}
+                    alt={item.name}
+                    width="230px"
+                    height="230px"
+                  />
+                )}
+              </ListItem>
+              <Collapse
+                in={item.name === expandedItem}
+                timeout="auto"
+                unmountOnExit
+              >
+                {userType === 'admin' && <Button variant='contained' sx={{m:'30px'}}>Sales Report</Button>}
+              </Collapse>
+              
+            </React.Fragment>
           ))}
         </List>
       </Paper>

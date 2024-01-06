@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import Footer from "../components/Footer";
 import axios from "axios";
 import GuestHomePage from "../components/HomePage/GuestHomePage";
-import AdminHomePage from "../components/HomePage/Admin/AdminHomePage";
+import AdminHomePage from "../components/HomePage/AdminHomePage";
 
 
 const HomePage = ({ scrollToSection }) => {

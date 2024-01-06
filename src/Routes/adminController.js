@@ -20,20 +20,21 @@ const addAdmin = async (req, res) => {
   let password = req.body.password;
   try {
     if (!username || !password) {
-      return res.json({ success: false, message: "Username and password are required. Please enter valid credentials!" });
+      return res.json({ success: false,title:'Incomplete Credentials', message: "Username and password are required. Please enter valid credentials!" });
     }
 
 
     const user = await userModel.findOne({username})
     if (user)
     {
-      res.json("Username already exists.")
+      res.json({success:false, title:"Username Already Exists", message: "Plase choose another username"})
     }
     else{
       const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%^&*()?[\]{}|<>])[A-Za-z\d@$!%^&*()?[\]{}|<>]{10,}$/;
       if (!passwordRegex.test(password)) {
         return res.json({
           success: false,
+          title: 'Invalid Password',
           message: "Password must contain at least 1 lowercase letter, 1 uppercase letter, 1 number, 1 special character, and be at least 10 characters long.",
         });
       }
@@ -47,7 +48,7 @@ const addAdmin = async (req, res) => {
         type : 'admin'
       })
       await user.save();
-      res.json("Admin Created Successfully.");
+      res.json({success:true, title:"Admin Created Successfully"});
     }
   } catch (err) {
     res.send(err.message);
@@ -316,7 +317,7 @@ const deleteAdmin = async (req, res) => {
   const adminId = req.query.id; 
   try {
      await adminModel.findByIdAndDelete(adminId);
-    res.status(200).json({ message: 'admin deleted successfully from the Database' });
+    res.status(200).json({ success:true, title: 'Admin Removed Successfully' });
   } catch (err) {
     res.status(404).json({ message: err.message });
   }

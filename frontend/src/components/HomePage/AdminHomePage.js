@@ -1,98 +1,13 @@
 import { useState } from "react";
-import {
-  AppBar,
-  Toolbar,
-  IconButton,
-  Container,
-  Box,
-  Grid,
-} from "@mui/material";
-import SettingsIcon from "@mui/icons-material/Settings";
-import NotificationsIcon from "@mui/icons-material/Notifications";
-import MailIcon from "@mui/icons-material/Mail";
-import SquareCard from "../../SquareCard";
+import { Container, Grid } from "@mui/material";
+import SquareCard from "../SquareCard";
 import MedicationIcon from "@mui/icons-material/Medication";
 import PersonIcon from "@mui/icons-material/Person";
 import SupervisorAccountIcon from "@mui/icons-material/SupervisorAccount";
 import Inventory2Icon from "@mui/icons-material/Inventory2";
-import NotificationBoard from "../../NotificationBoard";
-import SideBar from "../../SideBar";
-import MedicineView from "../../MedicineView";
-
-const ImageStyle = {
-  width: "100px",
-  height: "90px",
-  cursor: 'pointer'
-};
-
-const NavBar = ({homeButton}) => {
-  const [isSidebarOpen, setSidebarOpen] = useState(false);
-  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-
-  const handleSidebarToggle = () => {
-    setSidebarOpen(!isSidebarOpen);
-  };
-
-  const handleBackButton = () => {
-    setSidebarOpen(false);
-  };
-
-  return (
-    <>
-      <Box sx={{ flexGrow: 1 }}>
-        <AppBar
-          position="fixed"
-          sx={{
-            height: "100px",
-            paddingLeft: "30px",
-            paddingRight: "30px",
-            display: "flex",
-            justifyContent: "center",
-          }}
-        >
-          <Toolbar sx={{ alignItems: "center" }}>
-            <img style={ImageStyle} src="logo.png" alt="logo.png" onClick={homeButton} />
-            <Box
-              sx={{ display: "flex", alignItems: "center", marginLeft: "auto" }}
-            >
-              <IconButton size="large" color="inherit">
-                <MailIcon />
-              </IconButton>
-              <IconButton
-                size="large"
-                color="inherit"
-                onClick={() => setIsNotificationOpen(true)}
-              >
-                <NotificationsIcon />
-              </IconButton>
-              <IconButton
-                size="large"
-                color="inherit"
-                onClick={handleSidebarToggle}
-              >
-                <SettingsIcon />
-              </IconButton>
-            </Box>
-          </Toolbar>
-        </AppBar>
-
-        <Toolbar />
-        <Toolbar />
-
-        {isSidebarOpen && (
-          <SideBar
-            isSidebarOpen={isSidebarOpen}
-            handleSidebarToggle={handleSidebarToggle}
-            handleBackButton={handleBackButton}
-          />
-        )}
-        {isNotificationOpen && (
-          <NotificationBoard onClose={() => setIsNotificationOpen(false)} />
-        )}
-      </Box>
-    </>
-  );
-};
+import MedicineView from "../MedicineView";
+import HomeNavBar from "./HomeNavBar";
+import AdminsView from "../AdminsView";
 
 const AdminHomePage = () => {
   const [stage, setStage] = useState("home");
@@ -155,23 +70,22 @@ const AdminHomePage = () => {
     );
   };
 
-
   return (
     <>
-      <NavBar homeButton={() => setStage('home')} />
+      <HomeNavBar homeButton={() => setStage("home")} />
 
       <Container sx={{ mt: 3 }}>
         <Grid container spacing={5}>
           {stage === "home" ? (
             <Home />
           ) : stage === "medicine" ? (
-            <MedicineView />
+            <MedicineView userType={"admin"} />
           ) : stage === "employees" ? (
             "employees"
           ) : stage === "patients" ? (
             "patient"
           ) : stage === "admins" ? (
-            "admins"
+            <AdminsView />
           ) : (
             "healthPackages"
           )}
