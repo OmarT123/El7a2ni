@@ -12,11 +12,11 @@ const Schema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  expiryTime: {
-    type: Date,
+  title: {
+    type: String,
     required: true,
   },
-  showtime: {
+  expiryTime: {
     type: Date,
     required: true,
   },
