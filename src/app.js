@@ -2,9 +2,72 @@ const express = require("express");
 const mongoose = require("mongoose");
 mongoose.set("strictQuery", false);
 const cookieParser = require('cookie-parser');
+const http = require("http");
+const socketIO = require("socket.io");
 
 require("dotenv").config();
+
+
+
+
 const MongoURI = process.env.MONGO_URI;
+
+if (!MongoURI) {
+  console.error("MongoDB URI is not defined in the environment variables.");
+  process.exit(1);
+}
+
+const app = express();
+const port = process.env.PORT || "4000";
+app.use(express.json({ limit: '5000mb' }));
+app.use(express.urlencoded({ limit: '5000mb', extended: true }));
+const server = http.createServer(app);
+const io = socketIO(server, {
+  cors: {
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"],
+  },
+});
+
+
+mongoose
+  .connect(MongoURI)
+  .then(() => {
+    console.log("MongoDB is now connected!");
+    server.listen(port, () => {
+      console.log(`Listening to requests on http://localhost:${port}`);
+    });
+  })
+  .catch((err) => console.log(err));
+
+app.use(express.json());
+app.use(cookieParser());
+
+io.on("connection", (socket) => {
+  socket.emit("me", socket.id);
+
+  socket.on("callEnded", (data) => {
+    io.to(data.to).emit("callEnded");
+  });
+
+  socket.on("callUser", (data) => {
+    io.to(data.userToCall).emit("callUser", {
+      signal: data.signalData,
+      from: data.from,
+      name: data.name,
+    });
+  });
+
+  socket.on("answerCall", (data) => {
+    io.to(data.to).emit("callAccepted", data.signal);
+  });
+});
+
+
+
+
+
+
 
 const {
   addDoctor,
@@ -12,7 +75,7 @@ const {
   filterAppointmentsForDoctor,
   createAppointment,
   myPatients,
-  filterPatientsByAppointments,
+  filterPatientsByAppointments, 
   viewPatient,
   createPrescription,
   exactPatients,
@@ -112,25 +175,23 @@ const {
 
 const{ login, logout ,changePassword ,getUserFromTokenMiddleware ,resetPassword, resetPasswordWithOTP,loginAuthentication} =require("./Routes/userController");
 
+//VideoChat 
 
-const app = express();
-const port = process.env.PORT || "8000";
-app.use(express.json({ limit: '5000mb' }));
-app.use(express.urlencoded({ limit: '5000mb', extended: true }));
+app.get('/VideoChatRoom',(req,res)=>{
+  res.redirect(`/${uuidV4()}`)
+})
 
+app.get('/VideoChatRoom',(req,res)=>{
+  res.render('VideoChatRoom',{roomId : req.params.room})
+})
 
-mongoose
-  .connect(MongoURI)
-  .then(() => {
-    console.log("MongoDB is now connected!");
-    app.listen(port, () => {
-      console.log(`Listening to requests on http://localhost:${port}`);
-    });
+io.on('connection',socket=> {
+  socket.on('join-room', (roomId,userId)=>{
+    console.log(roomId,userId);
   })
-  .catch((err) => console.log(err));
 
-app.use(express.json());
-app.use(cookieParser());
+})
+
 
 //Admin
 app.post("/addHealthPackage", getUserFromTokenMiddleware,addHealthPackage);
@@ -247,3 +308,5 @@ app.put('/changePassword', getUserFromTokenMiddleware, changePassword);
 app.put('/resetPassword', resetPassword);
 app.put('/resetPasswordWithOTP',resetPasswordWithOTP);
 app.get('/loginAuthentication',loginAuthentication);
+
+
