@@ -26,6 +26,7 @@ const {
   rejectContract,
   viewPatientPrescriptions,
   selectPrescriptionDoctor,
+  addDosage,
   addToPrescription,
   viewAllMedicines,
   deleteFromPrescription
@@ -239,7 +240,8 @@ app.put("/acceptContract", getUserFromTokenMiddleware, acceptContract);
 app.put("/rejectContract", getUserFromTokenMiddleware, rejectContract);
 app.get("/viewPatientPrescriptions",getUserFromTokenMiddleware,viewPatientPrescriptions);
 app.get("/selectPrescriptionDoctor",getUserFromTokenMiddleware,selectPrescriptionDoctor);
-app.post("/addToPrescription",getUserFromTokenMiddleware,addToPrescription)
+app.put("/addDosage",addDosage);
+app.post("/addToPrescription",getUserFromTokenMiddleware,addToPrescription);
 app.get("/viewAllMedicines",getUserFromTokenMiddleware,viewAllMedicines);
 app.post("/deleteFromPrescription",getUserFromTokenMiddleware,deleteFromPrescription)
 
