@@ -155,7 +155,7 @@ const handleAfterBuy = async (cart, id) => {
         const purchaseTime = new Date();
         expiryTime.setFullYear(expiryTime.getFullYear() + 1);
         addNotification('Pharmacist', '', 'Stock alert', `Medicine "${medicine.name}" is out of stock. Please restock.`, expiryTime, purchaseTime)
-        
+
         const pharmacists = await pharmacistModel.find();
         for(pharmacist of pharmacists){
         const transporter = nodemailer.createTransport({
@@ -182,7 +182,8 @@ const handleAfterBuy = async (cart, id) => {
         }
         }
       }
-      await medicine.save();
+        await medicine.save();
+      }
     }
     const patient = await patientModel.findById(id);
     patient.cart.items = [];
@@ -1343,7 +1344,7 @@ const linkFamilyMemberAccount = async (req, res) => {
 const cancelAppointment = async (req, res) => {
   try {
     const appointmentID = req.body.appointmentID;
-    const appointment = await appointmentModel.findById(appointmentID);
+    const appointment = await appointmentModel.findById(appointmentID).populate('doctor patient').exec();
     appointment.status = 'cancelled';
     await appointment.save();
 
@@ -1351,7 +1352,7 @@ const cancelAppointment = async (req, res) => {
     const currentDate = new Date();
     const timeDifference = appointmentDate - currentDate;
     const isWithin24Hours = timeDifference < 24 * 60 * 60 * 1000;
-    const doctor = await doctorModel.findById(req.user_.id)
+    const doctor = await doctorModel.findById(req.user._id)
     if (!isWithin24Hours || doctor) {
       const patientID = appointment.patient;
       const patient = await patientModel.findById(patientID);
@@ -1359,6 +1360,41 @@ const cancelAppointment = async (req, res) => {
       await patient.save();
     }
 
+    const expiryTime = new Date();
+    const notificationDate = new Date();
+    expiryTime.setFullYear(expiryTime.getFullYear() + 1);
+    addNotification('Doctor', appointment.doctor._id, 'Appointment Cancelled', `Your appointment with patient ${appointment.attendantName} on ${appointment.date} has been cancelled.`, expiryTime, notificationDate)
+    addNotification('Patient', appointment.patient._id, 'Appointment Cancelled', `Your appointment with Dr.${appointment.doctor.name} on ${appointment.date} has been cancelled.`, expiryTime, notificationDate)
+    const transporter = nodemailer.createTransport({
+      service: process.env.NODEMAILER_SERVICE,
+      auth: {
+        user: process.env.NODEMAILER_EMAIL,
+        pass: process.env.NODEMAILER_PASSWORD,
+      },
+      tls: {
+        rejectUnauthorized: false,
+      },
+    });
+    const mailOptionsPatient = {
+      from: process.env.NODEMAILER_EMAIL,
+      to: appointment.patient.email,
+      subject: 'Appointment Cancelled',
+      text: `Your appointment with Dr.${appointment.doctor.name} on ${appointment.date} has been cancelled.`,
+    };
+    const mailOptionsDoctor = {
+      from: process.env.NODEMAILER_EMAIL,
+      to: appointment.doctor.email,
+      subject: 'Appointment Cancelled',
+      text: `Your appointment with patient ${appointment.attendantName} on ${appointment.date} has been cancelled.`,
+    };
+    try {
+      await transporter.sendMail(mailOptionsPatient);
+      await transporter.sendMail(mailOptionsDoctor);
+    }
+    catch (error) {
+      console.error('Error sending email:', error);
+    }
+    
     return res.json('Appointment cancelled successfully');
   } catch (error) {
     return res.json();

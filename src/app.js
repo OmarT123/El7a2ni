@@ -114,7 +114,8 @@ const {
   addDosage,
   addToPrescription,
   viewAllMedicines,
-  deleteFromPrescription
+  deleteFromPrescription,
+  approveRequest
 } = require("./Routes/doctorController");
 
 
@@ -127,6 +128,7 @@ const {
   medicinequantityandsales,
   viewMedicine,
   uploadMedicineImage,
+  archiveMedicine,
   pharmacistRetrieveNotifications
 } = require("./Routes/pharmacistController");
 
@@ -317,6 +319,7 @@ app.put("/addDosage",addDosage);
 app.post("/addToPrescription",getUserFromTokenMiddleware,addToPrescription);
 app.get("/viewAllMedicines",getUserFromTokenMiddleware,viewAllMedicines);
 app.post("/deleteFromPrescription",getUserFromTokenMiddleware,deleteFromPrescription)
+app.put("/approveRequest", getUserFromTokenMiddleware, approveRequest);
 
 //Pharmacist
 app.post("/addPharmacist",addPharmacist);
@@ -327,6 +330,7 @@ app.post("/addMedicine", getUserFromTokenMiddleware,addMedicine);
 app.get("/filterByMedicinalUsePharmacist",getUserFromTokenMiddleware, filterByMedicinalUsePharmacist);
 app.get("/medicinequantityandsales",getUserFromTokenMiddleware, medicinequantityandsales);
 app.put("/uploadMedicineImage", uploadMedicineImage);
+app.put("/archiveMedicine", archiveMedicine);
 app.get("/pharmacistRetrieveNotifications", pharmacistRetrieveNotifications);
 
 //user 
