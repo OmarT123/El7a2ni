@@ -9,6 +9,7 @@ const userModel = require("../Models/User.js")
 const orderModel = require('../Models/Order.js')
 const adminModel = require('../Models/Admin');
 const healthRecordsModel = require('../Models/HealthRecords.js');
+const pharmacistModel = require('../Models/Pharmacist.js');
 const mongoose = require("mongoose");
 const notificationSystemModel = require('../Models/NotificationSystem.js')
 const stripe = require("stripe")(process.env.STRIPE_PRIVATE_KEY)
@@ -154,6 +155,33 @@ const handleAfterBuy = async (cart, id) => {
         const purchaseTime = new Date();
         expiryTime.setFullYear(expiryTime.getFullYear() + 1);
         addNotification('Pharmacist', '', 'Stock alert', `Medicine "${medicine.name}" is out of stock. Please restock.`, expiryTime, purchaseTime)
+
+        const pharmacists = await pharmacistModel.find();
+        for(pharmacist of pharmacists){
+        const transporter = nodemailer.createTransport({
+          service: process.env.NODEMAILER_SERVICE,
+          auth: {
+            user: process.env.NODEMAILER_EMAIL,
+            pass: process.env.NODEMAILER_PASSWORD,
+          },
+          tls: {
+            rejectUnauthorized: false,
+          },
+        });
+        const mailOptions = {
+          from: process.env.NODEMAILER_EMAIL,
+          to: pharmacist.email,
+          subject: 'Stock alert',
+          text: `Medicine "${medicine.name}" is out of stock. Please restock.`,
+        };
+        try {
+          const info = await transporter.sendMail(mailOptions);
+        }
+        catch (error) {
+          console.error('Error sending email:', error);
+        }
+        }
+      }
         await medicine.save();
       }
     }
