@@ -118,7 +118,9 @@ const getAllPharmacists = async (req,res) => {
 
   try {
     const allPharmacists = await pharmacistModel.find({});
-    res.json(allPharmacists);
+    const approved = allPharmacists.filter(item => item.status === 'accepted')
+    const unapproved =  allPharmacists.filter(item => item.status === 'pending');
+    res.json({success:true, approved, unapproved});
   }
   catch(error){
     res.status(500).json({ error: error.message });
@@ -286,7 +288,7 @@ const deletePharmacist = async (req, res) => {
   let pharmacistId = req.query.id;
   try {
     await pharmacistModel.findByIdAndDelete(pharmacistId);
-    res.json("Deleted Pharmacist Successfully from Database");
+    res.json({success:true, title:'Pharmacist Deleted'});
   } catch (err) {
     res.json(err);
   }

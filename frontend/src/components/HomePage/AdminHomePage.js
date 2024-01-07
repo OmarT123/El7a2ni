@@ -11,6 +11,8 @@ import HomeNavBar from "./HomeNavBar";
 import AdminsView from "../AdminsView";
 import PatientsView from "../PatientsView";
 import HealthPackagesView from "../HealthPackagesView";
+import EmployeesView from "../EmployeesView";
+import { minHeight } from "@mui/system";
 
 const AdminHomePage = () => {
   const [stage, setStage] = useState("home");
@@ -78,13 +80,13 @@ const AdminHomePage = () => {
       <HomeNavBar homeButton={() => setStage("home")} />
 
       <Container sx={{ mt: 3 }}>
-        <Grid container spacing={5}>
+        <Grid container spacing={5} sx={{minHeight:'80vh'}}>
           {stage === "home" ? (
             <Home />
           ) : stage === "medicine" ? (
             <MedicineView userType={"admin"} />
           ) : stage === "employees" ? (
-            "employees"
+            <EmployeesView />
           ) : stage === "patients" ? (
             <PatientsView userType={"admin"} />
           ) : stage === "admins" ? (
