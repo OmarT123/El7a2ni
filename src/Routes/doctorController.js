@@ -473,7 +473,18 @@ const deleteFromPrescription=async(req,res) =>{
   }
 }
 
+const approveRequest = async (req, res) => {
+  try {
+    const appointmentID = req.body.appointmentID;
+    const appointment = await appointmentModel.findById(appointmentID);
+    appointment.status = 'upcoming';
+    await appointment.save();
 
+    return res.json('Request approved successfully.');
+  } catch (error) {
+    return res.json();
+  }
+};
 
 
 
@@ -497,5 +508,6 @@ module.exports = {
   addDosage,
   addToPrescription,
   viewAllMedicines,
-  deleteFromPrescription
+  deleteFromPrescription,
+  approveRequest
 };

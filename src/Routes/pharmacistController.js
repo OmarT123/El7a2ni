@@ -2,6 +2,7 @@ const pharmacistModel = require('../Models/Pharmacist.js');
 const medicineModel = require('../Models/Medicine.js');
 const userModel = require('../Models/User.js');
 const pharmacistDocuments = require("../Models/PharmacistDocuments.js");
+const notificationSystemModel = require("../Models/NotificationSystem.js");
 const { default: mongoose } = require("mongoose");
 const bcrypt = require('bcrypt');
 require('dotenv').config();
@@ -173,6 +174,11 @@ const uploadMedicineImage = async(req,res) => {
   }
 }
 
+const pharmacistRetrieveNotifications = async (req, res) => {
+  const notifications = await notificationSystemModel.find({type: 'Pharmacist'});
+  return res.json(notifications);
+}
+
   const archiveMedicine = async (req, res) => {
     const medicineID = req.body.id;
     const medicine = await medicineModel.findById(medicineID);
@@ -198,5 +204,6 @@ module.exports = {
   filterByMedicinalUsePharmacist,
   viewMedicine,
   uploadMedicineImage,
-  archiveMedicine
+  archiveMedicine,
+  pharmacistRetrieveNotifications
 };
