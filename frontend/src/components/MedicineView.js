@@ -79,7 +79,7 @@ const MedicineView = ({ userType }) => {
                 />
                 {item.picture && (
                   <img
-                    src={"med.jpg"}
+                    src={item.picture}
                     alt={item.name}
                     width="230px"
                     height="230px"

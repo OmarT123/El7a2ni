@@ -47,6 +47,8 @@ const PatientSignUp = () => {
               name="firstName"
               required
               fullWidth
+              value={name}
+              onChange={(e)=>setName(e.target.value)}
               id="firstName"
               label="First Name"
               autoFocus

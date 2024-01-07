@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, createContext, useContext } from "react";
 import { Container, Grid } from "@mui/material";
 import SquareCard from "../SquareCard";
 import MedicationIcon from "@mui/icons-material/Medication";
@@ -13,10 +13,14 @@ import PatientsView from "../PatientsView";
 import HealthPackagesView from "../HealthPackagesView";
 import EmployeesView from "../AdminEmployees/EmployeesView";
 import { minHeight } from "@mui/system";
+import ProfilePage from "../ProfilePage";
+import { HomePageContext } from "../../pages/HomePage";
+
+export const Context = createContext();
 
 const AdminHomePage = () => {
-  const [stage, setStage] = useState("home");
-
+  const [page, setPage] = useState("home");
+  const {user} = useContext(HomePageContext);
   const Home = () => {
     return (
       <>
@@ -26,8 +30,8 @@ const AdminHomePage = () => {
             body="Lorem ipsum sit amet consectetur adipiscing elit. Vivamus et erat in lacus convallis sodales."
             icon={MedicationIcon}
             isLearnMore={false}
-            changeFunction={() => setStage("medicine")}
-            closeFunction={() => setStage("home")}
+            changeFunction={() => setPage("medicine")}
+            closeFunction={() => setPage("home")}
           />
         </Grid>
         <Grid item xs={12} sm={4}>
@@ -36,8 +40,8 @@ const AdminHomePage = () => {
             body="Lorem ipsum sit amet consectetur adipiscing elit. Vivamus et erat in lacus convallis sodales."
             icon={LocalHospitalIcon}
             isLearnMore={false}
-            changeFunction={() => setStage("employees")}
-            closeFunction={() => setStage("home")}
+            changeFunction={() => setPage("employees")}
+            closeFunction={() => setPage("home")}
           />
         </Grid>
         <Grid item xs={12} sm={4}>
@@ -46,8 +50,8 @@ const AdminHomePage = () => {
             body="Lorem ipsum sit amet consectetur adipiscing elit. Vivamus et erat in lacus convallis sodales."
             icon={PersonIcon}
             isLearnMore={false}
-            changeFunction={() => setStage("patients")}
-            closeFunction={() => setStage("home")}
+            changeFunction={() => setPage("patients")}
+            closeFunction={() => setPage("home")}
           />
         </Grid>
         <Grid item xs={0} sm={1.5} />
@@ -57,8 +61,8 @@ const AdminHomePage = () => {
             body="Lorem ipsum sit amet consectetur adipiscing elit. Vivamus et erat in lacus convallis sodales."
             icon={SupervisorAccountIcon}
             isLearnMore={false}
-            changeFunction={() => setStage("admins")}
-            closeFunction={() => setStage("home")}
+            changeFunction={() => setPage("admins")}
+            closeFunction={() => setPage("home")}
           />
         </Grid>
         <Grid item xs={12} sm={5}>
@@ -67,8 +71,8 @@ const AdminHomePage = () => {
             body="Lorem ipsum sit amet consectetur adipiscing elit. Vivamus et erat in lacus convallis sodales."
             icon={HealthAndSafetyIcon}
             isLearnMore={false}
-            changeFunction={() => setStage("healthPackages")}
-            closeFunction={() => setStage("home")}
+            changeFunction={() => setPage("healthPackages")}
+            closeFunction={() => setPage("home")}
           />
         </Grid>
       </>
@@ -77,25 +81,29 @@ const AdminHomePage = () => {
 
   return (
     <>
-      <HomeNavBar homeButton={() => setStage("home")} />
+      <Context.Provider value={{ page, setPage, user }}>
+        <HomeNavBar homeButton={() => setPage("home")} setPage={setPage} />
 
-      <Container sx={{ mt: 3 }}>
-        <Grid container spacing={5} sx={{minHeight:'80vh'}}>
-          {stage === "home" ? (
-            <Home />
-          ) : stage === "medicine" ? (
-            <MedicineView userType={"admin"} />
-          ) : stage === "employees" ? (
-            <EmployeesView />
-          ) : stage === "patients" ? (
-            <PatientsView userType={"admin"} />
-          ) : stage === "admins" ? (
-            <AdminsView />
-          ) : (
-            <HealthPackagesView userType={"admin"} />
-          )}
-        </Grid>
-      </Container>
+        <Container sx={{ mt: 3 }}>
+          <Grid container spacing={5} sx={{ minHeight: "80vh" }}>
+            {page === "profile" ? (
+              <ProfilePage userData={user} />
+            ) : page === "home" ? (
+              <Home />
+            ) : page === "medicine" ? (
+              <MedicineView userType={"admin"} />
+            ) : page === "employees" ? (
+              <EmployeesView />
+            ) : page === "patients" ? (
+              <PatientsView userType={"admin"} />
+            ) : page === "admins" ? (
+              <AdminsView />
+            ) : (
+              <HealthPackagesView userType={"admin"} />
+            )}
+          </Grid>
+        </Container>
+      </Context.Provider>
     </>
   );
 };

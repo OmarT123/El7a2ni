@@ -15,6 +15,7 @@ import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import Copyright from "../components/Copyright";
+import Popup from '../components/Popup'
 
 const defaultTheme = createTheme();
 
@@ -22,6 +23,7 @@ const Login = () => {
   const [username, setName] = useState("");
   const [password, setPassword] = useState("");
   const [showContent, setShowContent] = useState(false);
+  const [alert, setAlert] = useState(null);
 
   useEffect(async () => {
     // localStorage.clear()
@@ -54,6 +56,11 @@ const Login = () => {
           if (type === "doctor" && user.status === "approved")
             window.location.href = "/doctorContract";
           else window.location.href = "/";
+        });
+      } else {
+        setAlert({
+          title: "Invalid Credentials",
+          message: "Wrong username or password",
         });
       }
     } catch (error) {
@@ -92,11 +99,7 @@ const Login = () => {
                   window.location.href = "/";
                 }}
               >
-                <img
-                  src="logo.png"
-                  width="100px"
-                  height="100px"
-                />
+                <img src="logo.png" width="100px" height="100px" />
               </Avatar>
               <Typography component="h1" variant="h5">
                 Sign in
@@ -155,6 +158,14 @@ const Login = () => {
             </Box>
             <Copyright sx={{ mt: 8, mb: 4 }} />
           </Container>
+          {alert && (
+            <Popup
+              onClose={() => setAlert(null)}
+              title={alert.title}
+              message={alert.message}
+              showButtons={false}
+            />
+          )}
         </ThemeProvider>
       )}
     </>

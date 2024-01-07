@@ -38,14 +38,6 @@ const ScrollTop = (props) => {
     </Zoom>
   );
 };
-
-const scrollToSection = (id) => {
-  const section = document.getElementById(id);
-  if (section) {
-    section.scrollIntoView({ behavior: "smooth" });
-  }
-};
-
 const App = () => {
 
   return (

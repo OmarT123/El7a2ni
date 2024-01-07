@@ -11,21 +11,20 @@ import {
   ListItemText,
 } from "@mui/material";
 
-import axios from 'axios'
+import axios from "axios";
 
-const SideBar = ({ isSidebarOpen, handleSidebarToggle, handleBackButton }) => {
-
+const SideBar = ({ isSidebarOpen, handleSidebarToggle, handleBackButton, setPage }) => {
 
   const handleLogout = async () => {
     try {
-      const response = await axios.get('/logout');
+      const response = await axios.get("/logout");
 
       if (response.data.success) {
-        localStorage.removeItem('userToken');
-        window.location.href = '/login';
+        localStorage.removeItem("userToken");
+        window.location.href = "/login";
       }
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error("Logout error:", error);
     }
   };
 
@@ -46,7 +45,13 @@ const SideBar = ({ isSidebarOpen, handleSidebarToggle, handleBackButton }) => {
           <ListItemIcon>
             <AccountCircle />
           </ListItemIcon>
-          <ListItemText primary="Profile" />
+          <ListItemText
+            primary="Profile"
+            onClick={() => {
+              setPage("profile");
+              handleSidebarToggle();
+            }}
+          />
         </ListItem>
         <ListItem button>
           <ListItemIcon>
