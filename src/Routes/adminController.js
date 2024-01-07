@@ -1,76 +1,79 @@
 const doctorModel = require("../Models/Doctor.js");
 const patientModel = require("../Models/Patient.js");
-const pharmacistModel = require('../Models/Pharmacist.js');
+const pharmacistModel = require("../Models/Pharmacist.js");
 const adminModel = require("../Models/Admin.js");
-const medicineModel = require('../Models/Medicine.js');
+const medicineModel = require("../Models/Medicine.js");
 const healthPackageModel = require("../Models/HealthPackage.js");
-const userModel = require("../Models/User.js")
-const familyMemberModel = require ('../Models/FamilyMember.js')
-
+const userModel = require("../Models/User.js");
+const familyMemberModel = require("../Models/FamilyMember.js");
 
 const { default: mongoose } = require("mongoose");
-const nodemailer = require("nodemailer")
-const bcrypt = require('bcrypt');
-require('dotenv').config();
-
-
+const nodemailer = require("nodemailer");
+const bcrypt = require("bcrypt");
+require("dotenv").config();
 
 const addAdmin = async (req, res) => {
   let username = req.body.username;
   let password = req.body.password;
   try {
     if (!username || !password) {
-      return res.json({ success: false,title:'Incomplete Credentials', message: "Username and password are required. Please enter valid credentials!" });
+      return res.json({
+        success: false,
+        title: "Incomplete Credentials",
+        message:
+          "Username and password are required. Please enter valid credentials!",
+      });
     }
 
-
-    const user = await userModel.findOne({username})
-    if (user)
-    {
-      res.json({success:false, title:"Username Already Exists", message: "Plase choose another username"})
-    }
-    else{
-      const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%^&*()?[\]{}|<>])[A-Za-z\d@$!%^&*()?[\]{}|<>]{10,}$/;
+    const user = await userModel.findOne({ username });
+    if (user) {
+      res.json({
+        success: false,
+        title: "Username Already Exists",
+        message: "Plase choose another username",
+      });
+    } else {
+      const passwordRegex =
+        /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%^&*()?[\]{}|<>])[A-Za-z\d@$!%^&*()?[\]{}|<>]{10,}$/;
       if (!passwordRegex.test(password)) {
         return res.json({
           success: false,
-          title: 'Invalid Password',
-          message: "Password must contain at least 1 lowercase letter, 1 uppercase letter, 1 number, 1 special character, and be at least 10 characters long.",
+          title: "Invalid Password",
+          message:
+            "Password must contain at least 1 lowercase letter, 1 uppercase letter, 1 number, 1 special character, and be at least 10 characters long.",
         });
       }
       const salt = await bcrypt.genSalt();
-      const encryptedPassword = await bcrypt.hash(password ,salt )
-      const admin = await adminModel.create({ username, password :encryptedPassword });
+      const encryptedPassword = await bcrypt.hash(password, salt);
+      const admin = await adminModel.create({
+        username,
+        password: encryptedPassword,
+      });
       await admin.save();
-     const user =  await userModel.create({
-        username, 
-        userId : admin._id,
-        type : 'admin'
-      })
+      const user = await userModel.create({
+        username,
+        userId: admin._id,
+        type: "admin",
+      });
       await user.save();
-      res.json({success:true, title:"Admin Created Successfully"});
+      res.json({ success: true, title: "Admin Created Successfully" });
     }
   } catch (err) {
     res.send(err.message);
   }
 };
 
+const filterByMedicinalUseAdmin = async (req, res) => {
+  const medUse = new RegExp(req.query.medicinalUse, "i");
 
-const filterByMedicinalUseAdmin = async(req,res) => {
-
-  const medUse = new RegExp(req.query.medicinalUse, "i")
-
-  try
-  {
-      const medicine = medicineModel.find({medicinalUse:medUse}).then((medicine) => res.json(medicine))
+  try {
+    const medicine = medicineModel
+      .find({ medicinalUse: medUse })
+      .then((medicine) => res.json(medicine));
+  } catch (err) {
+    res.json({ message: err.message });
   }
-  catch(err)
-  {
-      res.json({message:err.message})
-  }
-
 };
-
 
 const unapprovedPharmacists = async (req, res) => {
   try {
@@ -83,24 +86,20 @@ const unapprovedPharmacists = async (req, res) => {
   }
 };
 
-
 const searchMedicineAdmin = async (req, res) => {
   const searchName = req.query.name;
-  const searchQuery = new RegExp(searchName, "i"); 
+  const searchQuery = new RegExp(searchName, "i");
   try {
-
     const results = await medicineModel.find({ name: searchQuery });
-    if(results.length == 0){
-      res.json("Medicine is not Found !!" );
-    }
-    else {
+    if (results.length == 0) {
+      res.json("Medicine is not Found !!");
+    } else {
       res.json(results);
     }
   } catch (error) {
     res.status(500).json(error.message);
-}
+  }
 };
-
 
 const getPharmacist = async (req, res) => {
   try {
@@ -112,97 +111,78 @@ const getPharmacist = async (req, res) => {
   }
 };
 
-
-
-const getAllPharmacists = async (req,res) => {
-
+const getAllPharmacists = async (req, res) => {
   try {
     const allPharmacists = await pharmacistModel.find({});
-    const approved = allPharmacists.filter(item => item.status === 'accepted')
-    const unapproved =  allPharmacists.filter(item => item.status === 'pending');
-    res.json({success:true, approved, unapproved});
-  }
-  catch(error){
+    const approved = allPharmacists.filter(
+      (item) => item.status === "accepted"
+    );
+    const unapproved = allPharmacists.filter(
+      (item) => item.status === "pending"
+    );
+    res.json({ success: true, approved, unapproved });
+  } catch (error) {
     res.status(500).json({ error: error.message });
-
   }
-}
-
-const viewAllPatients = async (req, res) => {
-  try{
-  const patients = await patientModel.find({})  
-    res.status(200).json(patients)
-    return patients
-}
-catch (err) {
-  res.json({ message: err.message });
-}
 };
 
+const viewAllPatients = async (req, res) => {
+  try {
+    const patients = await patientModel.find({});
+    res.status(200).json(patients);
+    return patients;
+  } catch (err) {
+    res.json({ message: err.message });
+  }
+};
 
 const rejectPharmacist = async (req, res) => {
   const { pharmacistId } = req.query;
 
   try {
-    const pharmacist = await pharmacistModel.findById(pharmacistId);
+    const pharmacist = await pharmacistModel.findByIdAndUpdate(pharmacistId, {
+      status: "rejected",
+    });
 
     if (!pharmacist) {
-      return res.json({ message: 'Pharmacist not found' });
+      return res.json({ success: false, title: "Pharmacist not found" });
     }
 
-
-    pharmacist.status = "rejected";
-
-
-    await pharmacist.save();
-
-    return res.json({
-      message: 'Pharmacist request rejected successfully',
-      pharmacist,
-    });
+    return res.json({ success: true, title: "Pharmacist request rejected" });
   } catch (error) {
-    return res.json({ message: 'Internal Server Error' });
+    return res.json({ message: "Internal Server Error" });
   }
 };
-
 
 const acceptPharmacist = async (req, res) => {
   const { pharmacistId } = req.query;
 
   try {
-    const pharmacist = await pharmacistModel.findById(pharmacistId);
+    const pharmacist = await pharmacistModel.findByIdAndUpdate(
+      pharmacistId.toString(),
+      { status: "accepted" }
+    );
 
     if (!pharmacist) {
-      return res.json({ message: 'Pharmacist not found' });
+      return res.json({ success: false, title: "Pharmacist not found" });
     }
 
-    pharmacist.status = "accepted";
-    await pharmacist.save();
-
-    return res.json({
-      message: 'Pharmacist request accepted successfully',
-      pharmacist,
-    });
+    res.json({ succes: true, title: "Pharmacist request accepted" });
   } catch (error) {
     console.error(error);
-    return res.json({ message: 'Internal Server Error' });
+    res.json({ message: "Internal Server Error" });
   }
 };
 
-
-
 const viewAllPharmacists = async (req, res) => {
-  try{
-  const pharmacists = await pharmacistModel.find({})  
-    res.json(pharmacists)
-    return pharmacists
-}
-catch (err) {
-  res.json({ message: err.message });
-}
+  try {
+    const pharmacists = await pharmacistModel.find({});
+    res.json(pharmacists);
+    return pharmacists;
+  } catch (err) {
+    res.json({ message: err.message });
+  }
 };
-
-
 
 const viewDocInfo = async (req, res) => {
   try {
@@ -215,15 +195,16 @@ const viewDocInfo = async (req, res) => {
   }
 };
 
-const getADoctor = async (req,res) => {
-  const doctorId = req.query.id
+const getADoctor = async (req, res) => {
+  const doctorId = req.query.id;
   try {
-    const doctor = await doctorModel.findById(doctorId)
+    const doctor = await doctorModel.findById(doctorId);
     // console.log(doctor)
-    res.json(doctor)
-  }catch(err)
-    {res.json(err.message)}
-}
+    res.json(doctor);
+  } catch (err) {
+    res.json(err.message);
+  }
+};
 
 const addHealthPackage = async (req, res) => {
   let { name, price, doctorDiscount, medicineDiscount, familyDiscount } =
@@ -237,7 +218,7 @@ const addHealthPackage = async (req, res) => {
       familyDiscount,
     });
     await healthPackage.save();
-    res.send({success:true, title: 'Health Package Created Successfully'});
+    res.send({ success: true, title: "Health Package Created Successfully" });
   } catch (err) {
     res.send(err);
   }
@@ -257,7 +238,7 @@ const editHealthPackage = async (req, res) => {
       },
       { new: true }
     );
-    res.json({success: true, title:"Updated Successully"});
+    res.json({ success: true, title: "Updated Successully" });
   } catch (err) {
     res.json(err.message);
   }
@@ -267,18 +248,17 @@ const deleteHealthPackage = async (req, res) => {
   let id = req.query.id;
   try {
     await healthPackageModel.findByIdAndDelete(id);
-    res.json({success:true, title:"Deleted Successfully"});
+    res.json({ success: true, title: "Deleted Successfully" });
   } catch (err) {
     res.json(err.message);
   }
 };
 
-
 const deletePatient = async (req, res) => {
   let patientId = req.query.id;
   try {
-    await patientModel.findByIdAndDelete(patientId)
-    res.json({success: true, title:"Patient Deleted"});
+    await patientModel.findByIdAndDelete(patientId);
+    res.json({ success: true, title: "Patient Deleted" });
   } catch (err) {
     res.send(err);
   }
@@ -288,12 +268,11 @@ const deletePharmacist = async (req, res) => {
   let pharmacistId = req.query.id;
   try {
     await pharmacistModel.findByIdAndDelete(pharmacistId);
-    res.json({success:true, title:'Pharmacist Deleted'});
+    res.json({ success: true, title: "Pharmacist Deleted" });
   } catch (err) {
     res.json(err);
   }
 };
-
 
 const getPatient = async (req, res) => {
   try {
@@ -305,79 +284,82 @@ const getPatient = async (req, res) => {
   }
 };
 
-
 const deleteDoctor = async (req, res) => {
-  const doctorId = req.query.id; 
+  const doctorId = req.query.id;
   try {
     await doctorModel.findByIdAndDelete(doctorId);
-    res.status(200).json({ message: 'Doctor deleted successfully from the Database' });
+    res.status(200).json({ success: true, title: "Doctor Removed" });
   } catch (err) {
-    res.status(404).json({ message: err.message });
-  }
+    res.status(404).json({ message: err.message });
+  }
 };
 const deleteAdmin = async (req, res) => {
-  const adminId = req.query.id; 
+  const adminId = req.query.id;
   try {
-     await adminModel.findByIdAndDelete(adminId);
-    res.status(200).json({ success:true, title: 'Admin Removed Successfully' });
+    await adminModel.findByIdAndDelete(adminId);
+    res
+      .status(200)
+      .json({ success: true, title: "Admin Removed Successfully" });
   } catch (err) {
-    res.status(404).json({ message: err.message });
-  }
+    res.status(404).json({ message: err.message });
+  }
 };
-const getAllHealthPackages = async (req,res) => {
-  try{
-    const packages = await healthPackageModel.find()
-    res.json(packages)
-  }
-  catch(err){
-    res.json(err.message)
-  }
-}
-
-const getHealthPackage = async (req,res) => {
+const getAllHealthPackages = async (req, res) => {
   try {
-    const id = req.query.id
-    const hpackage = await healthPackageModel.findById(id)
-    res.json(hpackage)
-  }catch(err)
-  {res.json(err.message)}
-}
-
-const getAllPatients = async (req,res) => {
-
-  try {
-    const allPatient = await patientModel.find({}).populate({path:'familyMembers'}).populate({path:'healthPackage'}).exec();
-      res.json(allPatient);
+    const packages = await healthPackageModel.find();
+    res.json(packages);
+  } catch (err) {
+    res.json(err.message);
   }
-  catch(error){
+};
+
+const getHealthPackage = async (req, res) => {
+  try {
+    const id = req.query.id;
+    const hpackage = await healthPackageModel.findById(id);
+    res.json(hpackage);
+  } catch (err) {
+    res.json(err.message);
+  }
+};
+
+const getAllPatients = async (req, res) => {
+  try {
+    const allPatient = await patientModel
+      .find({})
+      .populate({ path: "familyMembers" })
+      .populate({ path: "healthPackage" })
+      .exec();
+    res.json(allPatient);
+  } catch (error) {
     res.json({ error: error.message });
-
   }
-}
-const getAllDoctors = async (req,res) => {
-
+};
+const getAllDoctors = async (req, res) => {
   try {
     const allDoctors = await doctorModel.find({});
-    res.json(allDoctors);
-  }
-  catch(error){
+    const approved = allDoctors.filter(
+      (item) => item.status === "accepted" || item.status === "approved"
+    );
+    const unapproved = allDoctors.filter((item) => item.status === "pending");
+    res.json({ success: true, approved, unapproved });
+  } catch (error) {
     res.status(500).json({ error: error.message });
-
   }
-}
+};
 
-const getAllAdmins = async (req,res) => {
-  const id = req.user._id
+const getAllAdmins = async (req, res) => {
+  const id = req.user._id;
   try {
     const allAdmins = await adminModel.find({});
-    const filteredAdmins = allAdmins.filter(admin => admin._id.toString() !== id.toString())
+    const filteredAdmins = allAdmins.filter(
+      (admin) => admin._id.toString() !== id.toString()
+    );
     res.json(filteredAdmins);
-  }
-  catch(error){
+  } catch (error) {
     res.status(500).json({ error: error.message });
-
   }
-}
+};
 
 const acceptDoctor = async (req, res) => {
   const { doctorId } = req.query;
@@ -389,8 +371,10 @@ const acceptDoctor = async (req, res) => {
     const currentMonth = currentDate.getMonth() + 1;
     const currentDay = currentDate.getDate();
 
-    const doc = await doctorModel.findById(doctorId)
-    const doctor = await doctorModel.findByIdAndUpdate(doctorId,{status: "approved", contract:`
+    const doc = await doctorModel.findById(doctorId);
+    const doctor = await doctorModel.findByIdAndUpdate(doctorId, {
+      status: "approved",
+      contract: `
     <header className="header-contract">
     <h1>Clinic Services Contract</h1>
     <p>Effective Date: ${currentYear}/${currentMonth}/${currentDay}</p>
@@ -429,55 +413,48 @@ const acceptDoctor = async (req, res) => {
     <p>Provider: Omar Abdelaty</p>
     <p>Client: ${doc.name}</p>
   </footer>
-    `});
+    `,
+    });
 
     if (!doctor) {
-      return res.json({ message: 'doctor not found' });
+      return res.json({ success: false, title: "Doctor not found" });
     }
 
-    sendMail(doctor, "Application Accepted, please log in to view your contract")
-    return res.status(200).json({
-      message: 'doctor request accepted successfully',
+    sendMail(
       doctor,
-    });
+      "Application Accepted, please log in to view your contract"
+    );
+    return res
+      .status(200)
+      .json({ success: true, title: "Doctor Request Accepted" });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    return res.status(500).json({ message: "Internal Server Error" });
   }
 };
-
 
 const rejectDoctor = async (req, res) => {
   const { doctorId } = req.query;
 
   try {
-    const doctor = await doctorModel.findById(doctorId);
+    const doctor = await doctorModel.findByIdAndUpdate(doctorId, {
+      status: "rejected",
+    });
 
     if (!doctor) {
-      return res.json({ message: 'doctor not found' });
+      return res.json({ success: false, title: "Doctor Not Found" });
     }
 
+    sendMail(doctor, "Application Rejected");
 
-    doctor.status = "rejected";
-
-    sendMail(doctor, "Application Rejected")
-
-    await doctor.save();
-
-    return res.status(200).json({
-      message: 'doctor request rejected successfully',
-      doctor,
-    });
+    res.status(200).json({ success: true, title: "Doctor Request Rejected" });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
-
-
 const sendMail = async (doctor, message) => {
-
   const transporter = nodemailer.createTransport({
     service: process.env.NODEMAILER_SERVICE,
     auth: {
@@ -488,20 +465,16 @@ const sendMail = async (doctor, message) => {
   const mailOptions = {
     from: process.env.NODEMAILER_EMAIL,
     to: doctor.email,
-    subject: 'Appliation',
+    subject: "Appliation",
     text: message,
   };
   try {
     const info = await transporter.sendMail(mailOptions);
     // console.log('done')
   } catch (error) {
-    console.log(error.message)
-  }
-}
-
-
-
-
+    console.log(error.message);
+  }
+};
 
 module.exports = {
   addHealthPackage,
@@ -530,5 +503,5 @@ module.exports = {
   viewAllPatients,
   viewAllPharmacists,
   rejectPharmacist,
-  acceptPharmacist
+  acceptPharmacist,
 };

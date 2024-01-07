@@ -11,7 +11,7 @@ import HomeNavBar from "./HomeNavBar";
 import AdminsView from "../AdminsView";
 import PatientsView from "../PatientsView";
 import HealthPackagesView from "../HealthPackagesView";
-import EmployeesView from "../EmployeesView";
+import EmployeesView from "../AdminEmployees/EmployeesView";
 import { minHeight } from "@mui/system";
 
 const AdminHomePage = () => {

@@ -3,7 +3,7 @@ import Paper from "@mui/material/Paper";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
-import SearchBar from "./SearchBar";
+import SearchBar from "../SearchBar";
 import axios from "axios";
 import Collapse from "@mui/material/Collapse";
 import Typography from "@mui/material/Typography";
@@ -14,13 +14,14 @@ import AddIcon from "@mui/icons-material/Add";
 import ClearIcon from "@mui/icons-material/Clear";
 import { AirlineSeatLegroomNormalTwoTone } from "@mui/icons-material";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
-import Popup from "./Popup";
+import Popup from "../Popup";
 import { Container, Grid } from "@mui/material";
-import SquareCard from "./SquareCard";
+import SquareCard from "../SquareCard";
 import MedicationIcon from "@mui/icons-material/Medication";
 import SupervisorAccountIcon from "@mui/icons-material/SupervisorAccount";
 import HealthAndSafetyIcon from "@mui/icons-material/HealthAndSafety";
 import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
+import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
 
 const paperStyle = {
   width: "1200px",
@@ -33,43 +34,7 @@ const listStyle = {
   marginTop: 16,
 };
 
-const EmployeesView = () => {
-  const [stage, setStage] = useState("first");
-  const [alert, setAlert] = useState(null);
-
-  const FirstStage = () => {
-    return (
-      <>
-        <Grid container spacing={5} sx={{ minHeight: "100vh" }}>
-          <Grid item xs={12} sm={12} />
-          <Grid item xs={0} sm={2} />
-          <Grid item xs={12} sm={3.5}>
-            <SquareCard
-              title="DOCTORS"
-              body="Lorem ipsum sit amet consectetur adipiscing elit. Vivamus et erat in lacus convallis sodales."
-              icon={LocalHospitalIcon}
-              isLearnMore={false}
-              changeFunction={() => setStage("doctors")}
-              closeFunction={() => setStage("home")}
-            />
-          </Grid>
-          <Grid item xs={0} sm={1} />
-          <Grid item xs={12} sm={3.5}>
-            <SquareCard
-              title="PHARMACISTS"
-              body="Lorem ipsum sit amet consectetur adipiscing elit. Vivamus et erat in lacus convallis sodales."
-              icon={LocalHospitalIcon}
-              isLearnMore={false}
-              changeFunction={() => setStage("pharmacists")}
-              closeFunction={() => setStage("home")}
-            />
-          </Grid>
-        </Grid>
-      </>
-    );
-  };
-
-  const PharmacistsStage = () => {
+  const PharmacistsStage = ({setAlert, setStage}) => {
     const [unapprovedPharmacists, setUnapprovedPharmacists] = useState([]);
     const [approvedPharmacists, setApprovedPharmacists] = useState([]);
 
@@ -78,8 +43,6 @@ const EmployeesView = () => {
       if (response.data.success) {
         setUnapprovedPharmacists(response.data.unapproved);
         setApprovedPharmacists(response.data.approved);
-        console.log(response.data.unapproved);
-        console.log(response.data.approved);
       }
     };
 
@@ -99,6 +62,36 @@ const EmployeesView = () => {
           });
       } catch (error) {
         console.error(error);
+      }
+    };
+
+    const acceptPharmacist = async (e, id) => {
+      e.preventDefault();
+      try {
+        const response = await axios.put(
+          "/acceptPharmacist?pharmacistId=" + id.toString()
+        );
+        setAlert(response.data);
+        if (response.data.success) {
+          fetchPharmacists();
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    };
+
+    const rejectPharmacist = async (e, id) => {
+      e.preventDefault();
+      try {
+        const response = await axios.put(
+          "/rejectPharmacist?pharmacistId=" + id
+        );
+        if (response.data.success) {
+          setAlert(response.data);
+          fetchPharmacists();
+        }
+      } catch (error) {
+        console.log(error.message);
       }
     };
 
@@ -183,7 +176,7 @@ const EmployeesView = () => {
             </Button>
             {item.status === "pending" && (
               <>
-              <Button variant="contained" sx={{ m: "30px" }}>
+                <Button variant="contained" sx={{ m: "30px" }}>
                   View ID
                 </Button>
                 <Button variant="contained" sx={{ m: "30px" }}>
@@ -192,11 +185,19 @@ const EmployeesView = () => {
                 <Button variant="contained" sx={{ m: "30px" }}>
                   View License
                 </Button>
-                
-                <Button variant="contained" sx={{ m: "30px" }}>
+
+                <Button
+                  variant="contained"
+                  onClick={(e) => acceptPharmacist(e, item._id)}
+                  sx={{ m: "30px" }}
+                >
                   Accept
                 </Button>
-                <Button variant="contained" sx={{ m: "30px" }}>
+                <Button
+                  variant="contained"
+                  onClick={(e) => rejectPharmacist(e, item._id)}
+                  sx={{ m: "30px" }}
+                >
                   Reject
                 </Button>
               </>
@@ -212,65 +213,50 @@ const EmployeesView = () => {
 
     return (
       <>
-        <>
-          <Paper style={paperStyle} elevation={3}>
-            <Typography
-              variant="h4"
-              sx={{
-                m: "30px",
-                pb: "5px",
-                borderBottom: "2px solid rgba(0, 0, 0, 0.12)",
-              }}
-            >
-              Pharmacists
-            </Typography>
+        <Fab
+          onClick={() => setStage("first")}
+          color="primary"
+          size="small"
+          sx={{
+            position: "absolute",
+            top: "25%",
+            left: "6%",
+            transform: "translateY(-50%)",
+          }}
+        >
+          <KeyboardArrowLeftIcon />
+        </Fab>
+        <Paper style={paperStyle} elevation={3}>
+          <Typography
+            variant="h4"
+            sx={{
+              m: "30px",
+              pb: "5px",
+              borderBottom: "2px solid rgba(0, 0, 0, 0.12)",
+            }}
+          >
+            Pharmacists
+          </Typography>
 
-            <Typography variant="h5" sx={{ ml: "30px" }}>
-              Unapproved
-            </Typography>
-            <List style={listStyle}>
-              {unapprovedPharmacists.map((item, index) => (
-                <PharmacistListItem item={item} key={index} />
-              ))}
-            </List>
+          <Typography variant="h5" sx={{ ml: "30px" }}>
+            Unapproved
+          </Typography>
+          <List style={listStyle}>
+            {unapprovedPharmacists.map((item, index) => (
+              <PharmacistListItem item={item} key={index} />
+            ))}
+          </List>
 
-            <Typography variant="h5" sx={{ ml: "30px" }}>
-              Approved
-            </Typography>
-            <List style={listStyle}>
-              {approvedPharmacists.map((item, index) => (
-                <PharmacistListItem item={item} key={index} />
-              ))}
-            </List>
-            {alert && (
-              <Popup
-                onClose={() => setAlert(false)}
-                title={alert.title}
-                message={alert.message}
-                showButtons={false}
-              />
-            )}
-          </Paper>
-        </>
+          <Typography variant="h5" sx={{ ml: "30px" }}>
+            Approved
+          </Typography>
+          <List style={listStyle}>
+            {approvedPharmacists.map((item, index) => (
+              <PharmacistListItem item={item} key={index} />
+            ))}
+          </List>
+        </Paper>
       </>
     );
   };
-
-  const DocotorsStage = () => {
-    return <>doctor</>;
-  };
-
-  return (
-    <>
-      {stage === "first" ? (
-        <FirstStage />
-      ) : stage === "doctors" ? (
-        <DocotorsStage />
-      ) : (
-        <PharmacistsStage />
-      )}
-    </>
-  );
-};
-
-export default EmployeesView;
+export default PharmacistsStage;
