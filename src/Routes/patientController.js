@@ -153,10 +153,7 @@ const handleAfterBuy = async (cart, id) => {
         const expiryTime = new Date(); 
         const purchaseTime =new Date(); 
         expiryTime.setFullYear(expiryTime.getFullYear() + 1); 
-        const pharmacists = await pharmacistModel.find();
-        for (const pharmacist of pharmacists) {
-          addNotification('Pharmacist',pharmacist._id,`Medicine "${medicine.name}" is out of stock. Please restock.`,expiryTime,purchaseTime)
-        }
+        addNotification('Pharmacist','','Stock alert',`Medicine "${medicine.name}" is out of stock. Please restock.`,expiryTime,purchaseTime)
       await medicine.save();
     }
   }
@@ -344,13 +341,13 @@ const removeFromCart = async (req, res) => {
   }
 };
 
-const addNotification = async (type, Id, message, showtime, expiryTime) => {
+const addNotification = async (type, Id, title, message, showtime, expiryTime) => {
 
   let user;
 
   switch (type) {
-    case 'Pharmacist':
-      user = await pharmacistModel.findById(Id);
+    case 'Admin':
+      user = await adminModel.findById(Id);
       break;
     case 'Doctor':
       user = await doctorModel.findById(Id);
@@ -370,9 +367,9 @@ const addNotification = async (type, Id, message, showtime, expiryTime) => {
   const notification = await notificationSystemModel.create({
     type,
     Id,
+    title,
     message,
     expiryTime,
-    showtime
   });
   await notification.save();
 }; 
