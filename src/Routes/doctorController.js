@@ -3,6 +3,7 @@ const patientModel = require("../Models/Patient.js");
 const appointmentModel = require("../Models/Appointment.js");
 const adminModel = require("../Models/Admin.js");
 const prescriptionModel = require("../Models/Prescription.js");
+const medicineModel = require("../Models/Medicine.js");
 const userModel = require("../Models/User.js")
 const healthPackageModel = require("../Models/HealthPackage.js")
 const doctorDocuments = require("../Models/DoctorDocuments.js");
@@ -18,7 +19,30 @@ const createPrescription = async(req,res)=>{
     res.send(err.message)
   }
 }
-
+//add/update dosage for each medicine added to the prescription
+const addDosage = async (req, res) => {
+  try {
+    let prescriptionId = req.body.prescriptionId;
+    let prescription = await prescriptionModel.findById(prescriptionId);
+    if (prescription) {
+      let medicineId = req.body.medicineId;
+      let dosage = req.body.dosage;
+      for(medicine of prescription.medicines){
+        if(medicine._id.equals(new mongoose.Types.ObjectId(medicineId))){
+          medicine.dosage = dosage;
+          await prescription.save();
+          return res.json(prescription);
+        }
+      }
+        res.json("Medicine not found");
+      
+    } else {
+      res.json("Prescription not found");
+    }
+  } catch (err) {
+    res.json(err.message);
+  }
+};
 
 const filterAppointmentsForDoctor = async (req, res) => {
   // Need login
@@ -40,7 +64,6 @@ const filterAppointmentsForDoctor = async (req, res) => {
   if (searchQuery) {
     filterQuery["status"] = searchQuery;
   }
-  if (req.user._id) {
     const id = req.user._id;
     filterQuery["doctor"] = id;
     try {
@@ -50,28 +73,25 @@ const filterAppointmentsForDoctor = async (req, res) => {
       if (filteredAppointments.length === 0) {
         return res.json([]);
       }
-      res.json(filteredAppointments);
+      const currentDate = new Date();
+      let upcomingAppointments = [];
+      let pastAppointments = [];
+      for(appointment of filteredAppointments)
+      {
+        if (appointment.date < currentDate)
+          pastAppointments.push(appointment)
+        else
+          upcomingAppointments.push(appointment)
+      }
+      const appointmentData = {
+        upcomingAppointments,
+        pastAppointments,
+      };
+      res.json(appointmentData);
     } catch (err) {
       console.error(err);
-      res
-        .status(500)
-        .json({ error: "An error occurred while retrieving appointments." });
+      res.json({ error: "An error occurred while retrieving appointments." });
     }
-  } else {
-    try {
-      const filteredAppointments = await appointmentModel.find(filterQuery);
-      if (filteredAppointments.length === 0) {
-        return res.json([]);
-      } 
-      else{
-        res.json(filteredAppointments);
-      }     
-    } catch (err) {
-      console.error(err);
-      res
-        .json({ error: "No matching appointments found for the Doctor." });
-    }
-  }
 };
 
 const addDoctor = async (req, res) => {
@@ -266,7 +286,7 @@ const ViewDoctorWallet = async (req, res) => {
 //new Req.45//
 const viewDoctorAppointments = async (req, res) => {
   try {
-    const doctorID = req.query.id;
+    const doctorID = req.user._id;
     const currentDate = new Date();
 
     const upcomingAppointments = await appointmentModel
@@ -313,11 +333,25 @@ const addAppointmentSlots = async (req,res) => {
     }
     else {
       if(req.body.patientID){
-        await appointmentModel.create({
+        const clinicMarkup = process.env.CLINIC_MARKUP
+        let discount = 1;
+        const patient = await patientModel.findById(req.body.patientID);
+        if(patient.healthPackage){
+          const healthPackageID = patient.healthPackage.healthPackageID.toString()
+          const healthPackage = await healthPackageModel.findById(healthPackageID).catch(err => console.log(err.message))
+          discount = 1 - healthPackage.doctorDiscount / 100;
+        }           
+        const appointment = await appointmentModel.create({
           doctor: doctor._id,
           date,
           status: 'upcoming',
-          patient: new mongoose.Types.ObjectId(req.body.patientID)
+          patient: new mongoose.Types.ObjectId(req.body.patientID),
+          price: (doctor.hourlyRate + 10 / 100 * clinicMarkup) * discount
+        })
+        await prescriptionModel.create({
+          doctor: doctor._id,
+          patient: new mongoose.Types.ObjectId(req.body.patientID),
+          appointment: appointment._id
         })
       }
       else{
@@ -370,6 +404,77 @@ const rejectContract = async(req, res) => {
   }
 }
 
+const viewPatientPrescriptions = async (req, res) => {
+  try {
+    const doctorId = req.user._id;
+    const prescriptions = await prescriptionModel.find({ doctor: doctorId }).populate({ path: 'medicines.medId' }).populate({ path: 'patient' }).exec();
+    res.json(prescriptions);
+  }
+  catch (err) {
+    res.json(err.message);
+  }
+};
+
+const selectPrescriptionDoctor = async (req, res) => {
+  try {
+    const prescriptionId = req.query.id;
+    const prescription = await prescriptionModel.findById(prescriptionId).populate({ path: 'medicines.medId' }).populate({ path: 'patient' }).exec();
+    res.json(prescription);
+  } catch (error) {
+    res.json({ error: error.message });
+  }
+};
+const addToPrescription = async (req, res) => {
+  try {
+    const { prescriptionId, medId, dosage } = req.body;
+    const prescription = await prescriptionModel.findById(prescriptionId);
+    prescription.medicines.push({ medId, dosage });
+    if(prescription.filled === false){
+      prescription.filled = true;
+      prescription.dateFilled = new Date();
+    }
+    await prescription.save();
+
+    res.json({ message: 'Medicine added to prescription successfully' });
+  } catch (error) {
+    console.error(error);
+    res.json({ error: 'Internal Server Error' });
+  }
+}
+const viewAllMedicines= async (req, res) => {
+
+  try {
+    const medicines = await medicineModel.find();
+    res.json(medicines);
+  } catch (error) {
+    console.error('Error fetching medicines:', error.message);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+}
+const deleteFromPrescription=async(req,res) =>{
+  try {
+    const { prescriptionId, medId } = req.body;
+    const prescription = await prescriptionModel.findById(prescriptionId);
+    const medicineIndex = prescription.medicines.findIndex(medicine => medicine.medId.toString() === medId);
+
+    if (medicineIndex !== -1) {
+
+      prescription.medicines.splice(medicineIndex, 1);
+
+      await prescription.save();
+
+      res.json({ message: 'Medicine deleted from prescription successfully' });
+    } else {
+      res.json({ error: 'Medicine not found in prescription' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.json({ error: 'Internal Server Error' });
+  }
+}
+
+
+
 
 
 module.exports = {
@@ -386,5 +491,11 @@ module.exports = {
   ViewDoctorWallet,
   viewDoctorAppointments,
   acceptContract,
-  rejectContract
+  rejectContract,
+  viewPatientPrescriptions,
+  selectPrescriptionDoctor,
+  addDosage,
+  addToPrescription,
+  viewAllMedicines,
+  deleteFromPrescription
 };

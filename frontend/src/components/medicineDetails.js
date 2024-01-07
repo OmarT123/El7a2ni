@@ -13,6 +13,7 @@ const MedicineDetails = ({medicine, show}) =>
                 <p><strong>Amount Sold: </strong>{medicine.amountSold}</p>
                 <p><strong>Archived: </strong>{medicine.archived?"archived":"not archived"}</p>
             </div>}
+            <strong><p>{medicine.prescriptionMedicine? "This a prescription medicine" : "This is non-prescription medicine" }</p></strong>
             {/*picture here*/}
             <br></br>
             <img

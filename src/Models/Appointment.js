@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
+const prescriptionModel = require("./Prescription");
 
 const appointmentSchema = new Schema(
   {
@@ -21,10 +22,48 @@ const appointmentSchema = new Schema(
     },
     attendantName : {
       type: String,
+    },
+    price : {
+      type: Number,
     }
   },
   { timestamps: true }
 );
 
+// This method cancels any appointments that were upcoming and were not completed by their arrival date, as well as deletes free slots at their date
+// The method now also deletes the respective prescription when an appointment is cancelled. (Keep in mind free appointments don't have prescriptions)
+appointmentSchema.statics.cancelPastAppointments = async function () {
+  try {
+    const currentDate = new Date();
+
+    const appointmentsToUpdate = await this.find({
+      $and: [
+        { date: { $lt: currentDate } },
+        { status: { $in: ['upcoming', 'requested'] } }
+      ]
+    });
+    
+    const appointmentsToDelete = await this.find({
+      date: { $lt: currentDate },
+      status: 'free',
+    });
+
+    for (const appointment of appointmentsToUpdate) {
+      await prescriptionModel.findOneAndDelete({appointment: appointment._id})
+      appointment.status = 'cancelled';
+      await appointment.save();
+    }
+
+    for (const appointment of appointmentsToDelete) {
+      await appointment.deleteOne();
+    }
+
+    console.log(`Updated ${appointmentsToUpdate.length} appointments to 'cancelled'.`);
+    console.log(`Deleted ${appointmentsToDelete.length} appointment slots.`);
+  } catch (error) {
+    console.error('Error updating appointments:', error);
+  }
+};
+
 const Appointment = mongoose.model("Appointment", appointmentSchema);
-module.exports = Appointment;
+module.exports = Appointment;
