@@ -1328,7 +1328,7 @@ const cancelAppointment = async (req, res) => {
     const currentDate = new Date();
     const timeDifference = appointmentDate - currentDate;
     const isWithin24Hours = timeDifference < 24 * 60 * 60 * 1000;
-    const doctor = await doctorModel.findById(req.user_.id)
+    const doctor = await doctorModel.findById(req.user._id)
     if (!isWithin24Hours || doctor) {
       const patientID = appointment.patient;
       const patient = await patientModel.findById(patientID);

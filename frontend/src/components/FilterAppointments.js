@@ -10,8 +10,7 @@ const FilterAppointments = ({ apiLink }) => {
     pastAppointments: [],
   });
   let isPatient;
-  if(apiLink === "/filterAppointmentsForPatient")
-  {
+  if (apiLink === "/filterAppointmentsForPatient") {
     isPatient = true;
   }
   else {
@@ -41,6 +40,18 @@ const FilterAppointments = ({ apiLink }) => {
   const cancelAppointment = async (e, appointmentID) => {
     e.preventDefault();
     const response = await axios.put('/cancelAppointment', { appointmentID: appointmentID });
+    const res = response.data;
+    if (typeof res === 'string') {
+      window.location.reload();
+      alert(res);
+    } else {
+      alert('Error cancelling appointment.');
+    }
+  };
+
+  const approveRequest = async (e, appointmentID) => {
+    e.preventDefault();
+    const response = await axios.put('/approveRequest', { appointmentID: appointmentID });
     const res = response.data;
     if (typeof res === 'string') {
       window.location.reload();
@@ -81,21 +92,28 @@ const FilterAppointments = ({ apiLink }) => {
         value={date}
         onChange={(e) => setDate(e.target.value)}
       />
-       <br />
-       <button onClick={handleSubmit} style={{ marginTop: '10px' }}>Filter Appointments</button>
+      <br />
+      <button onClick={handleSubmit} style={{ marginTop: '10px' }}>Filter Appointments</button>
 
 
       <div>
         <h3>Upcoming Appointments</h3>
         <ul>
-        {sortAppointmentsByDate(appointments.upcomingAppointments).map((appointment) => (
+          {sortAppointmentsByDate(appointments.upcomingAppointments).map((appointment) => (
             <li key={appointment._id}>
               <div> Patient: {appointment.attendantName} </div>
               <div> Date: {new Date(appointment.date).toLocaleString()} </div>
               <div>Status: {appointment.status}</div>
-              {appointment.status !== 'cancelled' && (
+              {appointment.status !== 'cancelled' && (appointment.status !== 'requested' || isPatient) && (
                 <button onClick={(e) => cancelAppointment(e, appointment._id)}>Cancel Appointment</button>
               )}
+              {appointment.status === 'requested' && (!isPatient) && (
+                <button onClick={(e) => approveRequest(e, appointment._id)}>Approve Follow-Up Request</button>
+              )}
+              {appointment.status === 'requested' && (!isPatient) && (
+                <button style={{ marginLeft: '5px' }} onClick={(e) => cancelAppointment(e, appointment._id)}>Reject Follow-Up Request</button>
+              )}
+
               <hr />
             </li>
           ))}
@@ -105,13 +123,13 @@ const FilterAppointments = ({ apiLink }) => {
       <div>
         <h3>Past Appointments</h3>
         <ul>
-        {sortAppointmentsByDate(appointments.pastAppointments).map((appointment) => (
+          {sortAppointmentsByDate(appointments.pastAppointments).map((appointment) => (
             <li key={appointment._id}>
               <div> Patient name: {appointment.attendantName} </div>
               <div> Date: {new Date(appointment.date).toLocaleString()} </div>
               <div> Status: {appointment.status}</div>
               {isPatient && (
-                 <Link to={`/RequestFollowup`}><button>Request Follow-up</button></Link>
+                <Link to={`/RequestFollowup`}><button>Request Follow-up</button></Link>
               )}
               <hr />
             </li>
