@@ -4,6 +4,8 @@ const schedule = require('node-schedule');
 mongoose.set("strictQuery", false);
 const cookieParser = require('cookie-parser');
 const appointmentModel = require("./Models/Appointment.js")
+const VideoChatRoom = require("./Models/VideoChatRoom");
+
 
 const http = require("http");
 const socketIO = require("socket.io");
@@ -60,7 +62,14 @@ io.on('connection',socket=> {
 })
 
 io.on("connection", (socket) => {
-  socket.emit("me", socket.id);
+  socket.on("startCall", async ({ patientId, doctorId }) => {
+    const roomId = socket.id;
+    await VideoChatRoom.create({ roomId, patientId, doctorId });
+    io.to(socket.id).emit("roomCreated", { roomId });
+  });
+  socket.on("joinRoom", ({ roomId }) => {
+    socket.join(roomId);
+  });
 
   socket.on("callEnded", (data) => {
     io.to(data.to).emit("callEnded");
@@ -70,7 +79,7 @@ io.on("connection", (socket) => {
     io.to(data.userToCall).emit("callUser", {
       signal: data.signalData,
       from: data.from,
-      name: data.name,
+      callerName: data.callerName,
     });
   });
 
@@ -162,7 +171,10 @@ const {
   cancelOrder,
   deleteHealthRecord,
   cancelAppointment,
-  addPrescriptionToCart
+  addPrescriptionToCart,
+  getMedicines,
+  getSubMedicines
+
 } = require("./Routes/patientController");
 
 
@@ -279,6 +291,8 @@ app.put("/cancelOrder",getUserFromTokenMiddleware,cancelOrder);
 app.put("/deleteHealthRecord", getUserFromTokenMiddleware, deleteHealthRecord);
 app.put("/cancelAppointment", getUserFromTokenMiddleware, cancelAppointment);
 app.post("/addPrescriptionToCart", getUserFromTokenMiddleware, addPrescriptionToCart);
+app.get("/getMedicines",getMedicines)
+app.get("/getSubMedicines",getSubMedicines)
 
 //Doctor
 app.get("/filterAppointmentsForDoctor",getUserFromTokenMiddleware ,filterAppointmentsForDoctor);

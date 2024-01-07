@@ -36,21 +36,39 @@ const doctorSchema = new Schema(
       type: [String],
       required: true,
     },
-    status: { //status can be: 1. pending (admin approval), 2. contract (to be accepted by the doctor), 3. approved (registered & contract approved)
-      type: String,
-      default: "pending",
+    pendingApproval: {
+      type: Boolean,
+      default: true,
     },
     speciality: {
       type: String,
       required: true,
     },
-    wallet:{
-      type:Number,
-      default: 0
-    },
-    contract: {
-      type: String
-    }
+    chats:[ {
+
+        partner: {
+      type : String ,// id od doc or pharmacist
+      required: true
+      }
+      ,
+      messages: [
+        {
+          status: {
+            type: String, // 'Received' or 'Sent'
+            required: true
+          },
+          content: {
+            type: String,
+            required: true
+          },
+          time: {
+            type: Date,
+            default: Date.now 
+          }
+        }
+      ]
+      }
+      ]
   },
   { timestamps: true }
 );

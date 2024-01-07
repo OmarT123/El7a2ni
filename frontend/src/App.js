@@ -34,7 +34,7 @@ import ViewMyWallet from './pages/patient/ViewMyWallet';
 import ViewDoctorWallet from './pages/doctor/ViewDoctorWallet';
 import DoctorApplication from './pages/admin/DoctorApplication';
 import DoctorContract from './pages/doctor/DoctorContract';
-import VideoChatPatient from './pages/patient/VideoChatPatient';
+import VideoChatPatient from './pages/patient/StartVideoCall';
 import VideoChatDoctor from './pages/doctor/VideoChatDoctor';
 import ViewPatientPrescriptions from './pages/doctor/ViewPatientPrescriptions';
 import SelectedPrescriptionDoctor from './pages/doctor/SelectedPrescriptionDoctor';
@@ -65,6 +65,7 @@ import Checkout from './pages/patient/Checkout';
 import PastOrders from './pages/patient/PastOrders';
 import SuccessfulCheckout from './pages/patient/SuccessfulCheckout';
 import RequestFollowup from './pages/patient/RequestFollowup';
+import StartVideoCall from './pages/patient/StartVideoCall';
 
 // user 
 
@@ -145,8 +146,8 @@ function App() {
             <Route path="/ViewDoctorWallet" element={<ViewDoctorWallet/>}/>
             <Route path="/DoctorApplication" element={<DoctorApplication/>}/>
             <Route path="/doctorContract" element={<DoctorContract />} />
-            <Route path = "/VideoChatPatient" element = {<VideoChatPatient/>}/>
-            <Route path = "/VideoChatDoctor" element = {<VideoChatDoctor/>}/>
+            <Route path="/StartVideoCall" element={<StartVideoCall />} />
+
             <Route path='/ViewPatientPrescriptions' element={<ViewPatientPrescriptions/>}/>
             <Route path='/SelectedPrescriptionDoctor' element={<SelectedPrescriptionDoctor/>}/>
             <Route path='/addToPrescription' element={<AddToPrescription/>}/>
