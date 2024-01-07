@@ -36,10 +36,12 @@ appointmentSchema.statics.cancelPastAppointments = async function () {
 
     // Find all upcoming appointments with a date in the past
     const appointmentsToUpdate = await this.find({
-      date: { $lt: currentDate },
-      status: 'upcoming',
+      $and: [
+        { date: { $lt: currentDate } },
+        { status: { $in: ['upcoming', 'requested'] } }
+      ]
     });
-
+    
     const appointmentsToDelete = await this.find({
       date: { $lt: currentDate },
       status: 'free',

@@ -96,7 +96,6 @@ const AddAppointmentSlots = ({user}) => {
             <li key={appointment._id}>
               <div>Date: {appointment.date.substr(0, 10)}</div>
               <div>Time: {appointment.date.substr(11, 5)}</div>
-              {/* Add other appointment details as needed */}
             </li>
           ))}
         </ul>
