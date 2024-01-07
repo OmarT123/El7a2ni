@@ -75,6 +75,7 @@ import ResetPassword from './pages/user/ResetPassword';
 import ResetPasswordOTP from './pages/user/ResetPasswordOTP';
 import NotAuthorized from './components/NotAuthorized';
 import AddToPrescription from './pages/doctor/addToPrescription';
+import ChatPage from './pages/patient/ChatPage';
 
 function App() {
   return (
@@ -147,6 +148,8 @@ function App() {
             <Route path="/DoctorApplication" element={<DoctorApplication/>}/>
             <Route path="/doctorContract" element={<DoctorContract />} />
             <Route path="/StartVideoCall" element={<StartVideoCall />} />
+
+            <Route path='/ChatPage' element={<ChatPage/>}/>
 
             <Route path='/ViewPatientPrescriptions' element={<ViewPatientPrescriptions/>}/>
             <Route path='/SelectedPrescriptionDoctor' element={<SelectedPrescriptionDoctor/>}/>

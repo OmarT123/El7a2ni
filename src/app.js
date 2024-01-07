@@ -1,67 +1,48 @@
-const express = require("express");
-const mongoose = require("mongoose");
 const schedule = require('node-schedule');
-mongoose.set("strictQuery", false);
-const cookieParser = require('cookie-parser');
 const appointmentModel = require("./Models/Appointment.js")
 const VideoChatRoom = require("./Models/VideoChatRoom");
-
-
-const http = require("http");
-const socketIO = require("socket.io");
-
-require("dotenv").config();
-
-
-
+const express = require("express");
+const mongoose = require("mongoose");
+mongoose.set("strictQuery", false);
 const app = express();
-const port = process.env.PORT || "8000";
-app.use(express.json({ limit: '5000mb' }));
-app.use(express.urlencoded({ limit: '5000mb', extended: true }));
-
-const server = http.createServer(app);
-const io = socketIO(server, {
+const http = require("http");
+const cors = require('cors');
+const {Server} = require('socket.io');
+app.use(cors()); // Enable CORS for all routes
+const server = http.createServer(app); // Replace 'app' with your Express app instance
+const io = new Server(server, {
   cors: {
     origin: "http://localhost:3000",
     methods: ["GET", "POST"],
   },
 });
-
-const MongoURI = process.env.MONGO_URI;
-if (!MongoURI) {
-  console.error("MongoDB URI is not defined in the environment variables.");
-  process.exit(1);
-}
-
-mongoose
-  .connect(MongoURI)
-  .then(() => {
-    console.log("MongoDB is now connected!");
-    server.listen(port, async() => {
-      await appointmentModel.cancelPastAppointments();
-      console.log(`Listening to requests on http://localhost:${port}`);
-    });
-  })
-  .catch((err) => console.log(err));
-
-//VideoChat 
-
-app.get('/VideoChatRoom',(req,res)=>{
-  res.redirect(`/${uuidV4()}`)
-})
-
-app.get('/VideoChatRoom',(req,res)=>{
-  res.render('VideoChatRoom',{roomId : req.params.room})
-})
-
+/*
 io.on('connection',socket=> {
   socket.on('join-room', (roomId,userId)=>{
     console.log(roomId,userId);
   })
 
 })
+*/
+
 
 io.on("connection", (socket) => {
+
+  console.log(`User Connected: ${socket.id}`);
+
+  socket.on("join_room", (data) => {
+    socket.join(data);
+    console.log(`User with ID: ${socket.id} joined room: ${data}`);
+  });
+
+  socket.on("send_message", (data) => {
+    socket.to(data.room).emit("receive_message", data);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("User Disconnected", socket.id);
+  });
+  
   socket.on("startCall", async ({ patientId, doctorId }) => {
     const roomId = socket.id;
     await VideoChatRoom.create({ roomId, patientId, doctorId });
@@ -87,6 +68,41 @@ io.on("connection", (socket) => {
     io.to(data.to).emit("callAccepted", data.signal);
   });
 });
+
+
+const cookieParser = require('cookie-parser');
+require("dotenv").config();
+const MongoURI = process.env.MONGO_URI;
+app.use(express.json({ limit: '5000mb' }));
+app.use(express.urlencoded({ limit: '5000mb', extended: true }));
+app.use(cookieParser()); 
+
+const port = process.env.PORT || "4000";
+if (!MongoURI) {
+  console.error("MongoDB URI is not defined in the environment variables.");
+  process.exit(1);
+}
+
+mongoose
+  .connect(MongoURI)
+  .then(() => {
+    console.log("MongoDB is now connected!");
+    server.listen(port, async() => {
+      await appointmentModel.cancelPastAppointments();
+      console.log(`Listening to requests on http://localhost:${port}`);
+    });
+  })
+  .catch((err) => console.log(err));
+
+//VideoChat 
+
+app.get('/VideoChatRoom',(req,res)=>{
+  res.redirect(`/${uuidV4()}`)
+})
+
+app.get('/VideoChatRoom',(req,res)=>{
+  res.render('VideoChatRoom',{roomId : req.params.room})
+})
 
 
 
@@ -174,7 +190,10 @@ const {
   cancelAppointment,
   addPrescriptionToCart,
   getMedicines,
-  getSubMedicines
+  getSubMedicines,
+  getChattingRoom,
+  sendMessage,
+  getMessages
 
 } = require("./Routes/patientController");
 
@@ -295,6 +314,12 @@ app.post("/addPrescriptionToCart", getUserFromTokenMiddleware, addPrescriptionTo
 app.get("/getMedicines",getMedicines)
 app.get("/getSubMedicines",getSubMedicines)
 
+app.get("/getChattingRoom",getUserFromTokenMiddleware,getChattingRoom)
+app.post("/sendMessage",getUserFromTokenMiddleware,sendMessage)
+app.get("/getMessages",getUserFromTokenMiddleware,getMessages)
+
+
+
 //Doctor
 app.get("/filterAppointmentsForDoctor",getUserFromTokenMiddleware ,filterAppointmentsForDoctor);
 app.post("/addAppointment",getUserFromTokenMiddleware,createAppointment);
@@ -328,6 +353,7 @@ app.get("/filterByMedicinalUsePharmacist",getUserFromTokenMiddleware, filterByMe
 app.get("/medicinequantityandsales",getUserFromTokenMiddleware, medicinequantityandsales);
 app.put("/uploadMedicineImage", uploadMedicineImage);
 app.get("/pharmacistRetrieveNotifications", pharmacistRetrieveNotifications);
+
 
 //user 
 

@@ -15,6 +15,8 @@ const stripe = require("stripe")(process.env.STRIPE_PRIVATE_KEY)
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt');
 require("dotenv").config();
+const ChattingRoomModel = require('../Models/ChattingRoom.js');
+const pharmacistModel =require('../Models/Pharmacist.js');
 
 
 const addPatient = async (req, res) => {
@@ -714,8 +716,6 @@ const filterDoctorsSpecialityDate = async (req, res) => {
       for (let i = 0; i < doctors.length; i++) {
         let found = false;
         for (let j = 0; j < busyDoctorsMapped.length; j++) {
-          // console.log(doctors[i].username)
-          // console.log(busyDoctorsMapped[j].username)
           if (doctors[i].username === busyDoctorsMapped[j].username) {
             found = true;
           }
@@ -1405,6 +1405,124 @@ function calculateAge(birthDate) {
   return age;
 }
 
+
+const getChattingRoom = async (req, res) => {
+  const partner1Id = (req.user._id).toString();
+  const partner2Id = req.query.partner;
+  try {
+  
+    let room = await ChattingRoomModel.findOne({
+      $or: [
+        { $and: [{ partner1Id :partner1Id}, { partner2Id :partner2Id}] },
+        { $and: [{ partner1Id: partner2Id }, { partner2Id: partner1Id }] }, 
+      ],
+    });
+    
+    if (!room && partner1Id !== partner2Id) {
+      room = await ChattingRoomModel.create({ partner1Id, partner2Id });
+    }
+    res.json(room);
+  } catch (error) {
+    res.status(500).json({ error: 'Error retrieving chat room', message: error.message });
+  }
+};
+
+const sendMessage = async (req, res) => {
+  try {
+    const  messageContent = req.body.messageContent;
+    const  receiverId     =req.body.receiverId;
+    const  senderId = (req.user._id).toString(); 
+
+    let sender = await patientModel.findById(senderId) || await pharmacistModel.findById(senderId) || await doctorModel.findById(senderId);
+    if (!sender) {
+      throw new Error('Sender not found');
+    }
+
+    let receiver = await patientModel.findById(receiverId) || await pharmacistModel.findById(receiverId) || await doctorModel.findById(receiverId);
+    if (!receiver) {
+      throw new Error('Receiver not found');
+    }
+
+    let senderChats = sender.chats;
+    let receiverChats = receiver.chats;
+
+    let chatWithReceiver = senderChats.find(chat => chat.partner === receiverId);
+    if (!chatWithReceiver) {
+      chatWithReceiver = {
+        partner: receiverId,
+        messages: []
+      };
+      chatWithReceiver.messages.push({
+        status: 'Sent',
+        content: messageContent,
+      });
+  
+      senderChats.push(chatWithReceiver);
+    }
+
+    chatWithReceiver.messages.push({
+      status: 'Sent',
+      content: messageContent,
+    });
+
+    let chatWithSender = receiverChats.find(chat => chat.partner === senderId);
+    if (!chatWithSender) {
+      chatWithSender = {
+        partner: senderId,
+        messages: []
+      };
+      chatWithSender.messages.push({
+        status: 'Delivered',
+        content: messageContent,
+      });
+      receiverChats.push(chatWithSender);
+    }
+
+    chatWithSender.messages.push({
+      status: 'Delivered',
+      content: messageContent,
+    });
+
+    await sender.save();
+    await receiver.save();
+
+    console.log('Message sent and received successfully');
+    res.json({ senderChats: sender.chats, receiverChats: receiver.chats });
+  } catch (error) {
+    console.error('Error:', error.message);
+    res.json({ message: error.message });
+  }
+};
+
+const getMessages = async (req, res) => {
+  try {
+    const senderId = req.user._id.toString(); 
+    const receiverId = req.query.receiverId; 
+
+    let senderMessages =[];
+    
+    let sender = await patientModel.findById(senderId) || await pharmacistModel.findById(senderId) || await doctorModel.findById(senderId);
+    if (!sender) {
+      throw new Error('Sender not found');
+    }
+
+    let receiver = await patientModel.findById(receiverId) || await pharmacistModel.findById(receiverId) || await doctorModel.findById(receiverId);
+    if (!receiver) {
+      throw new Error('Receiver not found');
+    }
+
+    let senderChat = sender.chats.find(chat => chat.partner === receiverId);
+    if (senderChat) {
+    senderMessages = senderChat.messages;
+    console.log('Messages retrieved successfully');
+  }
+    res.json({ oldMessages:senderMessages});
+  } catch (error) {
+    console.error('Error:', error.message);
+    res.json({ message: error.message });
+  }
+};
+
 module.exports = {
   createFamilyMember,
   searchForDoctorByNameSpeciality,
@@ -1449,5 +1567,8 @@ module.exports = {
   cancelOrder,
   deleteHealthRecord,
   cancelAppointment,
-  addPrescriptionToCart
+  addPrescriptionToCart,
+  getChattingRoom,
+  sendMessage,
+  getMessages
 };
