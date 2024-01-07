@@ -5,9 +5,85 @@ mongoose.set("strictQuery", false);
 const cookieParser = require('cookie-parser');
 const appointmentModel = require("./Models/Appointment.js")
 
+const http = require("http");
+const socketIO = require("socket.io");
 
 require("dotenv").config();
+
+
+
+const app = express();
+const port = process.env.PORT || "8000";
+app.use(express.json({ limit: '5000mb' }));
+app.use(express.urlencoded({ limit: '5000mb', extended: true }));
+
+const server = http.createServer(app);
+const io = socketIO(server, {
+  cors: {
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"],
+  },
+});
+
 const MongoURI = process.env.MONGO_URI;
+if (!MongoURI) {
+  console.error("MongoDB URI is not defined in the environment variables.");
+  process.exit(1);
+}
+
+mongoose
+  .connect(MongoURI)
+  .then(() => {
+    console.log("MongoDB is now connected!");
+    server.listen(port, async() => {
+      await appointmentModel.cancelPastAppointments();
+      console.log(`Listening to requests on http://localhost:${port}`);
+    });
+  })
+  .catch((err) => console.log(err));
+
+//VideoChat 
+
+app.get('/VideoChatRoom',(req,res)=>{
+  res.redirect(`/${uuidV4()}`)
+})
+
+app.get('/VideoChatRoom',(req,res)=>{
+  res.render('VideoChatRoom',{roomId : req.params.room})
+})
+
+io.on('connection',socket=> {
+  socket.on('join-room', (roomId,userId)=>{
+    console.log(roomId,userId);
+  })
+
+})
+
+io.on("connection", (socket) => {
+  socket.emit("me", socket.id);
+
+  socket.on("callEnded", (data) => {
+    io.to(data.to).emit("callEnded");
+  });
+
+  socket.on("callUser", (data) => {
+    io.to(data.userToCall).emit("callUser", {
+      signal: data.signalData,
+      from: data.from,
+      name: data.name,
+    });
+  });
+
+  socket.on("answerCall", (data) => {
+    io.to(data.to).emit("callAccepted", data.signal);
+  });
+});
+
+
+
+
+
+
 
 const {
   addDoctor,
@@ -15,7 +91,7 @@ const {
   filterAppointmentsForDoctor,
   createAppointment,
   myPatients,
-  filterPatientsByAppointments,
+  filterPatientsByAppointments, 
   viewPatient,
   createPrescription,
   exactPatients,
@@ -124,25 +200,7 @@ const {
 const{ login, logout ,changePassword ,getUserFromTokenMiddleware ,resetPassword, resetPasswordWithOTP,loginAuthentication} =require("./Routes/userController");
 
 
-const app = express();
-const port = process.env.PORT || "8000";
-app.use(express.json({ limit: '5000mb' }));
-app.use(express.urlencoded({ limit: '5000mb', extended: true }));
 
-
-mongoose
-  .connect(MongoURI)
-  .then(() => {
-    console.log("MongoDB is now connected!");
-    app.listen(port, async () => {
-      await appointmentModel.cancelPastAppointments();
-      console.log(`Listening to requests on http://localhost:${port}`);
-    });
-  })
-  .catch((err) => console.log(err));
-
-app.use(express.json());
-app.use(cookieParser());
 
 //Admin
 app.post("/addHealthPackage", getUserFromTokenMiddleware,addHealthPackage);
@@ -264,3 +322,5 @@ app.put('/changePassword', getUserFromTokenMiddleware, changePassword);
 app.put('/resetPassword', resetPassword);
 app.put('/resetPasswordWithOTP',resetPasswordWithOTP);
 app.get('/loginAuthentication',loginAuthentication);
+
+
