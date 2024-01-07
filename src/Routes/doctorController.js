@@ -318,12 +318,17 @@ const addAppointmentSlots = async (req,res) => {
           const healthPackage = await healthPackageModel.findById(healthPackageID).catch(err => console.log(err.message))
           discount = 1 - healthPackage.doctorDiscount / 100;
         }           
-        await appointmentModel.create({
+        const appointment = await appointmentModel.create({
           doctor: doctor._id,
           date,
           status: 'upcoming',
           patient: new mongoose.Types.ObjectId(req.body.patientID),
           price: (doctor.hourlyRate + 10 / 100 * clinicMarkup) * discount
+        })
+        await prescriptionModel.create({
+          doctor: doctor._id,
+          patient: new mongoose.Types.ObjectId(req.body.patientID),
+          appointment: appointment._id
         })
       }
       else{
@@ -399,9 +404,12 @@ const selectPrescriptionDoctor = async (req, res) => {
 const addToPrescription = async (req, res) => {
   try {
     const { prescriptionId, medId, dosage } = req.body;
-
     const prescription = await prescriptionModel.findById(prescriptionId);
     prescription.medicines.push({ medId, dosage });
+    if(prescription.filled === false){
+      prescription.filled = true;
+      prescription.dateFilled = new Date();
+    }
     await prescription.save();
 
     res.json({ message: 'Medicine added to prescription successfully' });
@@ -423,10 +431,6 @@ const viewAllMedicines= async (req, res) => {
 const deleteFromPrescription=async(req,res) =>{
   try {
     const { prescriptionId, medId } = req.body;
-    //console.log("prescriptionId);
-   // console.log(medId);
-    console.log('mypres:', prescriptionId);
-    console.log('mymedId:', medId);
     const prescription = await prescriptionModel.findById(prescriptionId);
     const medicineIndex = prescription.medicines.findIndex(medicine => medicine.medId.toString() === medId);
 
@@ -436,13 +440,13 @@ const deleteFromPrescription=async(req,res) =>{
 
       await prescription.save();
 
-      res.status(200).json({ message: 'Medicine deleted from prescription successfully' });
+      res.json({ message: 'Medicine deleted from prescription successfully' });
     } else {
-      res.status(404).json({ error: 'Medicine not found in prescription' });
+      res.json({ error: 'Medicine not found in prescription' });
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.json({ error: 'Internal Server Error' });
   }
 }
 

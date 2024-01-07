@@ -57,7 +57,7 @@ const MedicineSelection = () => {
 
   return (
     <div>
-      <label>Select Medicine:</label>
+      <label> Select Medicine: </label>
       <select value={selectedMedicine} onChange={handleMedicineSelect}>
         <option value="">Select an option</option>
         {medicines.map((medicine) => (
@@ -67,15 +67,17 @@ const MedicineSelection = () => {
         ))}
       </select>
 
-      <label>Select Dosage:</label>
-      <select value={selectedDosage} onChange={handleDosageSelect}>
-        <option value="">Select a dosage</option>
-        <option value="5">5</option>
-        <option value="10">10</option>
-        {/* Add other dosage options as needed */}
-      </select>
+      <label> Enter Dosage: </label>
+      <input
+        type="number"
+        value={selectedDosage}
+        onChange={(event) => setSelectedDosage(event.target.value)}
+        min="1"
+        step="1"
+        placeholder="Enter dosage"
+      />
 
-      <button onClick={handleAddMedicine}>Add Medicine</button>
+      <button style={{ marginLeft: '5px' }} onClick={handleAddMedicine}>Add Medicine</button>
 
       {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
     </div>
