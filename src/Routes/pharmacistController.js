@@ -171,9 +171,23 @@ const uploadMedicineImage = async(req,res) => {
   {
     res.status(500).json({ error: 'Internal Server Error' });
   }
-
-
 }
+
+  const archiveMedicine = async (req, res) => {
+    const medicineID = req.body.id;
+    const medicine = await medicineModel.findById(medicineID);
+    if(medicine.archived === true){
+      medicine.archived = false;
+      await medicine.save();
+      return res.json("Medicine unarchived successfully.")
+    }
+    else{
+      medicine.archived = true;
+      await medicine.save();
+      return res.json("Medicine archived successfully.")
+    }
+    
+  }
 
 module.exports = {
   addPharmacist,
@@ -183,5 +197,6 @@ module.exports = {
   medicinequantityandsales,
   filterByMedicinalUsePharmacist,
   viewMedicine,
-  uploadMedicineImage
+  uploadMedicineImage,
+  archiveMedicine
 };
