@@ -809,15 +809,6 @@ const payWithWallet = async (req, res) => {
   const type = req.query.type
   try {
     const patient = await patientModel.findById(patientId)
-
-    console.log('--------')
-    // if (patient.healthPackage && type === 'appointment')
-    // {
-    //   const healthPackageId = patient.healthPackage.healthPackageID
-    //   console.log(healthPackageId)
-    //   const healthPackage = await healthPackageModel.findById(healthPackageId)
-    //   price *= (1 - (healthPackage.doctorDiscount)/100)
-    // }
     if (patient.wallet < price) {
       return res.json({ success: false, message: "Insufficient funds!" })
     }
@@ -933,13 +924,17 @@ const reserveAppointment = async (req, res) => {
   const clinicMarkup = process.env.CLINIC_MARKUP
   let discount = 1;
   const patient = await patientModel.findById(patientId);
+  const followup = req.body.f
   if(patient.healthPackage){
     const healthPackageID = patient.healthPackage.healthPackageID.toString()
     const healthPackage = await healthPackageModel.findById(healthPackageID).catch(err => console.log(err.message))
     discount = 1 - healthPackage.doctorDiscount / 100;
     }
   try {
-    const appointment = await appointmentModel.findByIdAndUpdate(appointmentId, { patient: new mongoose.Types.ObjectId(patientId), status: "upcoming", attendantName: name, price: (doctor.hourlyRate + 10 / 100 * clinicMarkup) * discount }, { new: true })
+    if(followup)
+      await appointmentModel.findByIdAndUpdate(appointmentId, { patient: new mongoose.Types.ObjectId(patientId), status: "requested", attendantName: name, price: (doctor.hourlyRate + 10 / 100 * clinicMarkup) * discount }, { new: true })
+    else
+      await appointmentModel.findByIdAndUpdate(appointmentId, { patient: new mongoose.Types.ObjectId(patientId), status: "upcoming", attendantName: name, price: (doctor.hourlyRate + 10 / 100 * clinicMarkup) * discount }, { new: true })
     await prescriptionModel.create({
       doctor: appointment.doctor,
       patient: new mongoose.Types.ObjectId(patientId),
@@ -1100,7 +1095,6 @@ const getAnAppointment = async (req, res) => {
       const healthPackage = await healthPackageModel.findById(healthPackageID).catch(err => console.log(err.message))
       discount = 1 - healthPackage.doctorDiscount / 100;
     }
-
     const response = { appointment: appointment, price: (doctor.hourlyRate + 10 / 100 * clinicMarkUp) * discount }
     res.json(response)
   }

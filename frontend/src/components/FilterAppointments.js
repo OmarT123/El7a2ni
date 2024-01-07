@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 
 const FilterAppointments = ({ apiLink }) => {
   const [status, setStatus] = useState('');
@@ -8,7 +9,14 @@ const FilterAppointments = ({ apiLink }) => {
     upcomingAppointments: [],
     pastAppointments: [],
   });
-
+  let isPatient;
+  if(apiLink === "/filterAppointmentsForPatient")
+  {
+    isPatient = true;
+  }
+  else {
+    isPatient = false;
+  }
   const handleSubmit = async (e) => {
     if (e) {
       e.preventDefault();
@@ -99,9 +107,12 @@ const FilterAppointments = ({ apiLink }) => {
         <ul>
         {sortAppointmentsByDate(appointments.pastAppointments).map((appointment) => (
             <li key={appointment._id}>
-              <div> Patient: {appointment.attendantName} </div>
+              <div> Patient name: {appointment.attendantName} </div>
               <div> Date: {new Date(appointment.date).toLocaleString()} </div>
-              <div>Status: {appointment.status}</div>
+              <div> Status: {appointment.status}</div>
+              {isPatient && (
+                 <Link to={`/RequestFollowup`}><button>Request Follow-up</button></Link>
+              )}
               <hr />
             </li>
           ))}

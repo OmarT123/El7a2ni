@@ -62,6 +62,7 @@ import MyCart from './pages/patient/MyCart' ;
 import Checkout from './pages/patient/Checkout';
 import PastOrders from './pages/patient/PastOrders';
 import SuccessfulCheckout from './pages/patient/SuccessfulCheckout';
+import RequestFollowup from './pages/patient/RequestFollowup';
 
 // user 
 
@@ -105,6 +106,7 @@ function App() {
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/PastOrders" element={<PastOrders />} />
             <Route path="/SuccessfulCheckout" element={<SuccessfulCheckout />} />
+            <Route path='/RequestFollowup' element={<RequestFollowup/>}/>
 
             {/*Virtual clinic Routing */}
             <Route path="/Home" element={<Home />} />
