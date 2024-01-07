@@ -22,8 +22,6 @@ import FilterAppointmentsForPatient from './pages/patient/FilterAppointmentsForP
 import FilterPatientsByAppointments from './pages/doctor/FilterPatientsByAppointments'
 import DeleteAdmin from './pages/admin/DeleteAdmin';
 import DeleteDoctor from './pages/admin/DeleteDoctor';
-import DoctorsAppointments from './components/doctor/DoctorsAppointments';
-import PatientAppointments from './components/patient/PatientAppointments';
 import LinkFamilyMember from "./components/patient/LinkFamilyMember";
 import SuccessfulCheckoutHealthPackage from './pages/patient/SuccesfulCheckoutHealthPackage';
 import CheckoutHealthPackage from './pages/patient/CheckoutHealthPackage';
@@ -38,6 +36,8 @@ import DoctorApplication from './pages/admin/DoctorApplication';
 import DoctorContract from './pages/doctor/DoctorContract';
 import VideoChatPatient from './pages/patient/StartVideoCall';
 import VideoChatDoctor from './pages/doctor/VideoChatDoctor';
+import ViewPatientPrescriptions from './pages/doctor/ViewPatientPrescriptions';
+import SelectedPrescriptionDoctor from './pages/doctor/SelectedPrescriptionDoctor';
 
 // imported from the pharamcy : 
 import UnApprovedPharmacists from './pages/admin/UnApprovedPharmacists'
@@ -64,6 +64,7 @@ import MyCart from './pages/patient/MyCart' ;
 import Checkout from './pages/patient/Checkout';
 import PastOrders from './pages/patient/PastOrders';
 import SuccessfulCheckout from './pages/patient/SuccessfulCheckout';
+import RequestFollowup from './pages/patient/RequestFollowup';
 import StartVideoCall from './pages/patient/StartVideoCall';
 
 // user 
@@ -73,6 +74,7 @@ import ChangePassword from './pages/user/ChangePassword';
 import ResetPassword from './pages/user/ResetPassword';
 import ResetPasswordOTP from './pages/user/ResetPasswordOTP';
 import NotAuthorized from './components/NotAuthorized';
+import AddToPrescription from './pages/doctor/addToPrescription';
 
 function App() {
   return (
@@ -107,6 +109,7 @@ function App() {
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/PastOrders" element={<PastOrders />} />
             <Route path="/SuccessfulCheckout" element={<SuccessfulCheckout />} />
+            <Route path='/RequestFollowup' element={<RequestFollowup/>}/>
 
             {/*Virtual clinic Routing */}
             <Route path="/Home" element={<Home />} />
@@ -130,8 +133,6 @@ function App() {
             <Route path="/patient" element={<Patient/>}/>
             <Route path="/ViewMyPrescriptions" element={<ViewMyPrescriptions/>}/>
             <Route path="/SelectedPrescription" element={<SelectedPrescription/>}/>
-            <Route path="/viewDoctorAppointments" element={<DoctorsAppointments/>}/>
-            <Route path="/viewPatientAppointments" element={<PatientAppointments />} />
             <Route path="/linkFamilyMemberAccount" element={<LinkFamilyMember />} />
             <Route path="/CheckoutHealthPackage" element={<CheckoutHealthPackage />} />
             <Route path="/SuccessfulCheckoutHealthPackage" element={<SuccessfulCheckoutHealthPackage />} />
@@ -145,11 +146,11 @@ function App() {
             <Route path="/ViewDoctorWallet" element={<ViewDoctorWallet/>}/>
             <Route path="/DoctorApplication" element={<DoctorApplication/>}/>
             <Route path="/doctorContract" element={<DoctorContract />} />
-            {/* <Route path = "/VideoChatPatient" element = {<VideoChatPatient/>}/> */}
-            {/* <Route path = "/VideoChatDoctor" element = {<VideoChatDoctor/>}/> */}
             <Route path="/StartVideoCall" element={<StartVideoCall />} />
 
-
+            <Route path='/ViewPatientPrescriptions' element={<ViewPatientPrescriptions/>}/>
+            <Route path='/SelectedPrescriptionDoctor' element={<SelectedPrescriptionDoctor/>}/>
+            <Route path='/addToPrescription' element={<AddToPrescription/>}/>
 
             {/*User Routing */}
             <Route path="/login" element ={<Login />}/>

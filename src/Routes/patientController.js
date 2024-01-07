@@ -223,8 +223,34 @@ const addToCart = async (req, res) => {
 
 
     const medicine = await medicineModel.findById(stringMedicineId);
-    const patientId = req.user._id; // Replace with your method of obtaining the patient's ID
+    const patientId = req.user._id;
     let oldcart = await cartvalue(patientId);
+    if (medicine.prescriptionMedicine === true) {
+      try {
+        let prescriptions = [];
+        const date = new Date();
+        prescriptions = await prescriptionModel.find({ patient: patientId });
+    
+        const filteredPrescriptions = prescriptions.filter((prescription) => {
+          const prescriptionDate = new Date(prescription.dateFilled);
+          const timeDifference = date.getTime() - prescriptionDate.getTime();
+          const daysDifference = timeDifference / (1000 * 3600 * 24);
+          return daysDifference < 3;
+        });
+        let isFound = false;
+        for (const prescription of filteredPrescriptions) {
+          for (const prescribedMedicine of prescription.medicines) {
+            if (prescribedMedicine.medId.toString() === medicine._id.toString()) {
+              isFound = true;
+            }
+          }
+        }
+        if(!isFound)
+          return res.json({ message: "The specified prescription medicine wasn't found in any of your recent prescriptions." });
+      } catch (error) {
+        console.error('Error fetching prescriptions:', error.message);
+      }
+    }
     if (!medicine) {
       return res.json({ message: "Medicine not found" });
     }
@@ -583,7 +609,6 @@ const filterPrescriptionByDateDoctorStatus = async (req, res) => {
 
 
 const filterAppointmentsForPatient = async (req, res) => {
-  // Need login
   const dateToBeFiltered = req.query.date;
   const statusToBeFiltered = req.query.status;
   const filterQuery = {};
@@ -599,7 +624,6 @@ const filterAppointmentsForPatient = async (req, res) => {
   if (statusToBeFiltered) {
     filterQuery["status"] = statusToBeFiltered;
   }
-  if (req.user._id) {
     const id = req.user._id;
     filterQuery["patient"] = new mongoose.Types.ObjectId(id);
     try {
@@ -609,29 +633,25 @@ const filterAppointmentsForPatient = async (req, res) => {
       if (filteredAppointments.length === 0) {
         return res.json("No matching appointments found for the Patient.");
       }
-      res.json(filteredAppointments);
+      const currentDate = new Date();
+      let upcomingAppointments = [];
+      let pastAppointments = [];
+      for(appointment of filteredAppointments)
+      {
+        if (appointment.date < currentDate)
+          pastAppointments.push(appointment)
+        else
+          upcomingAppointments.push(appointment)
+      }
+      const appointmentData = {
+        upcomingAppointments,
+        pastAppointments,
+      };
+      res.json(appointmentData);
     } catch (err) {
       console.error(err);
-      res
-        .status(500)
-        .json({ error: "An error occurred while retrieving appointments." });
+      res.json({ error: "An error occurred while retrieving appointments." });
     }
-  } else {
-    try {
-      const filteredAppointments = await appointmentModel.find(filterQuery);
-      if (filteredAppointments.length === 0) {
-        return res.json("No matching appointments found for the Patient.");
-      }
-      else {
-        res.json(filteredAppointments);
-      }
-    } catch (err) {
-      console.error(err);
-      res
-        .status(500)
-        .json({ error: "No matching appointments found for the Patient." });
-    }
-  }
 };
 
 const selectDoctorFromFilterSearch = async (req, res) => {
@@ -671,10 +691,10 @@ const viewMyPrescriptions = async (req, res) => {
 const selectPrescription = async (req, res) => {
   try {
     const prescriptionId = req.query.id;
-    const prescription = await prescriptionModel.findById(prescriptionId).populate({ path: 'medicines.medId' }).exec();
-    res.status(200).json(prescription);
+    const prescription = await prescriptionModel.findById(prescriptionId).populate({ path: 'medicines.medId' }).populate({ path: 'doctor' }).exec();
+    res.json(prescription);
   } catch (error) {
-    res.status(404).json({ error: error.message });
+    res.json({ error: error.message });
   }
 };
 
@@ -786,7 +806,7 @@ const CancelSubscription = async (req, res) => {
     const patientId = req.user._id;
     const patient = await patientModel.findById(patientId);
     if (!patient) {
-      return res.status(404).json({ message: 'Patient not found' });
+      return res.json({ message: 'Patient not found' });
     }
     patient.healthPackage.status = "cancelled";
     await patient.save();
@@ -794,7 +814,7 @@ const CancelSubscription = async (req, res) => {
     res.json({ message: 'Subscription canceled successfully' });
   } catch (error) {
     console.error('Error canceling subscription:', error.message);
-    res.status(500).json({ message: 'Internal Server Error' });
+    res.json({ message: 'Internal Server Error' });
   }
 };
 
@@ -881,15 +901,6 @@ const payWithWallet = async (req, res) => {
   const type = req.query.type
   try {
     const patient = await patientModel.findById(patientId)
-
-    console.log('--------')
-    // if (patient.healthPackage && type === 'appointment')
-    // {
-    //   const healthPackageId = patient.healthPackage.healthPackageID
-    //   console.log(healthPackageId)
-    //   const healthPackage = await healthPackageModel.findById(healthPackageId)
-    //   price *= (1 - (healthPackage.doctorDiscount)/100)
-    // }
     if (patient.wallet < price) {
       return res.json({ success: false, message: "Insufficient funds!" })
     }
@@ -999,9 +1010,28 @@ const reserveAppointment = async (req, res) => {
   const patientId = req.user._id
   const appointmentId = req.body.appointmentId
   const name = req.body.name
-  console.log(name)
+  const app = await appointmentModel.findById(appointmentId)
+  const doctorID = app.doctor
+  const doctor = await doctorModel.findById(doctorID);
+  const clinicMarkup = process.env.CLINIC_MARKUP
+  let discount = 1;
+  const patient = await patientModel.findById(patientId);
+  const followup = req.body.f
+  if(patient.healthPackage){
+    const healthPackageID = patient.healthPackage.healthPackageID.toString()
+    const healthPackage = await healthPackageModel.findById(healthPackageID).catch(err => console.log(err.message))
+    discount = 1 - healthPackage.doctorDiscount / 100;
+    }
   try {
-    const appointment = await appointmentModel.findByIdAndUpdate(appointmentId, { patient: new mongoose.Types.ObjectId(patientId), status: "upcoming", attendantName: name }, { new: true })
+    if(followup)
+      await appointmentModel.findByIdAndUpdate(appointmentId, { patient: new mongoose.Types.ObjectId(patientId), status: "requested", attendantName: name, price: (doctor.hourlyRate + 10 / 100 * clinicMarkup) * discount }, { new: true })
+    else
+      await appointmentModel.findByIdAndUpdate(appointmentId, { patient: new mongoose.Types.ObjectId(patientId), status: "upcoming", attendantName: name, price: (doctor.hourlyRate + 10 / 100 * clinicMarkup) * discount }, { new: true })
+    await prescriptionModel.create({
+      doctor: appointment.doctor,
+      patient: new mongoose.Types.ObjectId(patientId),
+      appointment: appointmentId
+    }) 
     res.json('updated Successfully')
   } catch (err) {
     res.json(err.message)
@@ -1157,7 +1187,6 @@ const getAnAppointment = async (req, res) => {
       const healthPackage = await healthPackageModel.findById(healthPackageID).catch(err => console.log(err.message))
       discount = 1 - healthPackage.doctorDiscount / 100;
     }
-
     const response = { appointment: appointment, price: (doctor.hourlyRate + 10 / 100 * clinicMarkUp) * discount }
     res.json(response)
   }
@@ -1288,6 +1317,83 @@ const linkFamilyMemberAccount = async (req, res) => {
   }
 };
 
+const cancelAppointment = async (req, res) => {
+  try {
+    const appointmentID = req.body.appointmentID;
+    const appointment = await appointmentModel.findById(appointmentID);
+    appointment.status = 'cancelled';
+    await appointment.save();
+
+    const appointmentDate = new Date(appointment.date);
+    const currentDate = new Date();
+    const timeDifference = appointmentDate - currentDate;
+    const isWithin24Hours = timeDifference < 24 * 60 * 60 * 1000;
+    const doctor = await doctorModel.findById(req.user_.id)
+    if (!isWithin24Hours || doctor) {
+      const patientID = appointment.patient;
+      const patient = await patientModel.findById(patientID);
+      patient.wallet += appointment.price;
+      await patient.save();
+    } 
+
+    return res.json('Appointment cancelled successfully');
+  } catch (error) {
+    return res.json();
+  }
+};
+
+const addPrescriptionToCart = async (req, res) => {
+  const prescriptionID = req.body.prescription;
+  const prescription = await prescriptionModel.findById(prescriptionID);
+  const patientID = prescription.patient;
+  const patient = await patientModel.findById(patientID);
+  const medicines = prescription.medicines
+  //start here
+  for(requestedMedicine of medicines){
+    const medicine = await medicineModel.findById(requestedMedicine.medId);
+    if (medicine.archived === true)
+      return res.json({message: "One of the medicine is currently not being sold by our pharmacy, please buy these medicines seperately."});
+    if (requestedMedicine.dosage > medicine.stockQuantity) {
+      return res.json({ message: "Requested quantity of a certain medicine exceeds available stock, please buy these medicines seperately."});
+    }
+
+    const existingCartItemIndex = patient.cart.items.findIndex(item => item.medicine.toString() === requestedMedicine._id.toString());
+    if (existingCartItemIndex !== -1) {
+      if (patient.cart.items[existingCartItemIndex].quantity + requestedMedicine.dosage > medicine.stockQuantity)
+        return res.json({ message: "Requested quantity of a certain medicine exceeds available stock, please buy these medicines seperately." });
+      else
+        patient.cart.items[existingCartItemIndex].quantity += requestedMedicine.dosage;
+    } else {
+
+      patient.cart.items.push({ medicine: requestedMedicine._id, quantity : requestedMedicine.dosage });
+    }
+
+    let price = medicine.price;
+    let package_Id = null
+    if (patient.healthPackage) {
+      package_Id = patient.healthPackage.healthPackageID;
+    }
+
+
+    if (!package_Id)
+      patient.cart.amountToBePaid += price * requestedMedicine.dosage;
+    else {
+      let package = await healthPackageModel.findById(package_Id)
+      let ratio = package.medicineDiscount;
+      let percentage = 1 - ratio / 100;
+      patient.cart.amountToBePaid += (((price) * requestedMedicine.dosage) * percentage);
+    }
+
+
+    await patient.save();
+  }
+  prescription.sentToPharmacy = true;
+  await prescription.save();
+  res.json({ message: 'Prescriptions items added to cart successfully.'});
+  //end here
+}
+
+
 function calculateAge(birthDate) {
   const today = new Date();
   const birthDateObj = new Date(birthDate);
@@ -1344,5 +1450,7 @@ module.exports = {
   cashOnDelivery,
   pastOrders,
   cancelOrder,
-  deleteHealthRecord
+  deleteHealthRecord,
+  cancelAppointment,
+  addPrescriptionToCart
 };

@@ -1,7 +1,12 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const schedule = require('node-schedule');
 mongoose.set("strictQuery", false);
 const cookieParser = require('cookie-parser');
+const appointmentModel = require("./Models/Appointment.js")
+const VideoChatRoom = require("./Models/VideoChatRoom");
+
+
 const http = require("http");
 const socketIO = require("socket.io");
 
@@ -9,18 +14,11 @@ require("dotenv").config();
 
 
 
-
-const MongoURI = process.env.MONGO_URI;
-
-if (!MongoURI) {
-  console.error("MongoDB URI is not defined in the environment variables.");
-  process.exit(1);
-}
-
 const app = express();
-const port = process.env.PORT || "4000";
+const port = process.env.PORT || "8000";
 app.use(express.json({ limit: '5000mb' }));
 app.use(express.urlencoded({ limit: '5000mb', extended: true }));
+
 const server = http.createServer(app);
 const io = socketIO(server, {
   cors: {
@@ -29,21 +27,39 @@ const io = socketIO(server, {
   },
 });
 
+const MongoURI = process.env.MONGO_URI;
+if (!MongoURI) {
+  console.error("MongoDB URI is not defined in the environment variables.");
+  process.exit(1);
+}
 
 mongoose
   .connect(MongoURI)
   .then(() => {
     console.log("MongoDB is now connected!");
-    server.listen(port, () => {
+    server.listen(port, async() => {
+      await appointmentModel.cancelPastAppointments();
       console.log(`Listening to requests on http://localhost:${port}`);
     });
   })
   .catch((err) => console.log(err));
 
-app.use(express.json());
-app.use(cookieParser());
+//VideoChat 
 
-const VideoChatRoom = require("./Models/VideoChatRoom");
+app.get('/VideoChatRoom',(req,res)=>{
+  res.redirect(`/${uuidV4()}`)
+})
+
+app.get('/VideoChatRoom',(req,res)=>{
+  res.render('VideoChatRoom',{roomId : req.params.room})
+})
+
+io.on('connection',socket=> {
+  socket.on('join-room', (roomId,userId)=>{
+    console.log(roomId,userId);
+  })
+
+})
 
 io.on("connection", (socket) => {
   socket.on("startCall", async ({ patientId, doctorId }) => {
@@ -92,7 +108,13 @@ const {
   ViewDoctorWallet,
   viewDoctorAppointments,
   acceptContract,
-  rejectContract
+  rejectContract,
+  viewPatientPrescriptions,
+  selectPrescriptionDoctor,
+  addDosage,
+  addToPrescription,
+  viewAllMedicines,
+  deleteFromPrescription
 } = require("./Routes/doctorController");
 
 
@@ -148,6 +170,8 @@ const {
   pastOrders,
   cancelOrder,
   deleteHealthRecord,
+  cancelAppointment,
+  addPrescriptionToCart,
   getMedicines,
   getSubMedicines
 
@@ -187,22 +211,7 @@ const {
 
 const{ login, logout ,changePassword ,getUserFromTokenMiddleware ,resetPassword, resetPasswordWithOTP,loginAuthentication} =require("./Routes/userController");
 
-//VideoChat 
 
-app.get('/VideoChatRoom',(req,res)=>{
-  res.redirect(`/${uuidV4()}`)
-})
-
-app.get('/VideoChatRoom',(req,res)=>{
-  res.render('VideoChatRoom',{roomId : req.params.room})
-})
-
-io.on('connection',socket=> {
-  socket.on('join-room', (roomId,userId)=>{
-    console.log(roomId,userId);
-  })
-
-})
 
 
 //Admin
@@ -278,9 +287,10 @@ app.get("/sendCheckoutMail", getUserFromTokenMiddleware,sendCheckoutMail);
 app.get("/getAllAddresses",getUserFromTokenMiddleware ,getAllAddresses);
 app.get("/cashOnDelivery",getUserFromTokenMiddleware, cashOnDelivery);
 app.get("/pastOrders",getUserFromTokenMiddleware,pastOrders);
-app.put("/cancelOrder",getUserFromTokenMiddleware,cancelOrder)
+app.put("/cancelOrder",getUserFromTokenMiddleware,cancelOrder);
 app.put("/deleteHealthRecord", getUserFromTokenMiddleware, deleteHealthRecord);
-
+app.put("/cancelAppointment", getUserFromTokenMiddleware, cancelAppointment);
+app.post("/addPrescriptionToCart", getUserFromTokenMiddleware, addPrescriptionToCart);
 app.get("/getMedicines",getMedicines)
 app.get("/getSubMedicines",getSubMedicines)
 
@@ -295,13 +305,17 @@ app.get("/filterPatientsByAppointments",getUserFromTokenMiddleware, filterPatien
 app.get("/viewPatient", getUserFromTokenMiddleware,viewPatient);
 app.get("/viewmypatientsbyname",getUserFromTokenMiddleware,exactPatients);
 app.post("/createPrescription",getUserFromTokenMiddleware,createPrescription);
-app.get("/viewDoctorAppointments", viewDoctorAppointments); 
+app.get("/viewDoctorAppointments", getUserFromTokenMiddleware, viewDoctorAppointments); 
 app.post("/addAppointmentSlots",getUserFromTokenMiddleware, addAppointmentSlots);
-app.get("/ViewDoctorWallet",getUserFromTokenMiddleware,ViewDoctorWallet)
-app.put("/acceptContract", getUserFromTokenMiddleware, acceptContract)
-app.put("/rejectContract", getUserFromTokenMiddleware, rejectContract)
-
-
+app.get("/ViewDoctorWallet",getUserFromTokenMiddleware,ViewDoctorWallet);
+app.put("/acceptContract", getUserFromTokenMiddleware, acceptContract);
+app.put("/rejectContract", getUserFromTokenMiddleware, rejectContract);
+app.get("/viewPatientPrescriptions",getUserFromTokenMiddleware,viewPatientPrescriptions);
+app.get("/selectPrescriptionDoctor",getUserFromTokenMiddleware,selectPrescriptionDoctor);
+app.put("/addDosage",addDosage);
+app.post("/addToPrescription",getUserFromTokenMiddleware,addToPrescription);
+app.get("/viewAllMedicines",getUserFromTokenMiddleware,viewAllMedicines);
+app.post("/deleteFromPrescription",getUserFromTokenMiddleware,deleteFromPrescription)
 
 //Pharmacist
 app.post("/addPharmacist",addPharmacist);

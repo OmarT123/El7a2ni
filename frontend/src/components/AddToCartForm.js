@@ -11,6 +11,7 @@ const AddToCartForm = ({medicine}) =>
         try {
           const response = await axios.post('/addToCart', { medicineId:medicine._id, quantity: amount });
           setResponseMessage(response.data.message);
+          // alert(response.data.message)
         } catch (error) {
           console.error('Error increasing quantity:', error);
         }

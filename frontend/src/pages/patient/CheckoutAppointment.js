@@ -43,7 +43,15 @@ const CheckoutAppointment = ({ user }) => {
         if (selectedFamilyMember === '')
             alert('Please Select a family member')
         else
-            await axios.get("/payWithWallet?id="+user._id,{params: body}).then(res => window.location.href = res.data.url).catch(err => console.log(err))
+        await axios.get("/payWithWallet?id="+user._id, { params: body })
+        .then(res => {
+          if (res.data.success === true) {
+            window.location.href = res.data.url;
+          } else {
+            alert("Payment failed: " + res.data.message);
+          }
+        })
+        .catch(err => console.log(err));      
     }
 
     const handleFamilyMemberSelect = async (event) => {

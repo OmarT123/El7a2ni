@@ -1,18 +1,19 @@
 import axios from 'axios';
 import { useState, useEffect } from 'react';
-import PatientAuthorization from '../../components/PatientAuthorization';
+import DoctorAuthorization from '../../components/DoctorAuthorization';
 import html2pdf from 'html2pdf.js';
 
 const SelectedPrescription = ({ user }) => {
   const [prescription, setPrescription] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [dosages, setDosages] = useState({});
 
   useEffect(() => {
     const getPrescription = async () => {
       const queryParams = new URLSearchParams(window.location.search);
       const id = queryParams.get('id');
       try {
-        const response = await axios.get('/selectPrescription?id=' + id);
+        const response = await axios.get('/selectPrescriptionDoctor?id=' + id);
         setPrescription(response.data);
       } catch (error) {
         console.log(error.message);
@@ -26,7 +27,7 @@ const SelectedPrescription = ({ user }) => {
 
   const downloadPrescription = async () => {
     const content = document.getElementById('prescription-content');
-  
+
     const pdfOptions = {
       margin: 10,
       filename: 'Prescription.pdf',
@@ -34,15 +35,20 @@ const SelectedPrescription = ({ user }) => {
       html2canvas: { scale: 2 },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
     };
-  
-    // const title = document.createElement('h1');
-    // title.innerText = 'Prescription'; // You can customize the title here
-    // title.style.textAlign = 'centre';
-  
-    // content.insertBefore(title, content.firstChild);
+
     html2pdf().from(content).set(pdfOptions).save();
-  };  
-  
+  };
+
+  const handleDosageUpdate = async (medicineId) => {
+    const newDosage = {
+      dosage: dosages[medicineId] || '', // Retrieve dosage from dosages object
+      medicineId,
+      prescriptionId: prescription._id,
+    };
+
+    const response = await axios.put('/addDosage', newDosage);
+    window.location.reload();
+  };
 
   return (
     <div>
@@ -53,9 +59,9 @@ const SelectedPrescription = ({ user }) => {
           <div id="prescription-content">
             {prescription && prescription.doctor && (
               <>
-              <h1 style={{ textAlign: 'center' }}>Prescription</h1>
-              <p><strong>Doctor: </strong>{prescription.doctor.name}</p>
-              <p><strong>Prescription Date: </strong>{prescription.createdAt.substr(0, 10)}</p>
+                <h1 style={{ textAlign: 'center' }}>Prescription</h1>
+                <p><strong>Patient: </strong>{prescription.patient.name}</p>
+                <p><strong>Prescription Date: </strong>{prescription.createdAt.substr(0, 10)}</p>
               </>
             )}
             {prescription && prescription.medicines && prescription.medicines.length > 0 ? (
@@ -66,6 +72,7 @@ const SelectedPrescription = ({ user }) => {
                     <strong>Price: </strong>{medicine.medId.price}$
                     <strong>Medicinal Use: </strong>{medicine.medId.medicinalUse}
                     <strong>Active Ingredient: </strong>{medicine.medId.activeIngredient}
+                    <strong>Dosage: </strong>{medicine.dosage} <br/>
                     {medicine.medId.picture && (
                       <img
                         src={medicine.medId.picture}
@@ -73,20 +80,31 @@ const SelectedPrescription = ({ user }) => {
                         className="medicine-image"
                       />
                     )}
-                    <strong>Dosage: </strong>{medicine.dosage}
+                  </div>
+                  <div>
+                    <input
+                      type="text"
+                      placeholder="New Dosage"
+                      value={dosages[medicine._id] || ''}
+                      onChange={(e) => setDosages({ ...dosages, [medicine._id]: e.target.value })}
+                    />
+                    <button onClick={() => handleDosageUpdate(medicine._id)}>Update Dosage</button>
                   </div>
                 </div>
               ))
             ) : (
+              <div>
               <p>No medicine found in the prescription.</p>
+              <button>Fill Prescription</button>
+              </div>
             )}
           </div>
           <br />
-          <button onClick={downloadPrescription}>Download Prescription</button>
+          {prescription.filled && <button onClick={downloadPrescription}>Download Prescription</button>}
         </>
       )}
     </div>
   );
 };
 
-export default PatientAuthorization(SelectedPrescription);
+export default DoctorAuthorization(SelectedPrescription);

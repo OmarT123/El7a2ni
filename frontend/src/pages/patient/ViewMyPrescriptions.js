@@ -55,7 +55,14 @@ const ViewMyPrescriptions = ({user}) => {
                 .catch((err) => console.log(err.message));              
             setSearchResults(true)        
       }
-
+      
+      const addPresriptionItemstoCart = async(e, prescription) => {
+        e.preventDefault();
+        const body = {prescription: prescription}
+        const response = await axios.post("/addPrescriptionToCart", body)
+        alert(response.data.message);
+        window.location.reload();
+      }
         
 
       return (
@@ -105,7 +112,10 @@ const ViewMyPrescriptions = ({user}) => {
                               </li>
                             ))}
                           </ul>
+                          <p>Prescription Date: {prescription.createdAt.substr(0, 10)}</p>
+                          {!prescription.filled && <p>Filled: {prescription.filled? "" : "No"}</p>}
                           <Link to={`/SelectedPrescription?id=${prescription._id}`}>View Prescription</Link>
+                          {prescription.sentToPharmacy? "Prescription has been added to cart before." : <button style={{ marginLeft: '5px' }} onClick={(e) => addPresriptionItemstoCart(e, prescription._id)}>Add Prescription Items to Cart</button>}
                         </div>
                       ))}
                     </div>
@@ -114,7 +124,6 @@ const ViewMyPrescriptions = ({user}) => {
                     <div>
                       {prescriptionsFilter.map((prescription) => (
                         <div key={prescription._id} className="prescription-card">
-                          {/* Assuming DisplayPrescription is a component that displays prescription details */}
                           <h4>Prescription Details:</h4>
                           <p>Doctor: {prescription.doctor}</p>
                           <p>Medicines:</p>

@@ -352,7 +352,8 @@ a {
 /* Styles for the medicine information container */
 .medicine-info {
   margin-top: 10px;
-  color :rgb(20, 186, 128)
+  color :rgb(20, 186, 128);
+  font-size: 15px;
 }
 
 /* Style for the medicine image */
