@@ -10,6 +10,7 @@ const orderModel = require('../Models/Order.js')
 const adminModel = require('../Models/Admin');
 const healthRecordsModel = require('../Models/HealthRecords.js');
 const mongoose = require("mongoose");
+const notificationSystemModel=require ('../Models/NotificationSystem.js') 
 const stripe = require("stripe")(process.env.STRIPE_PRIVATE_KEY)
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt');
@@ -56,10 +57,20 @@ const addPatient = async (req, res) => {
 }
 
 const filterByMedicinalUsePatient = async (req, res) => {
-  const medUse = new RegExp(req.query.medicinalUse, "i")
+  const searchName = req.query.medicinalUse;
+  if (searchName.length < 3) {
+    return res.json('Search query must be at least three characters');
+  }
+  const medUse = new RegExp(searchName, "i")
 
   try {
-    const medicine = medicineModel.find({ medicinalUse: medUse }).then((medicine) => res.json(medicine))
+    const results= await medicineModel.find({medicinalUse:medUse})
+    if(results.length == 0){
+      res.json("Medicine is not Found !!" );
+    }
+    else {
+      res.json(results);
+    }
   }
   catch (err) {
     res.json({ message: err.message })
@@ -70,13 +81,19 @@ const filterByMedicinalUsePatient = async (req, res) => {
 
 const searchMedicinePatient = async (req, res) => {
   const searchName = req.query.name;
-  const searchQuery = new RegExp(searchName, "i"); // 'i' flag makes it case-insensitive
+  if (searchName.length < 3) {
+    return res.json('Search query must be at least three characters');
+  }
+  const searchQuery = new RegExp(searchName, 'i'); // 'i' flag makes it case-insensitive
+
   try {
     const results = await medicineModel.find({ name: searchQuery, stockQuantity: { $gt: 0 } });
+   
     if (results.length === 0) {
-      res.json("Medicine is not Found !!");
-    } else {
-      res.json(results);
+      return res.json("Medicine is not Found !!");
+    } 
+    else {
+      return res.json(results);
     }
   } catch (error) {
     res.json(error.message);
@@ -132,8 +149,17 @@ const handleAfterBuy = async (cart, id) => {
       const medicine = await medicineModel.findById(medicineId);
       medicine.amountSold += quantityBought;
       medicine.stockQuantity -= quantityBought;
+      if (medicine.stockQuantity <= 0) {
+        const expiryTime = new Date(); 
+        const purchaseTime =new Date(); 
+        expiryTime.setFullYear(expiryTime.getFullYear() + 1); 
+        const pharmacists = await pharmacistModel.find();
+        for (const pharmacist of pharmacists) {
+          addNotification('Pharmacist',pharmacist._id,`Medicine "${medicine.name}" is out of stock. Please restock.`,expiryTime,purchaseTime)
+        }
       await medicine.save();
     }
+  }
     const patient = await patientModel.findById(id);
     patient.cart.items = [];
     patient.cart.amountToBePaid = 0;
@@ -182,7 +208,7 @@ const cancelOrder = async (req, res) => {
     });
   }
   catch (error) {
-    res.status(500).json({ error: error.message });
+    res.json({ error: error.message });
   }
 };
 
@@ -210,13 +236,15 @@ const addToCart = async (req, res) => {
 
     const patient = await patientModel.findById(patientId);
     if (!patient) {
-      return res.status(404).json({ message: "Patient not found" });
+      return res.json({ message: "Patient not found" });
     }
 
+
+ if(quantity>0){
     const existingCartItemIndex = patient.cart.items.findIndex(item => item.medicine.toString() === medicineId.toString());
     if (existingCartItemIndex !== -1) {
       if (patient.cart.items[existingCartItemIndex].quantity + quantity > medicine.stockQuantity)
-        return res.status(400).json({ message: "Requested quantity exceeds available stock", cart: oldcart });
+        return res.json({ message: "Requested quantity exceeds available stock", cart: oldcart });
       else
         patient.cart.items[existingCartItemIndex].quantity += quantity;
     } else {
@@ -244,12 +272,13 @@ const addToCart = async (req, res) => {
     await patient.save();
     let modifiedcart = await cartvalue(patientId);
 
-    res.status(200).json({
+    res.json({
       message: 'Medicine added to cart successfully',
       cart: modifiedcart
     });
+  }
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.json({ error: error.message });
   }
 };
 
@@ -288,6 +317,69 @@ const removeFromCart = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+const addNotification = async (type, Id, message, showtime, expiryTime) => {
+
+  let user;
+
+  switch (type) {
+    case 'Pharmacist':
+      user = await pharmacistModel.findById(Id);
+      break;
+    case 'Doctor':
+      user = await doctorModel.findById(Id);
+      break;
+    case 'Patient':
+      user = await patientModel.findById(Id);
+      break;
+    default:
+      throw new Error('Invalid user type');
+  }
+
+  if (!user) {
+    throw new Error(`No ${type} found with provided ID`);
+  }
+
+  // Create the notification
+  const notification = await notificationSystemModel.create({
+    type,
+    Id,
+    message,
+    expiryTime,
+    showtime
+  });
+  await notification.save();
+}; 
+
+const getMedicines = async (req, res) => {
+
+try {
+
+  const results = await medicineModel.find({ archived: false });
+  res.json(results);
+  }
+  catch (error) {
+  res.status(500).json(error.message);
+}
+}
+
+const getSubMedicines = async (req, res) => {
+const activeIngredient = req.query.activeIngredient;
+
+try {
+  const results = await medicineModel.find({ activeIngredient, stockQuantity: { $gt: 0 } });
+  if (results.length === 0) {
+    res.json({ medicines: results, message: "There is no substitute!" });
+  } else {
+    res.json({ medicines: results, message: "Done" });
+  }
+  console.log(results)
+} catch (error) {
+  res.status(500).json(error.message);
+}
+};
+
+
 
 const increaseByOne = async (req, res) => {
   const stringMedicineId = req.body.medicineId;
@@ -1221,6 +1313,8 @@ module.exports = {
   viewMyPrescriptions,
   selectPrescription,
   getDoctors,
+  getMedicines,
+  getSubMedicines,
   linkFamilyMemberAccount,
   viewPatientAppointments,
   buyHealthPackage,

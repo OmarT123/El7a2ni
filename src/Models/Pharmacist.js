@@ -40,6 +40,41 @@ const pharmacistSchema = new Schema(
       type: String,// pending, rejected, accepted
       default: "pending",
   },
+  idPDF: {
+    type: String,
+    //required: true,
+  },
+  degreePDF: {
+    type: String,
+  },
+  licensePDF: {
+    type: String,
+    },
+chats:[ {
+
+  partner: {
+type : String ,// id od doc or pharmacist
+required: true
+}
+,
+messages: [
+  {
+    status: {
+      type: String, // 'Received' or 'Sent'
+      required: true
+    },
+    content: {
+      type: String,
+      required: true
+    },
+    time: {
+      type: Date,
+      default: Date.now 
+    }
+  }
+]
+}
+]
 },
   { timestamps: true }
 );

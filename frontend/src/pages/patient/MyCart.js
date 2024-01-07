@@ -103,6 +103,10 @@ const MyCart = ({user}) => {
           Proceed to Checkout
         </button>
       )}
+           <br></br>
+        <a href="/PatientGetMedicine">
+          <button>Back</button>
+        </a>
     </div>
   );
 };

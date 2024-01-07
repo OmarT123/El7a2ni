@@ -8,12 +8,12 @@ import AssignmentIcon from "@mui/icons-material/Assignment";
 import PhoneIcon from "@mui/icons-material/Phone";
 import Peer from "simple-peer";
 import io from "socket.io-client";
-import "../../VideoChat.css";
-import "../../process.js"
+import "../VideoChat.css";
+import "../process.js"
 
 const socket = io.connect('http://localhost:4000');
 
-function VideoChatPatient() {
+function VideoChatRoom({roomId}) {
   const [me, setMe] = useState("");
   const [stream, setStream] = useState(null);
   const [receivingCall, setReceivingCall] = useState(false);
@@ -43,9 +43,11 @@ function VideoChatPatient() {
         //   myVideo.current.srcObject = userMediaStream;
         // }
 
-        socket.on("me", (id) => {
-          setMe(id);
-        });
+        // socket.on("me", (id) => {
+        //   setMe(id);
+        // });
+
+        socket.emit("joinRoom", { roomId });
 
         socket.on("callUser", (data) => {
           setReceivingCall(true);
@@ -59,7 +61,7 @@ function VideoChatPatient() {
     };
 
     initializeMediaDevices();
-  }, []);
+  }, [roomId]);
   const callUser = (id) => {
     const peer = new Peer({
       initiator: true,
@@ -195,4 +197,4 @@ function VideoChatPatient() {
   );
 }
 
-export default VideoChatPatient;
+export default VideoChatRoom;

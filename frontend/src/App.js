@@ -36,7 +36,7 @@ import ViewMyWallet from './pages/patient/ViewMyWallet';
 import ViewDoctorWallet from './pages/doctor/ViewDoctorWallet';
 import DoctorApplication from './pages/admin/DoctorApplication';
 import DoctorContract from './pages/doctor/DoctorContract';
-import VideoChatPatient from './pages/patient/VideoChatPatient';
+import VideoChatPatient from './pages/patient/StartVideoCall';
 import VideoChatDoctor from './pages/doctor/VideoChatDoctor';
 
 // imported from the pharamcy : 
@@ -64,6 +64,7 @@ import MyCart from './pages/patient/MyCart' ;
 import Checkout from './pages/patient/Checkout';
 import PastOrders from './pages/patient/PastOrders';
 import SuccessfulCheckout from './pages/patient/SuccessfulCheckout';
+import StartVideoCall from './pages/patient/StartVideoCall';
 
 // user 
 
@@ -144,8 +145,10 @@ function App() {
             <Route path="/ViewDoctorWallet" element={<ViewDoctorWallet/>}/>
             <Route path="/DoctorApplication" element={<DoctorApplication/>}/>
             <Route path="/doctorContract" element={<DoctorContract />} />
-            <Route path = "/VideoChatPatient" element = {<VideoChatPatient/>}/>
-            <Route path = "/VideoChatDoctor" element = {<VideoChatDoctor/>}/>
+            {/* <Route path = "/VideoChatPatient" element = {<VideoChatPatient/>}/> */}
+            {/* <Route path = "/VideoChatDoctor" element = {<VideoChatDoctor/>}/> */}
+            <Route path="/StartVideoCall" element={<StartVideoCall />} />
+
 
 
             {/*User Routing */}
