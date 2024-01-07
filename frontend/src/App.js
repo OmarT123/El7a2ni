@@ -34,13 +34,10 @@ import ViewMyWallet from './pages/patient/ViewMyWallet';
 import ViewDoctorWallet from './pages/doctor/ViewDoctorWallet';
 import DoctorApplication from './pages/admin/DoctorApplication';
 import DoctorContract from './pages/doctor/DoctorContract';
-<<<<<<< HEAD
 import VideoChatPatient from './pages/patient/VideoChatPatient';
 import VideoChatDoctor from './pages/doctor/VideoChatDoctor';
-=======
 import ViewPatientPrescriptions from './pages/doctor/ViewPatientPrescriptions';
 import SelectedPrescriptionDoctor from './pages/doctor/SelectedPrescriptionDoctor';
->>>>>>> dev
 
 // imported from the pharamcy : 
 import UnApprovedPharmacists from './pages/admin/UnApprovedPharmacists'
