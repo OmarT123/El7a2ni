@@ -84,7 +84,8 @@ const {
   pastOrders,
   cancelOrder,
   deleteHealthRecord,
-  cancelAppointment
+  cancelAppointment,
+  addPrescriptionToCart
 } = require("./Routes/patientController");
 
 
@@ -218,7 +219,7 @@ app.get("/pastOrders",getUserFromTokenMiddleware,pastOrders);
 app.put("/cancelOrder",getUserFromTokenMiddleware,cancelOrder);
 app.put("/deleteHealthRecord", getUserFromTokenMiddleware, deleteHealthRecord);
 app.put("/cancelAppointment", getUserFromTokenMiddleware, cancelAppointment);
-
+app.post("/addPrescriptionToCart", getUserFromTokenMiddleware, addPrescriptionToCart);
 
 //Doctor
 app.get("/filterAppointmentsForDoctor",getUserFromTokenMiddleware ,filterAppointmentsForDoctor);

@@ -50,6 +50,10 @@ const FilterAppointments = ({ apiLink }) => {
     }
   };
 
+  const sortAppointmentsByDate = (appointmentsArray) => {
+    return appointmentsArray.sort((a, b) => new Date(a.date) - new Date(b.date));
+  };
+
   useEffect(() => {
     handleSubmit();
   }, []);
@@ -84,7 +88,7 @@ const FilterAppointments = ({ apiLink }) => {
       <div>
         <h3>Upcoming Appointments</h3>
         <ul>
-          {appointments.upcomingAppointments.map((appointment) => (
+        {sortAppointmentsByDate(appointments.upcomingAppointments).map((appointment) => (
             <li key={appointment._id}>
               <div> Patient: {appointment.attendantName} </div>
               <div> Date: {new Date(appointment.date).toLocaleString()} </div>
@@ -101,7 +105,7 @@ const FilterAppointments = ({ apiLink }) => {
       <div>
         <h3>Past Appointments</h3>
         <ul>
-          {appointments.pastAppointments.map((appointment) => (
+        {sortAppointmentsByDate(appointments.pastAppointments).map((appointment) => (
             <li key={appointment._id}>
               <div> Patient name: {appointment.attendantName} </div>
               <div> Date: {new Date(appointment.date).toLocaleString()} </div>

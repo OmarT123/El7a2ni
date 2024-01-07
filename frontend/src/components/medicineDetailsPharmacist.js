@@ -53,6 +53,7 @@ const MedicineDetailsPharmacist = ({medicine}) =>
             <p><strong>Description: </strong>{medicine.medicinalUse}</p>
             <p><strong>Stock Quantity: </strong>{medicine.stockQuantity}</p>
             <p><strong>Amount sold: </strong>{medicine.amountSold}</p>
+            <strong><p>{medicine.prescriptionMedicine? "This a prescription medicine" : "This is non-prescription medicine" }</p></strong>
             {/*picture here*/}
             <br></br>
             <img
