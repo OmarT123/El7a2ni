@@ -114,7 +114,8 @@ const {
   addDosage,
   addToPrescription,
   viewAllMedicines,
-  deleteFromPrescription
+  deleteFromPrescription,
+  approveRequest
 } = require("./Routes/doctorController");
 
 
@@ -317,6 +318,7 @@ app.put("/addDosage",addDosage);
 app.post("/addToPrescription",getUserFromTokenMiddleware,addToPrescription);
 app.get("/viewAllMedicines",getUserFromTokenMiddleware,viewAllMedicines);
 app.post("/deleteFromPrescription",getUserFromTokenMiddleware,deleteFromPrescription)
+app.put("/approveRequest", getUserFromTokenMiddleware, approveRequest);
 
 //Pharmacist
 app.post("/addPharmacist",addPharmacist);
