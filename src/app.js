@@ -128,6 +128,7 @@ const {
   medicinequantityandsales,
   viewMedicine,
   uploadMedicineImage,
+  archiveMedicine,
   pharmacistRetrieveNotifications
 } = require("./Routes/pharmacistController");
 
@@ -329,6 +330,7 @@ app.post("/addMedicine", getUserFromTokenMiddleware,addMedicine);
 app.get("/filterByMedicinalUsePharmacist",getUserFromTokenMiddleware, filterByMedicinalUsePharmacist);
 app.get("/medicinequantityandsales",getUserFromTokenMiddleware, medicinequantityandsales);
 app.put("/uploadMedicineImage", uploadMedicineImage);
+app.put("/archiveMedicine", archiveMedicine);
 app.get("/pharmacistRetrieveNotifications", pharmacistRetrieveNotifications);
 
 //user 

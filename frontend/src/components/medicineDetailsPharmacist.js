@@ -45,6 +45,14 @@ const MedicineDetailsPharmacist = ({medicine}) =>
     }
     }
 
+    const archiveMedicine = async(e, medicineID) => {
+        e.preventDefault();
+        await axios.put("/archiveMedicine", { id: medicineID }).then(res=> {
+            alert(res.data);
+            window.location.reload();
+            }).catch(err=>console.log(err))
+    }
+
     return (
         <div className="medicine-details">
             
@@ -53,7 +61,8 @@ const MedicineDetailsPharmacist = ({medicine}) =>
             <p><strong>Description: </strong>{medicine.medicinalUse}</p>
             <p><strong>Stock Quantity: </strong>{medicine.stockQuantity}</p>
             <p><strong>Amount sold: </strong>{medicine.amountSold}</p>
-            <strong><p>{medicine.prescriptionMedicine? "This a prescription medicine" : "This is non-prescription medicine" }</p></strong>
+            <strong><p>{medicine.archived? "This medicine is archived." : "This medicine is not archived." }</p></strong>
+            <strong><p>{medicine.prescriptionMedicine? "This a prescription medicine." : "This is non-prescription medicine."}</p></strong>
             {/*picture here*/}
             <br></br>
             <img
@@ -81,6 +90,13 @@ const MedicineDetailsPharmacist = ({medicine}) =>
                 Upload/Replace Medicine Image
             </button>
             </div>
+            <button
+                type="button"
+                onClick={(e) => archiveMedicine(e, medicine._id)}
+                style={{ marginTop: '7px' }}
+            >
+                Archive/Unarchive medicine
+            </button>
         </div>
     )
 }
