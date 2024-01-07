@@ -10,6 +10,7 @@ const SuccessfulCheckoutAppointment = ({user}) => {
             body['appointmentId'] = localStorage.getItem('appointment')
             const name = localStorage.getItem('attendantName')
             body['name'] = name
+            body['f'] = localStorage.getItem('f')
             console.log(name)
             await axios.put('/reserveAppointment?id='+user._id,body).then(res=>console.log(res.data))
             body['message'] = "Booked Appointment"

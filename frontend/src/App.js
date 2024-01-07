@@ -62,6 +62,7 @@ import MyCart from './pages/patient/MyCart' ;
 import Checkout from './pages/patient/Checkout';
 import PastOrders from './pages/patient/PastOrders';
 import SuccessfulCheckout from './pages/patient/SuccessfulCheckout';
+import RequestFollowup from './pages/patient/RequestFollowup';
 
 // user 
 
@@ -70,6 +71,7 @@ import ChangePassword from './pages/user/ChangePassword';
 import ResetPassword from './pages/user/ResetPassword';
 import ResetPasswordOTP from './pages/user/ResetPasswordOTP';
 import NotAuthorized from './components/NotAuthorized';
+import AddToPrescription from './pages/doctor/addToPrescription';
 
 function App() {
   return (
@@ -104,6 +106,7 @@ function App() {
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/PastOrders" element={<PastOrders />} />
             <Route path="/SuccessfulCheckout" element={<SuccessfulCheckout />} />
+            <Route path='/RequestFollowup' element={<RequestFollowup/>}/>
 
             {/*Virtual clinic Routing */}
             <Route path="/Home" element={<Home />} />
@@ -140,8 +143,10 @@ function App() {
             <Route path="/ViewDoctorWallet" element={<ViewDoctorWallet/>}/>
             <Route path="/DoctorApplication" element={<DoctorApplication/>}/>
             <Route path="/doctorContract" element={<DoctorContract />} />
-            <Route path='/ViewPatientsPrescriptions' element={<ViewPatientPrescriptions/>}/>
+            <Route path='/ViewPatientPrescriptions' element={<ViewPatientPrescriptions/>}/>
             <Route path='/SelectedPrescriptionDoctor' element={<SelectedPrescriptionDoctor/>}/>
+            <Route path='/addToPrescription' element={<AddToPrescription/>}/>
+
 
             {/*User Routing */}
             <Route path="/login" element ={<Login />}/>

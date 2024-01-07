@@ -72,6 +72,7 @@ const SelectedPrescription = ({ user }) => {
                     <strong>Price: </strong>{medicine.medId.price}$
                     <strong>Medicinal Use: </strong>{medicine.medId.medicinalUse}
                     <strong>Active Ingredient: </strong>{medicine.medId.activeIngredient}
+                    <strong>Dosage: </strong>{medicine.dosage} <br/>
                     {medicine.medId.picture && (
                       <img
                         src={medicine.medId.picture}
@@ -79,7 +80,6 @@ const SelectedPrescription = ({ user }) => {
                         className="medicine-image"
                       />
                     )}
-                    <strong>Dosage: </strong>{medicine.dosage}
                   </div>
                   <div>
                     <input
@@ -93,11 +93,14 @@ const SelectedPrescription = ({ user }) => {
                 </div>
               ))
             ) : (
+              <div>
               <p>No medicine found in the prescription.</p>
+              <button>Fill Prescription</button>
+              </div>
             )}
           </div>
           <br />
-          <button onClick={downloadPrescription}>Download Prescription</button>
+          {prescription.filled && <button onClick={downloadPrescription}>Download Prescription</button>}
         </>
       )}
     </div>

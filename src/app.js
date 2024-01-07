@@ -26,7 +26,10 @@ const {
   rejectContract,
   viewPatientPrescriptions,
   selectPrescriptionDoctor,
-  addDosage
+  addDosage,
+  addToPrescription,
+  viewAllMedicines,
+  deleteFromPrescription
 } = require("./Routes/doctorController");
 
 
@@ -82,7 +85,8 @@ const {
   pastOrders,
   cancelOrder,
   deleteHealthRecord,
-  cancelAppointment
+  cancelAppointment,
+  addPrescriptionToCart
 } = require("./Routes/patientController");
 
 
@@ -216,7 +220,7 @@ app.get("/pastOrders",getUserFromTokenMiddleware,pastOrders);
 app.put("/cancelOrder",getUserFromTokenMiddleware,cancelOrder);
 app.put("/deleteHealthRecord", getUserFromTokenMiddleware, deleteHealthRecord);
 app.put("/cancelAppointment", getUserFromTokenMiddleware, cancelAppointment);
-
+app.post("/addPrescriptionToCart", getUserFromTokenMiddleware, addPrescriptionToCart);
 
 //Doctor
 app.get("/filterAppointmentsForDoctor",getUserFromTokenMiddleware ,filterAppointmentsForDoctor);
@@ -236,9 +240,10 @@ app.put("/acceptContract", getUserFromTokenMiddleware, acceptContract);
 app.put("/rejectContract", getUserFromTokenMiddleware, rejectContract);
 app.get("/viewPatientPrescriptions",getUserFromTokenMiddleware,viewPatientPrescriptions);
 app.get("/selectPrescriptionDoctor",getUserFromTokenMiddleware,selectPrescriptionDoctor);
-app.put("/addDosage",addDosage)
-
-
+app.put("/addDosage",addDosage);
+app.post("/addToPrescription",getUserFromTokenMiddleware,addToPrescription);
+app.get("/viewAllMedicines",getUserFromTokenMiddleware,viewAllMedicines);
+app.post("/deleteFromPrescription",getUserFromTokenMiddleware,deleteFromPrescription)
 
 //Pharmacist
 app.post("/addPharmacist",addPharmacist);

@@ -3,6 +3,7 @@ const patientModel = require("../Models/Patient.js");
 const appointmentModel = require("../Models/Appointment.js");
 const adminModel = require("../Models/Admin.js");
 const prescriptionModel = require("../Models/Prescription.js");
+const medicineModel = require("../Models/Medicine.js");
 const userModel = require("../Models/User.js")
 const healthPackageModel = require("../Models/HealthPackage.js")
 const doctorDocuments = require("../Models/DoctorDocuments.js");
@@ -340,12 +341,17 @@ const addAppointmentSlots = async (req,res) => {
           const healthPackage = await healthPackageModel.findById(healthPackageID).catch(err => console.log(err.message))
           discount = 1 - healthPackage.doctorDiscount / 100;
         }           
-        await appointmentModel.create({
+        const appointment = await appointmentModel.create({
           doctor: doctor._id,
           date,
           status: 'upcoming',
           patient: new mongoose.Types.ObjectId(req.body.patientID),
           price: (doctor.hourlyRate + 10 / 100 * clinicMarkup) * discount
+        })
+        await prescriptionModel.create({
+          doctor: doctor._id,
+          patient: new mongoose.Types.ObjectId(req.body.patientID),
+          appointment: appointment._id
         })
       }
       else{
@@ -418,6 +424,58 @@ const selectPrescriptionDoctor = async (req, res) => {
     res.json({ error: error.message });
   }
 };
+const addToPrescription = async (req, res) => {
+  try {
+    const { prescriptionId, medId, dosage } = req.body;
+    const prescription = await prescriptionModel.findById(prescriptionId);
+    prescription.medicines.push({ medId, dosage });
+    if(prescription.filled === false){
+      prescription.filled = true;
+      prescription.dateFilled = new Date();
+    }
+    await prescription.save();
+
+    res.json({ message: 'Medicine added to prescription successfully' });
+  } catch (error) {
+    console.error(error);
+    res.json({ error: 'Internal Server Error' });
+  }
+}
+const viewAllMedicines= async (req, res) => {
+
+  try {
+    const medicines = await medicineModel.find();
+    res.json(medicines);
+  } catch (error) {
+    console.error('Error fetching medicines:', error.message);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+}
+const deleteFromPrescription=async(req,res) =>{
+  try {
+    const { prescriptionId, medId } = req.body;
+    const prescription = await prescriptionModel.findById(prescriptionId);
+    const medicineIndex = prescription.medicines.findIndex(medicine => medicine.medId.toString() === medId);
+
+    if (medicineIndex !== -1) {
+
+      prescription.medicines.splice(medicineIndex, 1);
+
+      await prescription.save();
+
+      res.json({ message: 'Medicine deleted from prescription successfully' });
+    } else {
+      res.json({ error: 'Medicine not found in prescription' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.json({ error: 'Internal Server Error' });
+  }
+}
+
+
+
+
 
 module.exports = {
   addDoctor,
@@ -436,5 +494,8 @@ module.exports = {
   rejectContract,
   viewPatientPrescriptions,
   selectPrescriptionDoctor,
-  addDosage
+  addDosage,
+  addToPrescription,
+  viewAllMedicines,
+  deleteFromPrescription
 };

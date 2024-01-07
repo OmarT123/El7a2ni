@@ -197,8 +197,34 @@ const addToCart = async (req, res) => {
 
 
     const medicine = await medicineModel.findById(stringMedicineId);
-    const patientId = req.user._id; // Replace with your method of obtaining the patient's ID
+    const patientId = req.user._id;
     let oldcart = await cartvalue(patientId);
+    if (medicine.prescriptionMedicine === true) {
+      try {
+        let prescriptions = [];
+        const date = new Date();
+        prescriptions = await prescriptionModel.find({ patient: patientId });
+    
+        const filteredPrescriptions = prescriptions.filter((prescription) => {
+          const prescriptionDate = new Date(prescription.dateFilled);
+          const timeDifference = date.getTime() - prescriptionDate.getTime();
+          const daysDifference = timeDifference / (1000 * 3600 * 24);
+          return daysDifference < 3;
+        });
+        let isFound = false;
+        for (const prescription of filteredPrescriptions) {
+          for (const prescribedMedicine of prescription.medicines) {
+            if (prescribedMedicine.medId.toString() === medicine._id.toString()) {
+              isFound = true;
+            }
+          }
+        }
+        if(!isFound)
+          return res.json({ message: "The specified prescription medicine wasn't found in any of your recent prescriptions." });
+      } catch (error) {
+        console.error('Error fetching prescriptions:', error.message);
+      }
+    }
     if (!medicine) {
       return res.json({ message: "Medicine not found" });
     }
@@ -783,15 +809,6 @@ const payWithWallet = async (req, res) => {
   const type = req.query.type
   try {
     const patient = await patientModel.findById(patientId)
-
-    console.log('--------')
-    // if (patient.healthPackage && type === 'appointment')
-    // {
-    //   const healthPackageId = patient.healthPackage.healthPackageID
-    //   console.log(healthPackageId)
-    //   const healthPackage = await healthPackageModel.findById(healthPackageId)
-    //   price *= (1 - (healthPackage.doctorDiscount)/100)
-    // }
     if (patient.wallet < price) {
       return res.json({ success: false, message: "Insufficient funds!" })
     }
@@ -907,13 +924,22 @@ const reserveAppointment = async (req, res) => {
   const clinicMarkup = process.env.CLINIC_MARKUP
   let discount = 1;
   const patient = await patientModel.findById(patientId);
+  const followup = req.body.f
   if(patient.healthPackage){
     const healthPackageID = patient.healthPackage.healthPackageID.toString()
     const healthPackage = await healthPackageModel.findById(healthPackageID).catch(err => console.log(err.message))
     discount = 1 - healthPackage.doctorDiscount / 100;
     }
   try {
-    const appointment = await appointmentModel.findByIdAndUpdate(appointmentId, { patient: new mongoose.Types.ObjectId(patientId), status: "upcoming", attendantName: name, price: (doctor.hourlyRate + 10 / 100 * clinicMarkup) * discount }, { new: true })
+    if(followup)
+      await appointmentModel.findByIdAndUpdate(appointmentId, { patient: new mongoose.Types.ObjectId(patientId), status: "requested", attendantName: name, price: (doctor.hourlyRate + 10 / 100 * clinicMarkup) * discount }, { new: true })
+    else
+      await appointmentModel.findByIdAndUpdate(appointmentId, { patient: new mongoose.Types.ObjectId(patientId), status: "upcoming", attendantName: name, price: (doctor.hourlyRate + 10 / 100 * clinicMarkup) * discount }, { new: true })
+    await prescriptionModel.create({
+      doctor: appointment.doctor,
+      patient: new mongoose.Types.ObjectId(patientId),
+      appointment: appointmentId
+    }) 
     res.json('updated Successfully')
   } catch (err) {
     res.json(err.message)
@@ -1069,7 +1095,6 @@ const getAnAppointment = async (req, res) => {
       const healthPackage = await healthPackageModel.findById(healthPackageID).catch(err => console.log(err.message))
       discount = 1 - healthPackage.doctorDiscount / 100;
     }
-
     const response = { appointment: appointment, price: (doctor.hourlyRate + 10 / 100 * clinicMarkUp) * discount }
     res.json(response)
   }
@@ -1225,6 +1250,57 @@ const cancelAppointment = async (req, res) => {
   }
 };
 
+const addPrescriptionToCart = async (req, res) => {
+  const prescriptionID = req.body.prescription;
+  const prescription = await prescriptionModel.findById(prescriptionID);
+  const patientID = prescription.patient;
+  const patient = await patientModel.findById(patientID);
+  const medicines = prescription.medicines
+  //start here
+  for(requestedMedicine of medicines){
+    const medicine = await medicineModel.findById(requestedMedicine.medId);
+    if (medicine.archived === true)
+      return res.json({message: "One of the medicine is currently not being sold by our pharmacy, please buy these medicines seperately."});
+    if (requestedMedicine.dosage > medicine.stockQuantity) {
+      return res.json({ message: "Requested quantity of a certain medicine exceeds available stock, please buy these medicines seperately."});
+    }
+
+    const existingCartItemIndex = patient.cart.items.findIndex(item => item.medicine.toString() === requestedMedicine._id.toString());
+    if (existingCartItemIndex !== -1) {
+      if (patient.cart.items[existingCartItemIndex].quantity + requestedMedicine.dosage > medicine.stockQuantity)
+        return res.json({ message: "Requested quantity of a certain medicine exceeds available stock, please buy these medicines seperately." });
+      else
+        patient.cart.items[existingCartItemIndex].quantity += requestedMedicine.dosage;
+    } else {
+
+      patient.cart.items.push({ medicine: requestedMedicine._id, quantity : requestedMedicine.dosage });
+    }
+
+    let price = medicine.price;
+    let package_Id = null
+    if (patient.healthPackage) {
+      package_Id = patient.healthPackage.healthPackageID;
+    }
+
+
+    if (!package_Id)
+      patient.cart.amountToBePaid += price * requestedMedicine.dosage;
+    else {
+      let package = await healthPackageModel.findById(package_Id)
+      let ratio = package.medicineDiscount;
+      let percentage = 1 - ratio / 100;
+      patient.cart.amountToBePaid += (((price) * requestedMedicine.dosage) * percentage);
+    }
+
+
+    await patient.save();
+  }
+  prescription.sentToPharmacy = true;
+  await prescription.save();
+  res.json({ message: 'Prescriptions items added to cart successfully.'});
+  //end here
+}
+
 
 function calculateAge(birthDate) {
   const today = new Date();
@@ -1281,5 +1357,6 @@ module.exports = {
   pastOrders,
   cancelOrder,
   deleteHealthRecord,
-  cancelAppointment
+  cancelAppointment,
+  addPrescriptionToCart
 };
