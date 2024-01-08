@@ -9,10 +9,14 @@ import { useContext } from "react";
 import MedicationIcon from "@mui/icons-material/Medication";
 import MedicineView from "../MedicineView";
 import DoctorsStage from "../AdminEmployees/DoctorsStage";
+import Chat from "../Chat";
 
 const PharmacistHomePage = () => {
   const [page, setPage] = useState("home");
   const { user } = useContext(HomePageContext);
+  const [chat, setChat] = useState(false);
+  const [chatterID, setChatterID] = useState('');
+  const [chatterName, setChatterName] = useState('');
 
   const Home = () => {
     return (
@@ -62,8 +66,12 @@ const PharmacistHomePage = () => {
               setStage={() => setPage("home")}
               together={true}
               userType={"pharmacist"}
+              setChat={setChat}
+              setChatterID={setChatterID}
+              setChatterName={setChatterName}
             />
           )}
+          {chat && <Chat partner={chatterID} name= {chatterName} setChat={setChat}/>}
         </Grid>
       </Container>
     </>

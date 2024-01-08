@@ -31,7 +31,7 @@ const ScrollTop = (props) => {
       <div
         onClick={scrollToTop}
         role="presentation"
-        style={{ position: "fixed", bottom: 16, right: 16 }}
+        style={{ position: "fixed", bottom: 16, left: 16 }}
       >
         {children}
       </div>

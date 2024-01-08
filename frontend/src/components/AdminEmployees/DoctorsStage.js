@@ -23,7 +23,7 @@ const listStyle = {
   marginTop: 16,
 };
 
-const DoctorsStage = ({ setAlert, setStage, together = false, userType }) => {
+const DoctorsStage = ({ setAlert, setStage, together = false, userType, setChat, setChatterID, setChatterName }) => {
   const [unapprovedDoctors, setUnapprovedDoctors] = useState([]);
   const [approvedDoctors, setApprovedDoctors] = useState([]);
 
@@ -84,6 +84,15 @@ const DoctorsStage = ({ setAlert, setStage, together = false, userType }) => {
       console.error(error.message);
     }
   };
+
+  const openChat = (e, doctorId, name) => {
+    e.preventDefault();
+    setChat(false);
+    setChatterID('');
+    setChat(true);
+    setChatterID(doctorId);
+    setChatterName(name);
+  }
 
   const DoctorListItem = ({ item }) => {
     const [expandedItem, setExpandedItem] = useState(null);
@@ -180,7 +189,11 @@ const DoctorsStage = ({ setAlert, setStage, together = false, userType }) => {
           unmountOnExit
         >
           {userType === "pharmacist" && (
-            <Button variant="contained" sx={{ m: "30px" }}>
+            <Button 
+            variant="contained" 
+            sx={{ m: "30px" }}
+            onClick={(e) => openChat(e, item._id, item.name)}
+            >
               Chat With Doctor
             </Button>
           )}
