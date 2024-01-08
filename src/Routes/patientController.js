@@ -17,7 +17,6 @@ const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt');
 require("dotenv").config();
 const ChattingRoomModel = require('../Models/ChattingRoom.js');
-const pharmacistModel =require('../Models/Pharmacist.js');
 
 
 const addPatient = async (req, res) => {
@@ -186,7 +185,7 @@ const handleAfterBuy = async (cart, id) => {
       }
         await medicine.save();
       }
-    }
+    
     const patient = await patientModel.findById(id);
     patient.cart.items = [];
     patient.cart.amountToBePaid = 0;
