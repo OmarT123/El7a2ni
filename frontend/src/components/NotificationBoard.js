@@ -6,28 +6,30 @@ import { Collapse } from "@mui/material";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 
-
 const Notification = ({ notification }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const handleToggle = () => {
     setIsExpanded(!isExpanded);
   };
+
   return (
     <Box sx={{ width: "100%" }}>
       <h3 onClick={handleToggle} style={{ cursor: 'pointer' }}>
         {notification.title} {!isExpanded && <ExpandMoreIcon />}{isExpanded && <ExpandLessIcon/>}
       </h3>
       <Collapse in={isExpanded}>
-      {<p>{notification.message}</p>}
+        {<p>{notification.message}</p>}
       </Collapse>
     </Box>
   );
 };
 
 const NotificationBoard = ({ onClose }) => {
-  const { user, userType } = useContext(HomePageContext)
+  const { user, userType } = useContext(HomePageContext);
   const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   let apiLink;
   if (userType === 'pharmacist')
     apiLink = '/pharmacistRetrieveNotifications';
@@ -35,11 +37,19 @@ const NotificationBoard = ({ onClose }) => {
     apiLink = '/doctorRetrieveNotifications';
   if (userType === 'patient')
     apiLink = '/patientRetrieveNotifications';
+
   useEffect(() => {
-    axios.get(apiLink).then((response) => {
-      setNotifications(response.data);
-    });
-  }, []);
+    axios.get(apiLink)
+      .then((response) => {
+        setNotifications(response.data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching notifications:", error);
+        setLoading(false);
+      });
+  }, [apiLink]);
+
   return (
     <Box
       sx={{
@@ -89,8 +99,10 @@ const NotificationBoard = ({ onClose }) => {
             Notifications
           </h2>
         </Box>
-        {notifications.map((notification) => (
-          <Notification notification={notification} />
+        {loading && <p>Loading...</p>}
+        {!loading && notifications.length === 0 && <p>No recent notifications.</p>}
+        {!loading && notifications.map((notification) => (
+          <Notification key={notification._id} notification={notification} />
         ))}
       </Box>
     </Box>
