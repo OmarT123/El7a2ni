@@ -48,7 +48,7 @@ const PharmacistHomePage = () => {
 
   return (
     <>
-      <HomeNavBar homeButton={() => setPage("home")} setPage={setPage}/>
+      <HomeNavBar homeButton={() => setPage("home")} setPage={setPage} />
       <Container sx={{ mt: 3 }}>
         <Grid container spacing={5}>
           {page === "profile" ? (
