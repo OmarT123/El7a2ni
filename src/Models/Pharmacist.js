@@ -6,7 +6,7 @@ const pharmacistSchema = new Schema(
     username: {
       type: String,
       required: true,
-      unique: true,
+      unique : true
     },
     name: {
       type: String,
@@ -37,24 +37,35 @@ const pharmacistSchema = new Schema(
       required: true,
     },
     status: {
-      type: String, // pending, rejected, accepted
+      type: String,// pending, rejected, accepted
       default: "pending",
-    },
-    idPDF: {
-      type: String,
-      required: true,
-    },
-    degreePDF: {
-      type: String,
-    },
-    licensePDF: {
-      type: String,
-    },
-    wallet: {
-      type: Number,
-      default: 0,
-    },
   },
+chats:[ {
+
+  partner: {
+type : String ,// id od doc or pharmacist
+required: true
+}
+,
+messages: [
+  {
+    status: {
+      type: String, // 'Received' or 'Sent'
+      required: true
+    },
+    content: {
+      type: String,
+      required: true
+    },
+    time: {
+      type: Date,
+      default: Date.now 
+    }
+  }
+]
+}
+]
+},
   { timestamps: true }
 );
 

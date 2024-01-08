@@ -88,7 +88,7 @@ const MedicineView = ({ userType }) => {
       setSearchName("");
       setShowResetButton(false);
       try {
-        const res = await axios.get("/viewMedicine");
+        const res = await axios.get("/viewMedicineUser");
         const medicinesData = res.data;
         setMedicine(medicinesData);
       } catch (error) {
@@ -202,7 +202,7 @@ const MedicineView = ({ userType }) => {
 
   const fetchMedicines = async () => {
     try {
-      const res = await axios.get("/viewMedicine");
+      const res = await axios.get("/viewMedicineUser");
       const medicinesData = res.data;
       setMedicine(medicinesData);
     } catch (error) {

@@ -44,31 +44,50 @@ const patientSchema = new Schema(
       {
         type: mongoose.Types.ObjectId,
         ref: "FamilyMember",
-      },
+      }
     ],
-    HealthRecords: {
-      type: [String],
-      default: [],
-    },
+    HealthRecords: [
+      { 
+        type: String,
+      }
+    ],
     healthPackage:{
-      type: {
+        type: {
         healthPackageID: {
           type : mongoose.Schema.Types.ObjectId,
           ref : 'HealthPackage',
         },
         status: String,
         endDate: Date,
-      },
+      },
+    }
+,
+chats:[ {
+
+  partner: {
+type : String ,// id od doc or pharmacist
+required: true
+}
+,
+messages: [
+  {
+    status: {
+      type: String, // 'Received' or 'Sent'
+      required: true
     },
-    healthPackageDiscount:{
-      type: {
-        healthPackageID: {
-          type : mongoose.Schema.Types.ObjectId,
-          ref : 'HealthPackage',
-        },
-        discount: Number,
-      },
+    content: {
+      type: String,
+      required: true
     },
+     time: {
+      type: Date,
+      default: Date.now 
+    }
+  }
+]
+}
+]
+,
     cart: { items:[
       {
         medicine: {
@@ -86,7 +105,6 @@ const patientSchema = new Schema(
       default: 0
     }
   },
-
   wallet: {
     type: Number,
     default: 0
@@ -101,4 +119,4 @@ const patientSchema = new Schema(
 );
 
 const Patient = mongoose.model("Patient", patientSchema);
-module.exports = Patient;
+module.exports = Patient;

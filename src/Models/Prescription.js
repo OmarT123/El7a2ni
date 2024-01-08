@@ -31,6 +31,17 @@ const prescriptionSchema = new Schema(
       ref:"Doctor",
       required: true,
     },
+    appointment: {
+      type: mongoose.Types.ObjectId,
+      ref:"Appointment",
+    },
+    dateFilled: {
+      type: Date,
+    },
+    sentToPharmacy: {
+      type: Boolean,
+      default: false
+    }
   },
   { timestamps: true }
 );

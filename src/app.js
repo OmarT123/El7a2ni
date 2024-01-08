@@ -1,10 +1,174 @@
+const schedule = require("node-schedule");
+const appointmentModel = require("./Models/Appointment.js");
+const VideoChatRoom = require("./Models/VideoChatRoom");
 const express = require("express");
 const mongoose = require("mongoose");
 mongoose.set("strictQuery", false);
-const cookieParser = require("cookie-parser");
+const app = express();
+const http = require("http");
+const cors = require("cors");
+const { Server } = require("socket.io");
+app.use(cors()); // Enable CORS for all routes
+const server = http.createServer(app); // Replace 'app' with your Express app instance
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"],
+  },
+});
+/*
+io.on('connection',socket=> {
+  socket.on('join-room', (roomId,userId)=>{
+    console.log(roomId,userId);
+  })
 
+})
+*/
+
+//This function runs at midnight every day automatically to send a notification and email to the patient/doctor to remind them of their appointments within the 24 hours.
+schedule.scheduleJob("0 0 * * *", async () => {
+  //to customize how often it is run, first param: every how many min it is run, second: every how many hours, third: day of the month, 4th: month, 5th: day of the month, * means every
+  //to run every 5 mins, use '*/5 * * * *'
+  try {
+    const currentDate = new Date();
+    const next24Hours = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000);
+
+    const upcomingAppointments = await appointmentModel
+      .find({
+        date: { $gte: currentDate, $lt: next24Hours },
+        status: "upcoming",
+      })
+      .populate("doctor patient");
+
+    for (const appointment of upcomingAppointments) {
+      const expiryTime = new Date();
+      const notificationDate = new Date();
+      expiryTime.setFullYear(expiryTime.getFullYear() + 1);
+      addNotification(
+        "Doctor",
+        appointment.doctor,
+        "Appointment Reminder",
+        `You have an upcoming appointment at ${appointment.date} with patient ${appointment.attendantName}.`,
+        expiryTime,
+        notificationDate
+      );
+      addNotification(
+        "Patient",
+        appointment.patient,
+        "Appointment Reminder",
+        `You have an upcoming appointment with Dr.${appointment.doctor.name} on ${appointment.date}.`,
+        expiryTime,
+        notificationDate
+      );
+      const transporter = nodemailer.createTransport({
+        service: process.env.NODEMAILER_SERVICE,
+        auth: {
+          user: process.env.NODEMAILER_EMAIL,
+          pass: process.env.NODEMAILER_PASSWORD,
+        },
+        tls: {
+          rejectUnauthorized: false,
+        },
+      });
+      const mailOptionsPatient = {
+        from: process.env.NODEMAILER_EMAIL,
+        to: appointment.patient.email,
+        subject: "Appointment Reminder",
+        text: `You have an upcoming appointment with Dr.${appointment.doctor.name} on ${appointment.date}.`,
+      };
+      const mailOptionsDoctor = {
+        from: process.env.NODEMAILER_EMAIL,
+        to: appointment.doctor.email,
+        subject: "Appointment Reminder",
+        text: `You have an upcoming appointment at ${appointment.date} with patient ${appointment.attendantName}.`,
+      };
+      try {
+        await transporter.sendMail(mailOptionsPatient);
+        await transporter.sendMail(mailOptionsDoctor);
+      } catch (error) {
+        console.error("Error sending email:", error);
+      }
+    }
+  } catch (error) {
+    console.error("Error retrieving upcoming appointments:", error);
+  }
+});
+
+io.on("connection", (socket) => {
+  console.log(`User Connected: ${socket.id}`);
+
+  socket.on("join_room", (data) => {
+    socket.join(data);
+    console.log(`User with ID: ${socket.id} joined room: ${data}`);
+  });
+
+  socket.on("send_message", (data) => {
+    socket.to(data.room).emit("receive_message", data);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("User Disconnected", socket.id);
+  });
+
+  socket.on("startCall", async ({ patientId, doctorId }) => {
+    const roomId = socket.id;
+    await VideoChatRoom.create({ roomId, patientId, doctorId });
+    io.to(socket.id).emit("roomCreated", { roomId });
+  });
+  socket.on("joinRoom", ({ roomId }) => {
+    socket.join(roomId);
+  });
+
+  socket.on("callEnded", (data) => {
+    io.to(data.to).emit("callEnded");
+  });
+
+  socket.on("callUser", (data) => {
+    io.to(data.userToCall).emit("callUser", {
+      signal: data.signalData,
+      from: data.from,
+      callerName: data.callerName,
+    });
+  });
+
+  socket.on("answerCall", (data) => {
+    io.to(data.to).emit("callAccepted", data.signal);
+  });
+});
+
+const cookieParser = require("cookie-parser");
 require("dotenv").config();
 const MongoURI = process.env.MONGO_URI;
+app.use(express.json({ limit: "5000mb" }));
+app.use(express.urlencoded({ limit: "5000mb", extended: true }));
+app.use(cookieParser());
+
+const port = process.env.PORT || "4000";
+if (!MongoURI) {
+  console.error("MongoDB URI is not defined in the environment variables.");
+  process.exit(1);
+}
+
+mongoose
+  .connect(MongoURI)
+  .then(() => {
+    console.log("MongoDB is now connected!");
+    server.listen(port, async () => {
+      await appointmentModel.cancelPastAppointments();
+      console.log(`Listening to requests on http://localhost:${port}`);
+    });
+  })
+  .catch((err) => console.log(err));
+
+//VideoChat
+
+app.get("/VideoChatRoom", (req, res) => {
+  res.redirect(`/${uuidV4()}`);
+});
+
+app.get("/VideoChatRoom", (req, res) => {
+  res.render("VideoChatRoom", { roomId: req.params.room });
+});
 
 const {
   addDoctor,
@@ -21,6 +185,14 @@ const {
   viewDoctorAppointments,
   acceptContract,
   rejectContract,
+  viewPatientPrescriptions,
+  selectPrescriptionDoctor,
+  addDosage,
+  addToPrescription,
+  viewAllMedicines,
+  deleteFromPrescription,
+  approveRequest,
+  doctorRetrieveNotifications,
 } = require("./Routes/doctorController");
 
 const {
@@ -30,7 +202,10 @@ const {
   editMedicine,
   filterByMedicinalUsePharmacist,
   medicinequantityandsales,
+  viewMedicine,
   uploadMedicineImage,
+  archiveMedicine,
+  pharmacistRetrieveNotifications,
 } = require("./Routes/pharmacistController");
 
 const {
@@ -73,6 +248,15 @@ const {
   cashOnDelivery,
   pastOrders,
   cancelOrder,
+  deleteHealthRecord,
+  cancelAppointment,
+  addPrescriptionToCart,
+  getMedicines,
+  getSubMedicines,
+  getChattingRoom,
+  sendMessage,
+  getMessages,
+  patientRetrieveNotifications,
 } = require("./Routes/patientController");
 
 const {
@@ -113,27 +297,9 @@ const {
   resetPassword,
   resetPasswordWithOTP,
   loginAuthentication,
-  viewMedicine,
+  viewMedicineUser,
   searchMedicine,
 } = require("./Routes/userController");
-
-const app = express();
-const port = process.env.PORT || "8000";
-app.use(express.json({ limit: "5000mb" }));
-app.use(express.urlencoded({ limit: "5000mb", extended: true }));
-
-mongoose
-  .connect(MongoURI)
-  .then(() => {
-    console.log("MongoDB is now connected!");
-    app.listen(port, () => {
-      console.log(`Listening to requests on http://localhost:${port}`);
-    });
-  })
-  .catch((err) => console.log(err));
-
-app.use(express.json());
-app.use(cookieParser());
 
 //Admin
 app.post("/addHealthPackage", getUserFromTokenMiddleware, addHealthPackage);
@@ -261,6 +427,7 @@ app.get(
   getUserFromTokenMiddleware,
   filterByMedicinalUsePatient
 );
+app.get("/viewMedicine", getUserFromTokenMiddleware, viewMedicine);
 app.post("/addPatient", addPatient);
 app.post("/addToCart", getUserFromTokenMiddleware, addToCart);
 app.get("/viewMyCart", getUserFromTokenMiddleware, viewMyCart);
@@ -274,6 +441,23 @@ app.get("/getAllAddresses", getUserFromTokenMiddleware, getAllAddresses);
 app.get("/cashOnDelivery", getUserFromTokenMiddleware, cashOnDelivery);
 app.get("/pastOrders", getUserFromTokenMiddleware, pastOrders);
 app.put("/cancelOrder", getUserFromTokenMiddleware, cancelOrder);
+app.put("/deleteHealthRecord", getUserFromTokenMiddleware, deleteHealthRecord);
+app.put("/cancelAppointment", getUserFromTokenMiddleware, cancelAppointment);
+app.post(
+  "/addPrescriptionToCart",
+  getUserFromTokenMiddleware,
+  addPrescriptionToCart
+);
+app.get("/getMedicines", getUserFromTokenMiddleware, getMedicines);
+app.get("/getSubMedicines", getSubMedicines);
+app.get("/getChattingRoom", getUserFromTokenMiddleware, getChattingRoom);
+app.post("/sendMessage", getUserFromTokenMiddleware, sendMessage);
+app.get("/getMessages", getUserFromTokenMiddleware, getMessages);
+app.get(
+  "/patientRetrieveNotifications",
+  getUserFromTokenMiddleware,
+  patientRetrieveNotifications
+);
 
 //Doctor
 app.get(
@@ -294,7 +478,11 @@ app.get(
 app.get("/viewPatient", getUserFromTokenMiddleware, viewPatient);
 app.get("/viewmypatientsbyname", getUserFromTokenMiddleware, exactPatients);
 app.post("/createPrescription", getUserFromTokenMiddleware, createPrescription);
-app.get("/viewDoctorAppointments", viewDoctorAppointments);
+app.get(
+  "/viewDoctorAppointments",
+  getUserFromTokenMiddleware,
+  viewDoctorAppointments
+);
 app.post(
   "/addAppointmentSlots",
   getUserFromTokenMiddleware,
@@ -303,6 +491,30 @@ app.post(
 app.get("/ViewDoctorWallet", getUserFromTokenMiddleware, ViewDoctorWallet);
 app.put("/acceptContract", getUserFromTokenMiddleware, acceptContract);
 app.put("/rejectContract", getUserFromTokenMiddleware, rejectContract);
+app.get(
+  "/viewPatientPrescriptions",
+  getUserFromTokenMiddleware,
+  viewPatientPrescriptions
+);
+app.get(
+  "/selectPrescriptionDoctor",
+  getUserFromTokenMiddleware,
+  selectPrescriptionDoctor
+);
+app.put("/addDosage", addDosage);
+app.post("/addToPrescription", getUserFromTokenMiddleware, addToPrescription);
+app.get("/viewAllMedicines", getUserFromTokenMiddleware, viewAllMedicines);
+app.post(
+  "/deleteFromPrescription",
+  getUserFromTokenMiddleware,
+  deleteFromPrescription
+);
+app.put("/approveRequest", getUserFromTokenMiddleware, approveRequest);
+app.get(
+  "doctorRetrieveNotifications",
+  getUserFromTokenMiddleware,
+  doctorRetrieveNotifications
+);
 
 //Pharmacist
 app.post("/addPharmacist", addPharmacist);
@@ -325,6 +537,8 @@ app.get(
   medicinequantityandsales
 );
 app.put("/uploadMedicineImage", uploadMedicineImage);
+app.put("/archiveMedicine", archiveMedicine);
+app.get("/pharmacistRetrieveNotifications", pharmacistRetrieveNotifications);
 
 //user
 
@@ -335,5 +549,5 @@ app.put("/changePassword", getUserFromTokenMiddleware, changePassword);
 app.put("/resetPassword", resetPassword);
 app.put("/resetPasswordWithOTP", resetPasswordWithOTP);
 app.get("/loginAuthentication", loginAuthentication);
-app.get("/viewMedicine", viewMedicine);
+app.get("/viewMedicineUser", viewMedicineUser);
 app.get("/searchMedicine", searchMedicine);
