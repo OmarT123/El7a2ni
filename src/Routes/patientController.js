@@ -406,7 +406,6 @@ const addNotification = async (type, Id, title, message, showtime, expiryTime) =
 const getMedicines = async (req, res) => {
 
   try {
-
     const results = await medicineModel.find({ archived: false });
     res.json(results);
   }
@@ -1045,16 +1044,51 @@ const reserveAppointment = async (req, res) => {
     const healthPackage = await healthPackageModel.findById(healthPackageID).catch(err => console.log(err.message))
     discount = 1 - healthPackage.doctorDiscount / 100;
   }
+  let appointment;
   try {
     if (followup)
-      await appointmentModel.findByIdAndUpdate(appointmentId, { patient: new mongoose.Types.ObjectId(patientId), status: "requested", attendantName: name, price: (doctor.hourlyRate + 10 / 100 * clinicMarkup) * discount }, { new: true })
+      appointment = await appointmentModel.findByIdAndUpdate(appointmentId, { patient: new mongoose.Types.ObjectId(patientId), status: "requested", attendantName: name, price: (doctor.hourlyRate + 10 / 100 * clinicMarkup) * discount }, { new: true })
     else
-      await appointmentModel.findByIdAndUpdate(appointmentId, { patient: new mongoose.Types.ObjectId(patientId), status: "upcoming", attendantName: name, price: (doctor.hourlyRate + 10 / 100 * clinicMarkup) * discount }, { new: true })
+      appointment = await appointmentModel.findByIdAndUpdate(appointmentId, { patient: new mongoose.Types.ObjectId(patientId), status: "upcoming", attendantName: name, price: (doctor.hourlyRate + 10 / 100 * clinicMarkup) * discount }, { new: true })
     await prescriptionModel.create({
       doctor: appointment.doctor,
       patient: new mongoose.Types.ObjectId(patientId),
       appointment: appointmentId
     })
+    const expiryTime = new Date();
+    const notificationDate = new Date();
+    expiryTime.setFullYear(expiryTime.getFullYear() + 1);
+    addNotification('Doctor', doctorID, 'Appointment Scheduled', `A new appointment at date ${appointment.date} with patient ${name} has been scheduled.`, expiryTime, notificationDate)
+    addNotification('Patient', patientId, 'Appointment Booked', `You have booked an appointment with Dr.${doctor.name} on ${appointment.date}.`, expiryTime, notificationDate)
+    const transporter = nodemailer.createTransport({
+      service: process.env.NODEMAILER_SERVICE,
+      auth: {
+        user: process.env.NODEMAILER_EMAIL,
+        pass: process.env.NODEMAILER_PASSWORD,
+      },
+      tls: {
+        rejectUnauthorized: false,
+      },
+    });
+    const mailOptionsPatient = {
+      from: process.env.NODEMAILER_EMAIL,
+      to: appointment.patient.email,
+      subject: 'Appointment Booked',
+      text: `You have booked an appointment with Dr.${doctor.name} on ${appointment.date}.`,
+    };
+    const mailOptionsDoctor = {
+      from: process.env.NODEMAILER_EMAIL,
+      to: appointment.doctor.email,
+      subject: 'Appointment Scheduled',
+      text: `A new appointment at date ${appointment.date} with patient ${name} has been scheduled.`,
+    };
+    try {
+      await transporter.sendMail(mailOptionsPatient);
+      await transporter.sendMail(mailOptionsDoctor);
+    }
+    catch (error) {
+      console.error('Error sending email:', error);
+    }
     res.json('updated Successfully')
   } catch (err) {
     res.json(err.message)
@@ -1584,6 +1618,11 @@ const getMessages = async (req, res) => {
   }
 };
 
+const patientRetrieveNotifications = async (req, res) => {
+  const notifications = await notificationSystemModel.find({type: 'Patient', Id: req.user._id.toString()});
+  return res.json(notifications);
+}
+
 module.exports = {
   createFamilyMember,
   searchForDoctorByNameSpeciality,
@@ -1631,5 +1670,6 @@ module.exports = {
   addPrescriptionToCart,
   getChattingRoom,
   sendMessage,
-  getMessages
+  getMessages,
+  patientRetrieveNotifications
 };

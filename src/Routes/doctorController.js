@@ -486,7 +486,10 @@ const approveRequest = async (req, res) => {
   }
 };
 
-
+const doctorRetrieveNotifications = async (req, res) => {
+  const notifications = await notificationSystemModel.find({type: 'Doctor', Id: req.user._id.toString()});
+  return res.json(notifications);
+}
 
 module.exports = {
   addDoctor,
@@ -509,5 +512,6 @@ module.exports = {
   addToPrescription,
   viewAllMedicines,
   deleteFromPrescription,
-  approveRequest
+  approveRequest,
+  doctorRetrieveNotifications
 };
