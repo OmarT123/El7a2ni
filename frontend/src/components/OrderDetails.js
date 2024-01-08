@@ -21,6 +21,13 @@ const OrderDetails = ({ Order }) => {
             </div>
 
             <p><strong>Total: </strong>{Order.total}</p>
+        <>
+           {Order.discount !== 0 && (
+           <p>
+           <strong>Discount:</strong> {Order.discount}%
+           </p>
+           )}
+        </>
             <p><strong>Payment method: </strong>{Order.paymentMethod}</p>
         </div>
     );

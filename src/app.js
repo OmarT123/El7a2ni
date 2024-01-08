@@ -143,7 +143,9 @@ const {
   medicinequantityandsales,
   viewMedicine,
   uploadMedicineImage,
-  pharmacistRetrieveNotifications
+  pharmacistRetrieveNotifications,
+  getSaleReport,
+  getMonthlyMedicineReport
 } = require("./Routes/pharmacistController");
 
 const {
@@ -193,7 +195,9 @@ const {
   getSubMedicines,
   getChattingRoom,
   sendMessage,
-  getMessages
+  getMessages,
+  payWithWalletCart,
+  payWithCardCart
 
 } = require("./Routes/patientController");
 
@@ -303,6 +307,10 @@ app.put("/decreaseByOne",getUserFromTokenMiddleware,decreaseByOne);
 app.put("/increaseByOne",getUserFromTokenMiddleware,increaseByOne);
 app.get("/payWithCard",getUserFromTokenMiddleware, payWithCard);
 app.get("/payWithWallet",getUserFromTokenMiddleware, payWithWallet);
+app.get("/payWithWalletCart",getUserFromTokenMiddleware, payWithWalletCart);
+app.get("/payWithCardCart",getUserFromTokenMiddleware, payWithCardCart);
+
+
 app.get("/sendCheckoutMail", getUserFromTokenMiddleware,sendCheckoutMail);
 app.get("/getAllAddresses",getUserFromTokenMiddleware ,getAllAddresses);
 app.get("/cashOnDelivery",getUserFromTokenMiddleware, cashOnDelivery);
@@ -353,7 +361,8 @@ app.get("/filterByMedicinalUsePharmacist",getUserFromTokenMiddleware, filterByMe
 app.get("/medicinequantityandsales",getUserFromTokenMiddleware, medicinequantityandsales);
 app.put("/uploadMedicineImage", uploadMedicineImage);
 app.get("/pharmacistRetrieveNotifications", pharmacistRetrieveNotifications);
-
+app.get("/getSaleReport", getSaleReport);
+app.get("/getMonthlyMedicineReport", getMonthlyMedicineReport);
 
 //user 
 
