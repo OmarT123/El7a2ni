@@ -204,6 +204,7 @@ const MedicineView = ({ userType }) => {
     try {
       const res = await axios.get("/viewMedicineUser");
       const medicinesData = res.data;
+      // console.log(medicinesData)
       setMedicine(medicinesData);
     } catch (error) {
       console.error("Error fetching medicines:", error);
@@ -227,26 +228,37 @@ const MedicineView = ({ userType }) => {
       setExpandedItem(item.name === expandedItem ? null : item.name);
       setSelectedMedicine(item);
     };
-    const addMedicine = async(e) => {
-      e.preventDefault()
+    const addMedicine = async (e) => {
+      e.preventDefault();
 
-      if (name === '' || price === 0 || medicinalUse === '' || activeIngredient === '' ||stockQuantity === '')
-          setAlert({title: 'Insufficient Data', message: 'Please fill all fields'})
+      if (
+        name === "" ||
+        price === 0 ||
+        medicinalUse === "" ||
+        activeIngredient === "" ||
+        stockQuantity === ""
+      )
+        setAlert({
+          title: "Insufficient Data",
+          message: "Please fill all fields",
+        });
       else {
-          const body = {name, price,stockQuantity, medicinalUse, activeIngredient}
-          const response = await axios.post("/addMedicine",body)
-          if (response.data.success)
-          {
-            setAlert(response.data)
-            fetchMedicines()
-            setAddMedicineExpanded(false)
-          }
-          else {
-
-          }
+        const body = {
+          name,
+          price,
+          stockQuantity,
+          medicinalUse,
+          activeIngredient,
+        };
+        const response = await axios.post("/addMedicine", body);
+        if (response.data.success) {
+          setAlert(response.data);
+          fetchMedicines();
+          setAddMedicineExpanded(false);
+        } else {
+        }
       }
-
-  }
+    };
 
     return (
       <>
@@ -323,10 +335,9 @@ const MedicineView = ({ userType }) => {
                       label="Active Ingredient"
                       variant="outlined"
                       value={activeIngredient}
-                      
                       fullWidth
                       onChange={(e) => setActiveIngredient(e.target.value)}
-                      sx={{ marginBottom: "10px"}}
+                      sx={{ marginBottom: "10px" }}
                     />
                   </Grid>
                   <Grid xs={12} sm={1} />
@@ -348,57 +359,58 @@ const MedicineView = ({ userType }) => {
         <SearchBar updateMedicine={setMedicine} />
         <Paper style={paperStyle} elevation={3}>
           <List style={listStyle}>
-            {medicine.map((item, index) => (
-              <React.Fragment key={index}>
-                <ListItem button onClick={() => handleItemExpand(item)}>
-                  <ListItemText
-                    primary={`${item.name.toUpperCase()}`}
-                    secondary={
-                      <React.Fragment>
-                        <p>Active Ingredient: {item.activeIngredient}</p>
-                        {userType === "pharmacist" && (
-                          <p>Amount Sold: {item.amountSold}</p>
-                        )}
-                        {userType !== "patient" && (
-                          <p>Archived: {item.archived.toString()}</p>
-                        )}
-                        <p>Medicinal Use: {item.medicinalUse}</p>
-                        <p>Price: {item.price}</p>
-                        {userType === "pharmacist" && (
-                          <p>Stock Quantity: {item.stockQuantity}</p>
-                        )}
-                      </React.Fragment>
-                    }
-                  />
-                  <img
+            {medicine &&
+              medicine.map((item, index) => (
+                <React.Fragment key={index}>
+                  <ListItem button onClick={() => handleItemExpand(item)}>
+                    <ListItemText
+                      primary={`${item.name.toUpperCase()}`}
+                      secondary={
+                        <React.Fragment>
+                          <p>Active Ingredient: {item.activeIngredient}</p>
+                          {userType === "pharmacist" && (
+                            <p>Amount Sold: {item.amountSold}</p>
+                          )}
+                          {userType !== "patient" && (
+                            <p>Archived: {item.archived.toString()}</p>
+                          )}
+                          <p>Medicinal Use: {item.medicinalUse}</p>
+                          <p>Price: {item.price}</p>
+                          {userType === "pharmacist" && (
+                            <p>Stock Quantity: {item.stockQuantity}</p>
+                          )}
+                        </React.Fragment>
+                      }
+                    />
+                    <img
                       src={item.picture || "med.jpg"}
                       alt={"Medicine"}
                       width="230px"
                       height="230px"
                     />
-                </ListItem>
-                <Collapse
-                  in={item.name === expandedItem}
-                  timeout="auto"
-                  unmountOnExit
-                >
-                  {userType === "admin" && (
-                    <Button variant="contained" sx={{ m: "30px" }}>
-                      Sales Report
-                    </Button>
-                  )}
-                  {userType === "pharmacist" && (
-                    <Button
-                      variant="contained"
-                      sx={{ m: "30px" }}
-                      onClick={() => setStage("details")}
-                    >
-                      View Details and Edit
-                    </Button>
-                  )}
-                </Collapse>
-              </React.Fragment>
-            ))}
+                  </ListItem>
+                  <Collapse
+                    in={item.name === expandedItem}
+                    timeout="auto"
+                    unmountOnExit
+                  >
+                    {userType === "admin" && (
+                      <Button variant="contained" sx={{ m: "30px" }}>
+                        Sales Report
+                      </Button>
+                    )}
+                    {userType === "pharmacist" && (
+                      <Button
+                        variant="contained"
+                        sx={{ m: "30px" }}
+                        onClick={() => setStage("details")}
+                      >
+                        View Details and Edit
+                      </Button>
+                    )}
+                  </Collapse>
+                </React.Fragment>
+              ))}
           </List>
         </Paper>
       </>
@@ -466,7 +478,21 @@ const MedicineView = ({ userType }) => {
         fileReader.readAsDataURL(fileToLoad);
       }
     }
-    const handleArchive = () => {};
+    const handleArchive = async (e) => {
+      e.preventDefault();
+      const body = {id:selectedMedicine._id}
+      const response = await axios.put("/archiveMedicine", body);
+      if (response.data.success) {
+        const newArchive = !selectedMedicine.archived;
+        setAlert(response.data);
+        setSelectedMedicine({ ...selectedMedicine, archived: newArchive });
+      } else {
+        setAlert({
+          title: "Something Went Wrong",
+          message: "Please try again at a later time",
+        });
+      }
+    };
     return (
       <>
         <Fab

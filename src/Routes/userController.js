@@ -3,6 +3,7 @@ const adminModel = require('../Models/Admin.js');
 const userModel = require('../Models/User.js');
 const patientModel = require('../Models/Patient.js');
 const pharmacistModel = require('../Models/Pharmacist.js');
+const medicineModel = require('../Models/Medicine.js')
 const bcrypt = require('bcrypt');
 const nodemailer = require('nodemailer');
 const otpGenerator = require('otp-generator');
