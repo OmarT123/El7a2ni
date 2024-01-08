@@ -22,7 +22,7 @@ const ProfilePage = ({ userData }) => {
             justifyContent="center"
           >
             <Grid item xs={12} sm={12} align="center">
-              {/* {<Typography variant="h4">{userData.name}</Typography>} */}
+              <Typography variant="h4">{userData.name}</Typography>
               <Typography variant={userData.name ? "subtitle1": 'h4'} sx={{ color: "#555" }}>
                 {userData.username}
               </Typography>

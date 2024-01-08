@@ -20,7 +20,7 @@ export const Context = createContext();
 
 const AdminHomePage = () => {
   const [page, setPage] = useState("home");
-  const {user} = useContext(HomePageContext);
+  const { user } = useContext(HomePageContext);
   const Home = () => {
     return (
       <>
@@ -93,7 +93,7 @@ const AdminHomePage = () => {
             ) : page === "medicine" ? (
               <MedicineView userType={"admin"} />
             ) : page === "employees" ? (
-              <EmployeesView />
+              <EmployeesView userType={"admin"} />
             ) : page === "patients" ? (
               <PatientsView userType={"admin"} />
             ) : page === "admins" ? (

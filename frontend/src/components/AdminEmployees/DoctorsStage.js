@@ -23,7 +23,7 @@ const listStyle = {
   marginTop: 16,
 };
 
-const DoctorsStage = ({ setAlert, setStage }) => {
+const DoctorsStage = ({ setAlert, setStage, together = false, userType }) => {
   const [unapprovedDoctors, setUnapprovedDoctors] = useState([]);
   const [approvedDoctors, setApprovedDoctors] = useState([]);
 
@@ -47,7 +47,6 @@ const DoctorsStage = ({ setAlert, setStage }) => {
           title: "Action could not be Completed",
           message: "Try again at a later time",
         });
-
     } catch (error) {
       console.error(error);
     }
@@ -159,14 +158,19 @@ const DoctorsStage = ({ setAlert, setStage }) => {
           timeout="auto"
           unmountOnExit
         >
-          <Button
-            variant="contained"
-            onClick={(e) => removeDoctor(e, item._id)}
-            sx={{ m: "30px" }}
-          >
-            Remove Doctor
-          </Button>
-          {item.status === "pending" && (
+          {userType === 'pharmacist' && <Button variant='contained' sx={{m:'30px'}}>
+            Chat With Doctor
+            </Button>}
+          {userType === "admin" && (
+            <Button
+              variant="contained"
+              onClick={(e) => removeDoctor(e, item._id)}
+              sx={{ m: "30px" }}
+            >
+              Remove Doctor
+            </Button>
+          )}
+          {item.status === "pending" && userType === "admin" && (
             <>
               <Button variant="contained" sx={{ m: "30px" }}>
                 View ID
@@ -230,19 +234,23 @@ const DoctorsStage = ({ setAlert, setStage }) => {
           Doctors
         </Typography>
 
-        <Typography variant="h5" sx={{ ml: "30px" }}>
-          Unapproved
-        </Typography>
+        {!together && (
+          <Typography variant="h5" sx={{ ml: "30px" }}>
+            Unapproved
+          </Typography>
+        )}
         <List style={listStyle}>
           {unapprovedDoctors.map((item, index) => (
             <DoctorListItem item={item} key={index} />
           ))}
         </List>
 
-        <Typography variant="h5" sx={{ ml: "30px" }}>
-          Approved
-        </Typography>
-        <List style={listStyle}>
+        {!together && (
+          <Typography variant="h5" sx={{ ml: "30px" }}>
+            Approved
+          </Typography>
+        )}
+        <List style={listStyle} sx={{ mt: together ? "0" : "30" }}>
           {approvedDoctors.map((item, index) => (
             <DoctorListItem item={item} key={index} />
           ))}

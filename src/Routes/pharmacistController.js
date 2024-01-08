@@ -57,8 +57,10 @@ const filterByMedicinalUsePharmacist = async (req, res) => {
 
 const editMedicine = async (req, res) => {
   await medicineModel
-    .updateMany({ name: req.body.name }, { $set: req.body })
-    .then(() => res.json("Medicine Updated Successfully!"))
+    .updateMany({ name: req.body.name }, req.body)
+    .then(() =>
+      res.json({ success: true, title: "Medicine Updated Successfully!" })
+    )
     .catch((err) => res.json({ message: err.message }));
 };
 
@@ -161,7 +163,6 @@ const medicinequantityandsales = async (req, res) => {
     res.json({ message: err.message });
   }
 };
-
 
 const uploadMedicineImage = async (req, res) => {
   const medicineID = req.body.id;

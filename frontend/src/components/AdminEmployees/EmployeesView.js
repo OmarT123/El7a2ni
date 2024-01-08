@@ -17,7 +17,7 @@ const listStyle = {
   marginTop: 16,
 };
 
-const EmployeesView = () => {
+const EmployeesView = ({ userType }) => {
   const [stage, setStage] = useState("first");
   const [alert, setAlert] = useState(null);
 
@@ -58,7 +58,11 @@ const EmployeesView = () => {
       {stage === "first" ? (
         <FirstStage />
       ) : stage === "doctors" ? (
-        <DoctorsStage setAlert={setAlert} setStage={setStage} />
+        <DoctorsStage
+          setAlert={setAlert}
+          setStage={setStage}
+          userType={userType}
+        />
       ) : (
         <PharmacistsStage setAlert={setAlert} setStage={setStage} />
       )}
