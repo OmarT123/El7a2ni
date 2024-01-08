@@ -269,12 +269,12 @@ const changePassword = async (req, res) => {
     const passwordMatched = await bcrypt.compare(oldPassword, user.password);
 
     if (!passwordMatched) {
-      return res.json({ success: false, message: "Invalid old password!" });
+      return res.json({ success: false, title: "Invalid Old Password!" });
     }
     if (oldPassword === newPassword) {
       return res.json({
         success: false,
-        message: "You can't use the same password !",
+        title: "You can't use the same password !",
       });
     }
 
@@ -284,6 +284,7 @@ const changePassword = async (req, res) => {
     if (!passwordRegex.test(newPassword)) {
       return res.json({
         success: false,
+        title:'Invalid Password',
         message:
           "New password must contain at least 1 lowercase letter, 1 uppercase letter, 1 number, 1 special character, and be at least 10 characters long.",
       });
@@ -312,7 +313,7 @@ const changePassword = async (req, res) => {
 
     return res.json({
       success: true,
-      message: "Password changed successfully",
+      title: "Password changed successfully",
     });
   } catch (error) {
     console.error("Change password error:", error);
