@@ -25,7 +25,7 @@ const HomePage = ({ scrollToSection }) => {
 
   return (
     <>
-      <HomePageContext.Provider value={{ user }}>
+      <HomePageContext.Provider value={{ user, userType }}>
         {userType === "guest" ? (
           <GuestHomePage scrollToSection={scrollToSection} />
         ) : userType === "patient" ? (

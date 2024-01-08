@@ -12,7 +12,7 @@ const ImageStyle = {
   cursor: "pointer",
 };
 
-const HomeNavBar = ({ homeButton, setPage }) => {
+const HomeNavBar = ({ homeButton, setPage, user}) => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
