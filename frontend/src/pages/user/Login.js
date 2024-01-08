@@ -8,7 +8,7 @@ const Login = () => {
   const [showContent, setShowContent] = useState(true);
 
   useEffect(() => {
-    localStorage.clear();
+    //localStorage.clear();
     const userToken = localStorage.getItem('userToken');
 
     if (userToken) {
