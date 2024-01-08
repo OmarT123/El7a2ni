@@ -374,6 +374,11 @@ const MedicineView = ({ userType }) => {
                           {userType !== "patient" && (
                             <p>Archived: {item.archived.toString()}</p>
                           )}
+                          <p>
+                            Require Prescription :{" "}
+                            {item.prescriptionMedicine? 'true':'false'}
+                          </p>
+
                           <p>Medicinal Use: {item.medicinalUse}</p>
                           <p>Price: {item.price}</p>
                           {userType === "pharmacist" && (
@@ -480,7 +485,7 @@ const MedicineView = ({ userType }) => {
     }
     const handleArchive = async (e) => {
       e.preventDefault();
-      const body = {id:selectedMedicine._id}
+      const body = { id: selectedMedicine._id };
       const response = await axios.put("/archiveMedicine", body);
       if (response.data.success) {
         const newArchive = !selectedMedicine.archived;
@@ -557,22 +562,31 @@ const MedicineView = ({ userType }) => {
               </Grid>
               <Grid item xs={12} sm={6} align="left">
                 <Typography variant="subtitle1">
-                  <strong>Medicinal Use:</strong>{" "}
-                  {selectedMedicine.medicinalUse}
+                  <strong>Require Prescription:</strong>{" "}
+                  {selectedMedicine.prescriptionMedicine ? "true" : "false"}
                 </Typography>
               </Grid>
               <Grid item xs={0} sm={12} />
               <Grid item xs={12} sm={6} align="left">
                 <Typography variant="subtitle1">
+                  <strong>Medicinal Use:</strong>{" "}
+                  {selectedMedicine.medicinalUse}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={6} align="left">
+                <Typography variant="subtitle1">
                   <strong>Price:</strong> ${selectedMedicine.price}
                 </Typography>
               </Grid>
+              <Grid item xs={0} sm={12} />
               <Grid item xs={12} sm={6} align="left">
                 <Typography variant="subtitle1">
                   <strong>Stock Quantity:</strong>{" "}
                   {selectedMedicine.stockQuantity}
                 </Typography>
               </Grid>
+              <Grid item xs={0} sm={6} />
+
               <Grid item xs={0} sm={12} />
               <Grid item xs={12} sm={4} align="left">
                 <Button variant="contained" onClick={editMedicine}>

@@ -455,6 +455,7 @@ const resetPasswordWithOTP = async (req, res) => {
 const viewMedicineUser = async (req, res) => {
   try {
     const medicine = await medicineModel.find({});
+    // console.log(medicine)
     res.status(200).json(medicine);
   } catch (err) {
     res.json({ message: err.message });
