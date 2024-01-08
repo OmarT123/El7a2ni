@@ -47,6 +47,10 @@ const doctorSchema = new Schema(
     contract: {
       type: String
     },
+    status:{
+      type: String,
+      default: 'pending'
+    },
     chats:[ {
 
         partner: {

@@ -87,9 +87,30 @@ const DoctorsStage = ({ setAlert, setStage, together = false, userType }) => {
 
   const DoctorListItem = ({ item }) => {
     const [expandedItem, setExpandedItem] = useState(null);
+    const [selectedDoctor, setSelectedDoctor] = useState(null);
+    const [idPDF, setIdPDF] = useState(false)
+    const [licensePDF, setLicensePDF] = useState(false)
+    const [degreePDF, setDegreePDF] = useState(false)
 
-    const handleItemExpand = (item) => {
+    const handleItemExpand = async (item) => {
       setExpandedItem(item.username === expandedItem ? null : item.username);
+      setIdPDF(false)
+      setLicensePDF(false)
+      setDegreePDF(false)
+      if (
+        selectedDoctor &&
+        (selectedDoctor.username === item.username ||
+          selectedDoctor.status !== "pending")
+      )
+        return;
+      const response = await axios.get("/viewDocInfo");
+      if (response.data.success) {
+        // console.log(response.data.doctorsWithDocuments);
+        const doctorWithDocs = response.data.doctorsWithDocuments.find(
+          (doc) => doc.username === item.username
+        );
+        setSelectedDoctor(doctorWithDocs)
+      }
     };
     return (
       <React.Fragment>
@@ -158,9 +179,11 @@ const DoctorsStage = ({ setAlert, setStage, together = false, userType }) => {
           timeout="auto"
           unmountOnExit
         >
-          {userType === 'pharmacist' && <Button variant='contained' sx={{m:'30px'}}>
-            Chat With Doctor
-            </Button>}
+          {userType === "pharmacist" && (
+            <Button variant="contained" sx={{ m: "30px" }}>
+              Chat With Doctor
+            </Button>
+          )}
           {userType === "admin" && (
             <Button
               variant="contained"
@@ -172,13 +195,13 @@ const DoctorsStage = ({ setAlert, setStage, together = false, userType }) => {
           )}
           {item.status === "pending" && userType === "admin" && (
             <>
-              <Button variant="contained" sx={{ m: "30px" }}>
+              <Button variant="contained" sx={{ m: "30px" }} onClick={()=>{setIdPDF(true);setDegreePDF(false);setLicensePDF(false)}}>
                 View ID
               </Button>
-              <Button variant="contained" sx={{ m: "30px" }}>
+              <Button variant="contained" sx={{ m: "30px" }} onClick={()=>{setIdPDF(false);setDegreePDF(true);setLicensePDF(false)}}>
                 View Degree
               </Button>
-              <Button variant="contained" sx={{ m: "30px" }}>
+              <Button variant="contained" sx={{ m: "30px" }} onClick={()=>{setIdPDF(false);setDegreePDF(false);setLicensePDF(true)}}>
                 View License
               </Button>
 
@@ -198,6 +221,13 @@ const DoctorsStage = ({ setAlert, setStage, together = false, userType }) => {
               </Button>
             </>
           )}
+          <Collapse in={idPDF || licensePDF || degreePDF  }
+          timeout="auto"
+          unmountOnExit>
+            {idPDF  && <iframe title="PDF Viewer" src={selectedDoctor.idPDF} width="90%" height="600px" />}
+            {licensePDF  && <iframe title="PDF Viewer" src={selectedDoctor.degreePDF} width="90%" height="600px" />}
+            {degreePDF  && <iframe title="PDF Viewer" src={selectedDoctor.licensePDF} width="90%" height="600px" />}
+          </Collapse>
         </Collapse>
       </React.Fragment>
     );

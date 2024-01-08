@@ -5,6 +5,7 @@ import GuestHomePage from "../components/HomePage/GuestHomePage";
 import AdminHomePage from "../components/HomePage/AdminHomePage";
 import { createContext } from "react";
 import PharmacistHomePage from "../components/HomePage/PharmacistHomePage";
+import PdfViewer from "../components/PdfViewer";
 
 export const HomePageContext = createContext();
 
