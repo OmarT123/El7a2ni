@@ -7,11 +7,11 @@ const healthPackageModel = require("../Models/HealthPackage.js");
 const userModel = require("../Models/User.js");
 const familyMemberModel = require("../Models/FamilyMember.js");
 const DoctorDocuments = require("../Models/DoctorDocuments.js");
+const PharmacistDocuments = require("../Models/PharmacistDocuments.js");
 
 const { default: mongoose } = require("mongoose");
 const nodemailer = require("nodemailer");
 const bcrypt = require("bcrypt");
-const PharmacistDocuments = require("../Models/PharmacistDocuments.js");
 require("dotenv").config();
 
 const addAdmin = async (req, res) => {
@@ -79,14 +79,71 @@ const filterByMedicinalUseAdmin = async (req, res) => {
 
 const unapprovedPharmacists = async (req, res) => {
   try {
-    const pharmacists = pharmacistModel
-      .find({ status: "pending" })
-      .populate()
-      .then((pharmacists) => res.json(pharmacists));
+    const pharmacists = pharmacistModel.find({ status: "pending" });
+    const pharmacistsWithDocuments = []
+    for (const pharmacist of pharmacists) {
+      const {
+        _id,
+        name,
+        username,
+        email,
+        birthDate,
+        affiliation,
+        educationalBackground,
+        hourlyRate,
+        createdAt,
+        status,
+      } = pharmacist;
+
+      const pharmacistDocuments = await PharmacistDocuments.findOne({
+        pharmacist: pharmacist._id,
+      });
+      if (pharmacistDocuments) {
+        const { idPDF, licensePDF, degreePDF } = pharmacistDocuments;
+
+        // Include the additional documents
+        const pharmacistWithDocuments = {
+          _id,
+          name,
+          username,
+          email,
+          birthDate,
+          affiliation,
+          educationalBackground,
+          hourlyRate,
+          createdAt,
+          status,
+          idPDF,
+          licensePDF,
+          degreePDF,
+        };
+
+        pharmacistsWithDocuments.push(pharmacistWithDocuments);
+      }
+    }
+
+    res.json({ success: true, pharmacistsWithDocuments });
   } catch (err) {
     res.json({ message: err.message });
   }
 };
+
+// const getADoctor = async (req, res) => {
+// const doctorId = req.query.id;
+// try {
+//   const doctor = await doctorModel.findById(doctorId);
+//   const documents = await DoctorDocuments.findOne({ doctor: doctor._id });
+//   // console.log(doctor)
+//   extendedDoctor = {
+//     ...doctor.toObject(),
+//     idPDF: documents.idPDF,
+//     licensePDF: documents.licensePDF,
+//     degreePDF: documents.degreePDF,
+//   };
+//   res.json(extendedDoctor);
+// } catch (err) {
+//   res.json(err.message);
+// }
 
 const searchMedicineAdmin = async (req, res) => {
   const searchName = req.query.name;
