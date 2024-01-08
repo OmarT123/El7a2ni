@@ -11,7 +11,7 @@ const addMedicine = async (req, res) => {
   let stockQuantity = req.body.stockQuantity;
   let medicinalUse = req.body.medicinalUse;
   let name = req.body.name;
-  let amountSold = req.body.amountSold;
+  let amountSold = 0;
 
   try {
     let medicine = await medicineModel.create({
@@ -23,9 +23,9 @@ const addMedicine = async (req, res) => {
       amountSold: amountSold,
     });
     await medicine.save();
-    res.status(200).json("Medicine added successfully!");
+    res.status(200).json({success:true, title: 'Medicine Created Successfully'});
   } catch (err) {
-    res.json("Medicine name already exists");
+    res.json({success: false, title:"Medicine name already exists"});
   }
 };
 const searchMedicinePharmacist = async (req, res) => {

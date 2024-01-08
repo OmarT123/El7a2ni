@@ -20,6 +20,8 @@ import {
 import Popup from "./Popup";
 import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
 import Fab from "@mui/material/Fab";
+import AddIcon from "@mui/icons-material/Add";
+import ClearIcon from "@mui/icons-material/Clear";
 
 const paperStyle = {
   width: "1200px",
@@ -30,6 +32,22 @@ const paperStyle = {
 
 const listStyle = {
   marginTop: 16,
+};
+
+const buttonStyle = {
+  backgroundColor: "#1976D2",
+  color: "#fff",
+  borderRadius: "50%",
+  width: "56px",
+  height: "56px",
+  cursor: "pointer",
+  marginTop: "20px",
+  "&:hover": {
+    backgroundColor: "#1565C0",
+  },
+};
+const iconStyle = {
+  fontSize: "2rem",
 };
 
 const MedicineView = ({ userType }) => {
@@ -198,14 +216,135 @@ const MedicineView = ({ userType }) => {
 
   const Home = () => {
     const [expandedItem, setExpandedItem] = useState(null);
+    const [addMedicineExpanded, setAddMedicineExpanded] = useState(false);
+    const [name, setName] = useState("");
+    const [price, setPrice] = useState("");
+    const [stockQuantity, setStockQuantity] = useState("");
+    const [activeIngredient, setActiveIngredient] = useState("");
+    const [medicinalUse, setMedicinalUse] = useState("");
 
     const handleItemExpand = (item) => {
       setExpandedItem(item.name === expandedItem ? null : item.name);
       setSelectedMedicine(item);
     };
+    const addMedicine = async(e) => {
+      e.preventDefault()
+
+      if (name === '' || price === 0 || medicinalUse === '' || activeIngredient === '' ||stockQuantity === '')
+          setAlert({title: 'Insufficient Data', message: 'Please fill all fields'})
+      else {
+          const body = {name, price,stockQuantity, medicinalUse, activeIngredient}
+          const response = await axios.post("/addMedicine",body)
+          if (response.data.success)
+          {
+            setAlert(response.data)
+            fetchMedicines()
+            setAddMedicineExpanded(false)
+          }
+          else {
+
+          }
+      }
+
+  }
 
     return (
       <>
+        <Box fullWidth sx={{ display: "flex", flexDirection: "column" }}>
+          <Box sx={{ display: "flex", flexDirection: "row" }}>
+            <Typography variant="h4" sx={{ m: "30px" }}>
+              Medicine
+            </Typography>
+            <Fab
+              style={buttonStyle}
+              onClick={() => setAddMedicineExpanded((prev) => !prev)}
+            >
+              {addMedicineExpanded ? (
+                <ClearIcon style={iconStyle} />
+              ) : (
+                <AddIcon style={iconStyle} />
+              )}
+            </Fab>
+          </Box>
+          <Collapse in={addMedicineExpanded} timeout="auto" unmountOnExit>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "stretch",
+                ml: 1.5,
+                width: "99%",
+              }}
+            >
+              <Box sx={{ display: "flex", flexDirection: "row" }}>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      label="Name"
+                      variant="outlined"
+                      value={name}
+                      fullWidth
+                      onChange={(e) => setName(e.target.value)}
+                      sx={{ marginBottom: "10px" }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      label="Price"
+                      variant="outlined"
+                      value={price}
+                      fullWidth
+                      onChange={(e) => setPrice(e.target.value)}
+                      sx={{ marginBottom: "10px" }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
+                    <TextField
+                      label="Stock Quantity"
+                      variant="outlined"
+                      value={stockQuantity}
+                      fullWidth
+                      onChange={(e) => setStockQuantity(e.target.value)}
+                      sx={{ marginBottom: "10px" }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
+                    <TextField
+                      label="Medicinal Use"
+                      variant="outlined"
+                      value={medicinalUse}
+                      fullWidth
+                      onChange={(e) => setMedicinalUse(e.target.value)}
+                      sx={{ marginBottom: "10px" }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
+                    <TextField
+                      label="Active Ingredient"
+                      variant="outlined"
+                      value={activeIngredient}
+                      
+                      fullWidth
+                      onChange={(e) => setActiveIngredient(e.target.value)}
+                      sx={{ marginBottom: "10px"}}
+                    />
+                  </Grid>
+                  <Grid xs={12} sm={1} />
+                  <Grid item xs={12} sm={5.5}></Grid>
+                </Grid>
+              </Box>
+              <Button
+                variant="contained"
+                onClick={addMedicine}
+                sx={{ width: "100%" }}
+                fullWidth
+              >
+                Add Medicine
+              </Button>
+            </Box>
+          </Collapse>
+        </Box>
+
         <SearchBar updateMedicine={setMedicine} />
         <Paper style={paperStyle} elevation={3}>
           <List style={listStyle}>
@@ -231,14 +370,12 @@ const MedicineView = ({ userType }) => {
                       </React.Fragment>
                     }
                   />
-                  {item.picture && (
-                    <img
-                      src={item.picture}
-                      alt={item.name}
+                  <img
+                      src={item.picture || "med.jpg"}
+                      alt={"Medicine"}
                       width="230px"
                       height="230px"
                     />
-                  )}
                 </ListItem>
                 <Collapse
                   in={item.name === expandedItem}

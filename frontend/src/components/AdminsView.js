@@ -84,7 +84,6 @@ const AdminsView = ({ userType }) => {
       try {
         const response = await axios.post("/addAdmin", newAdminData);
         setAlert(response.data);
-        //   console.log(response.data);
         if (response.data.success) {
           console.log("here");
           setNewName("");
