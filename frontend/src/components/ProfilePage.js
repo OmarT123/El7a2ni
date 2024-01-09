@@ -121,6 +121,11 @@ const ProfilePage = ({ userData }) => {
                   <strong>Phone Number:</strong> {userData.phoneNumber}
                 </Typography>
               )}
+              {userData.mobileNumber && (
+                <Typography variant="subtitle1">
+                  <strong>Phone Number:</strong> {userData.mobileNumber}
+                </Typography>
+              )}
               {userData.hourlyRate && (
                 <Typography variant="subtitle1">
                   <strong>Hourly Rate:</strong> {userData.hourlyRate}

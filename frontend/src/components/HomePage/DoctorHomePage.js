@@ -7,9 +7,11 @@ import { HomePageContext } from "../../pages/HomePage";
 import { useContext, useEffect } from "react";
 import PersonIcon from "@mui/icons-material/Person";
 import EventNoteIcon from "@mui/icons-material/EventNote";
+import AccessAlarmIcon from '@mui/icons-material/AccessAlarm';
 import PatientsView from "../PatientsView";
 import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
 import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
+import HealingIcon from '@mui/icons-material/Healing';
 import Fab from "@mui/material/Fab";
 import PharmacistsStage from "../AdminEmployees/PharmacistsStage";
 import axios from 'axios';
@@ -49,7 +51,7 @@ const DoctorHomePage = () => {
             <SquareCard
               title="APPOINTMENTS"
               body="Lorem ipsum sit amet consectetur adipiscing elit. Vivamus et erat in lacus convallis sodales."
-              icon={EventNoteIcon}
+              icon={AccessAlarmIcon}
               isLearnMore={false}
               changeFunction={() => setPage("appointments")}
               closeFunction={() => setPage("home")}
@@ -69,7 +71,7 @@ const DoctorHomePage = () => {
             <SquareCard
               title="PHARMACISTS"
               body="Lorem ipsum sit amet consectetur adipiscing elit. Vivamus et erat in lacus convallis sodales."
-              icon={LocalHospitalIcon}
+              icon={HealingIcon}
               isLearnMore={false}
               changeFunction={() => setPage("pharmacists")}
               closeFunction={() => setPage("home")}
