@@ -40,7 +40,7 @@ const iconStyle = {
   fontSize: "2rem",
 };
 
-const PatientsView = ({ userType }) => {
+const PatientsView = ({ userType, setChat, setChatterID, setChatterName }) => {
   const [patients, setPatients] = useState([]);
   const [expandedItem, setExpandedItem] = useState(null);
   const [alert, setAlert] = useState(null);
@@ -121,6 +121,15 @@ const PatientsView = ({ userType }) => {
     }
   };
 
+  const openChat = (e, doctorId, name) => {
+    e.preventDefault();
+    setChat(false);
+    setChatterID('');
+    setChat(true);
+    setChatterID(doctorId);
+    setChatterName(name);
+  }
+
   useEffect(() => {
     fetchPatients();
   }, []);
@@ -200,6 +209,15 @@ const PatientsView = ({ userType }) => {
               >
                 {item.familyMembers && item.familyMembers.length > 0 && (
                   <FamilyMembersView item={item} />
+                )}
+                {userType === "pharmacist" && (
+                  <Button
+                    variant="contained"
+                    sx={{ m: "30px" }}
+                    onClick={(e) => openChat(e, item._id, item.name)}
+                  >
+                    Chat With Patient
+                  </Button>
                 )}
                 {userType === "admin" && (
                   <Button
