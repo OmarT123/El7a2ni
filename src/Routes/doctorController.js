@@ -8,6 +8,7 @@ const userModel = require("../Models/User.js");
 const healthPackageModel = require("../Models/HealthPackage.js");
 const doctorDocuments = require("../Models/DoctorDocuments.js");
 const familyMemberModel = require("../Models/FamilyMember.js");
+const FamilyMemberModel = require("../Models/FamilyMember.js");
 const { default: mongoose } = require("mongoose");
 const bcrypt = require("bcrypt");
 
@@ -75,20 +76,33 @@ const filterAppointmentsForDoctor = async (req, res) => {
       .find(filterQuery)
       .populate({ path: "patient" });
     if (filteredAppointments.length === 0) {
-      return res.json([]);
+      return res.json({ success: false, title: 'No Appointments Found', message: 'Change the search filter to view more results' });
     }
     const currentDate = new Date();
     let upcomingAppointments = [];
-    let pastAppointments = [];
+    let cancelledAppointments = [];
+    let freeAppointments = [];
+    let completedAppointments = [];
+    let requestedAppointments = [];
     for (appointment of filteredAppointments) {
-      if (appointment.date < currentDate) pastAppointments.push(appointment);
-      else upcomingAppointments.push(appointment);
+      if (appointment.status === "upcoming")
+        upcomingAppointments.push(appointment);
+      else if (appointment.status === "cancelled")
+        cancelledAppointments.push(appointment);
+      else if (appointment.status === "free")
+        freeAppointments.push(appointment);
+      else if (appointment.status === "completed")
+        completedAppointments.push(appointment);
+      else requestedAppointments.push(appointment);
     }
     const appointmentData = {
       upcomingAppointments,
-      pastAppointments,
+      cancelledAppointments,
+      freeAppointments,
+      completedAppointments,
+      requestedAppointments,
     };
-    res.json(appointmentData);
+    res.json({success:true, appointmentData});
   } catch (err) {
     console.error(err);
     res.json({ error: "An error occurred while retrieving appointments." });
@@ -196,49 +210,41 @@ const editDoctor = async (req, res) => {
 };
 
 const myPatients = async (req, res) => {
+  let doctorID = req.user._id;
   try {
-    let id = req.user._id;
-    let allMyAppointments = await appointmentModel
-      .find({ doctor: id })
-      .populate({ path: "patient" });
+    const appointments = await appointmentModel
+      .find({ doctor: doctorID })
+      .populate({ path: "patient" })
+      .exec();
+    const uniquePatientsSet = new Set();
+    appointments.forEach((appointment) => {
+      if (appointment.patient !== null) {
+        uniquePatientsSet.add(appointment.patient._id.toString());
+      }
+    });
 
-    let uniquePatientsSet = new Set();
+    // Convert Set back to an array of unique patient IDs
+    const uniquePatientsArray = Array.from(uniquePatientsSet);
+    // Fetch patient details from database based on unique patient IDs
+    const PatientsDetails = await patientModel.find({
+      _id: { $in: uniquePatientsArray },
+    });
 
-    let patients = allMyAppointments
-      .map((appointment) =>
-        appointment.patient !== null ? appointment.patient : undefined
-      )
-      .filter((patient) => {
-        if (patient !== undefined && !uniquePatientsSet.has(patient._id)) {
-          uniquePatientsSet.add(patient._id);
-          return true;
-        }
-        return false;
-      });
-    // const newPatients = []
-    // patients.map(async(patient) => {
-    //   const familyMembers = patient.familyMembers;
-    //   // const temp = await familyMemberModel.findById(familyMembers[0].toString())
-    //   // console.log(temp)
-    //   const oldFamilyMembers = patient.familyMembers
-    //   const newFamilyMembers = []
-    //   const newPatient = {
-    //     ...patient,
-    //     familyMembers: []
-    //   }
-    //   for (let fm of oldFamilyMembers)
-    //   {
-    //     const familyMember = await familyMemberModel.findById(fm.toString())
-    //     newFamilyMembers.push(familyMember)
-    //   }
-    //   newPatient.familyMembers = newFamilyMembers
-    //   newPatients.push(newPatient)
-    // })
-    // console.log(newPatients)
+    let memberId;
+    let memberArray = [];
+    for (let i = 0; i < PatientsDetails.length; i++) {
+      for (let j = 0; j < PatientsDetails[i].familyMembers.length; j++) {
+        memberId = PatientsDetails[i].familyMembers[j].toString();
+        let member = await FamilyMemberModel.findById(memberId);
+        memberArray[j] = member;
+      }
+      PatientsDetails[i].familyMembers = memberArray;
+      memberArray = [];
+    }
 
-    res.json(patients);
-  } catch (err) {
-    res.send(err.message);
+    res.json({ success: true, PatientsDetails });
+  } catch (error) {
+    res.status(400).json(error.message);
   }
 };
 
@@ -304,17 +310,42 @@ const filterPatientsByAppointments = async (req, res) => {
       .find({ doctor: doctorID })
       .populate({ path: "patient" })
       .exec();
-    const patients = appointments
-      .filter(
-        (appointment) =>
-          appointment.status !== "canceled" && appointment.patient !== null
-      )
-      .map((appointment) => appointment.patient);
-    res.json(patients);
+    const uniquePatientsSet = new Set();
+    appointments.forEach((appointment) => {
+      if (
+        (appointment.status === "upcoming" ||
+          appointment.status === "requested") &&
+        appointment.patient !== null
+      ) {
+        uniquePatientsSet.add(appointment.patient._id.toString());
+      }
+    });
+
+    // Convert Set back to an array of unique patient IDs
+    const uniquePatientsArray = Array.from(uniquePatientsSet);
+    // Fetch patient details from database based on unique patient IDs
+    const PatientsDetails = await patientModel.find({
+      _id: { $in: uniquePatientsArray },
+    });
+
+    let memberId;
+    let memberArray = [];
+    for (let i = 0; i < PatientsDetails.length; i++) {
+      for (let j = 0; j < PatientsDetails[i].familyMembers.length; j++) {
+        memberId = PatientsDetails[i].familyMembers[j].toString();
+        let member = await FamilyMemberModel.findById(memberId);
+        memberArray[j] = member;
+      }
+      PatientsDetails[i].familyMembers = memberArray;
+      memberArray = [];
+    }
+
+    res.json({ success: true, PatientsDetails });
   } catch (error) {
     res.status(400).json(error.message);
   }
 };
+
 const ViewDoctorWallet = async (req, res) => {
   try {
     const DoctorId = req.user._id;
@@ -331,29 +362,51 @@ const ViewDoctorWallet = async (req, res) => {
   }
 };
 
-//new Req.45//
 const viewDoctorAppointments = async (req, res) => {
   try {
     const doctorID = req.user._id;
-    const currentDate = new Date();
 
     const upcomingAppointments = await appointmentModel
       .find({
         doctor: doctorID,
-        date: { $gte: currentDate },
+        status: "upcoming",
       })
       .populate({ path: "patient" });
 
     const pastAppointments = await appointmentModel
       .find({
         doctor: doctorID,
-        date: { $lt: currentDate },
+        status: "cancelled",
+      })
+      .populate({ path: "patient" });
+
+    const freeAppointments = await appointmentModel
+      .find({
+        doctor: doctorID,
+        status: "free",
+      })
+      .populate({ path: "patient" });
+
+    const completedAppointments = await appointmentModel
+      .find({
+        doctor: doctorID,
+        status: "completed",
+      })
+      .populate({ path: "patient" });
+
+    const requestedAppointments = await appointmentModel
+      .find({
+        doctor: doctorID,
+        status: "requested",
       })
       .populate({ path: "patient" });
 
     const appointmentData = {
       upcomingAppointments,
       pastAppointments,
+      freeAppointments,
+      completedAppointments,
+      requestedAppointments,
     };
 
     res.status(200).json(appointmentData);

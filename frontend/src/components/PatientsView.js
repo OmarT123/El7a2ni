@@ -58,7 +58,6 @@ const PatientsView = ({
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [searchName, setSearchName] = useState("");
   const [searchMedicinal, setSearchMedicinal] = useState("");
-  const [expandSearchOptions, setExpandSearchOptions] = useState(false);
   const [showResetButton, setShowResetButton] = useState(false);
 
   const handleSearch = async (e) => {
@@ -76,61 +75,78 @@ const PatientsView = ({
       }
     }
   };
-  const handleExpandOptionsClick = () => {
-    setExpandSearchOptions(!expandSearchOptions);
+
+  const filterByAppointment = async (e) => {
+    e.preventDefault();
+    try {
+      console.log("here");
+      const response = await axios.get("/filterPatientsByAppointments");
+      // console.log(response.data)
+      setPatients(response.data.PatientsDetails);
+      setShowResetButton(true);
+    } catch (error) {
+      console.error("Error fetching doctor appointments:", error);
+    }
   };
+
   const handleResetSearchClick = async (e) => {
     e.preventDefault();
     setSearchName("");
     const response = await axios.get("/viewmypatients");
-    setPatients(response.data);
+    setPatients(response.data.PatientsDetails);
     setShowResetButton(false);
   };
 
   const FamilyMembersView = ({ item }) => {
     console.log(item);
     return (
-      <Box>
-        <Typography variant="h6" sx={{ padding: "2px", m: "30px" }}>
-          Family Members
-        </Typography>
-        {item.familyMembers.map((fam) => (
-          <Container maxWidth="md" sx={{}}>
-            <Grid container spacing={1}>
-              <Grid item xs={6}>
-                <List>
-                  <FiberManualRecordIcon
-                    sx={{ position: "absolute", left: -20, top: 20 }}
-                  />
-                  <ListItem>
-                    <ListItemText secondary={`Name: ${fam.name}`} />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      secondary={`National ID: ${fam.nationalId}`}
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText secondary={`Age: ${fam.age}`} />
-                  </ListItem>
-                </List>
-              </Grid>
-              <Grid item xs={6}>
-                <List>
-                  <ListItem>
-                    <ListItemText secondary={`Gender: ${fam.gender}`} />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      secondary={`Relation to Patient: ${fam.relationToPatient}`}
-                    />
-                  </ListItem>
-                </List>
-              </Grid>
-            </Grid>
-          </Container>
-        ))}
-      </Box>
+      <>
+        {item && (
+          <Box>
+            <Typography variant="h6" sx={{ padding: "2px", m: "30px" }}>
+              Family Members
+            </Typography>
+            {item &&
+              item.familyMembers &&
+              item.familyMembers.map((fam) => (
+                <Container maxWidth="md" sx={{}}>
+                  <Grid container spacing={1}>
+                    <Grid item xs={6}>
+                      <List>
+                        <FiberManualRecordIcon
+                          sx={{ position: "absolute", left: -20, top: 20 }}
+                        />
+                        <ListItem>
+                          <ListItemText secondary={`Name: ${fam.name}`} />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText
+                            secondary={`National ID: ${fam.nationalId}`}
+                          />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText secondary={`Age: ${fam.age}`} />
+                        </ListItem>
+                      </List>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <List>
+                        <ListItem>
+                          <ListItemText secondary={`Gender: ${fam.gender}`} />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText
+                            secondary={`Relation to Patient: ${fam.relationToPatient}`}
+                          />
+                        </ListItem>
+                      </List>
+                    </Grid>
+                  </Grid>
+                </Container>
+              ))}
+          </Box>
+        )}
+      </>
     );
   };
 
@@ -142,7 +158,7 @@ const PatientsView = ({
     try {
       if (userType === "doctor") {
         const response = await axios.get("/viewmypatients");
-        setPatients(response.data);
+        setPatients(response.data.PatientsDetails);
       } else {
         await axios.get("/getAllPatients").then((res) => {
           setPatients(res.data);
@@ -232,7 +248,7 @@ const PatientsView = ({
                 </Button>
                 <Button
                   variant="outlined"
-                  onClick={handleExpandOptionsClick}
+                  onClick={filterByAppointment}
                   style={{
                     color: "black",
                     marginLeft: "8px",
@@ -242,7 +258,7 @@ const PatientsView = ({
                     "&:hover": { backgroundColor: "#2196F3", color: "white" },
                   }}
                 >
-                  {expandSearchOptions ? "Hide Options" : "Show Options"}
+                  Filter By Upcoming Appointment
                 </Button>
                 {showResetButton && (
                   <Button
@@ -262,23 +278,6 @@ const PatientsView = ({
                 )}
               </Box>
             </Box>
-            <Collapse in={expandSearchOptions}>
-              <TextField
-                label="Medicinal Use..."
-                variant="outlined"
-                margin="dense"
-                id="medicinalUse"
-                name="medicinalUse"
-                value={searchMedicinal}
-                onChange={(e) => setSearchMedicinal(e.target.value)}
-                InputProps={{
-                  style: {
-                    borderBottom: "none",
-                  },
-                }}
-                sx={{ marginLeft: "11px", width: "77.5%" }}
-              />
-            </Collapse>
           </Box>
           <Fab
             onClick={backButton}
@@ -300,119 +299,115 @@ const PatientsView = ({
           </Box>
 
           <List style={listStyle}>
-            {patients.map((item, index) => (
-              <React.Fragment key={index}>
-                <ListItem button onClick={() => handleItemExpand(item)}>
-                  <PersonIcon
-                    sx={{ mr: "15px", width: "50px", height: "50px" }}
-                  />
-                  <Container
-                    maxWidth="md"
-                    sx={{ marginTop: 2, padding: "5px" }}
+            {patients &&
+              patients.map((item, index) => (
+                <React.Fragment key={index}>
+                  <ListItem button onClick={() => handleItemExpand(item)}>
+                    <PersonIcon
+                      sx={{ mr: "15px", width: "50px", height: "50px" }}
+                    />
+                    <Container
+                      maxWidth="md"
+                      sx={{ marginTop: 2, padding: "5px" }}
+                    >
+                      <Typography variant="h5" sx={{ marginBottom: 2 }}>
+                        {item.name}
+                      </Typography>
+                      <Grid container spacing={3}>
+                        <Grid item xs={6}>
+                          <List>
+                            <ListItem>
+                              <ListItemText
+                                primary={`Username: ${item.username}`}
+                              />
+                            </ListItem>
+                            <ListItem>
+                              <ListItemText primary={`Email: ${item.email}`} />
+                            </ListItem>
+                            <ListItem>
+                              <ListItemText
+                                primary={`Birth Date: ${new Date(
+                                  item.birthDate
+                                ).toLocaleDateString("en-US", {
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                })}`}
+                              />
+                            </ListItem>
+                          </List>
+                        </Grid>
+                        <Grid item xs={6}>
+                          <List>
+                            <ListItem>
+                              <ListItemText
+                                primary={`Gender: ${item.gender}`}
+                              />
+                            </ListItem>
+                            <ListItem>
+                              <ListItemText
+                                primary={`Mobile Number: ${item.mobileNumber}`}
+                              />
+                            </ListItem>
+                            <ListItem>
+                              <ListItemText
+                                primary={`Emergency Contact: ${item.emergencyContact.name}, ${item.emergencyContact.mobileNumber} (${item.emergencyContact.relation})`}
+                              />
+                            </ListItem>
+                          </List>
+                        </Grid>
+                      </Grid>
+                    </Container>
+                  </ListItem>
+                  <Collapse
+                    in={item.username === expandedItem}
+                    timeout="auto"
+                    unmountOnExit
                   >
-                    <Typography variant="h5" sx={{ marginBottom: 2 }}>
-                      {item.name}
-                    </Typography>
-                    <Grid container spacing={3}>
-                      <Grid item xs={6}>
-                        <List>
-                          <ListItem>
-                            <ListItemText
-                              primary={`Username: ${item.username}`}
-                            />
-                          </ListItem>
-                          <ListItem>
-                            <ListItemText primary={`Email: ${item.email}`} />
-                          </ListItem>
-                          <ListItem>
-                            <ListItemText
-                              primary={`Birth Date: ${new Date(
-                                item.birthDate
-                              ).toLocaleDateString("en-US", {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                              })}`}
-                            />
-                          </ListItem>
-                        </List>
-                      </Grid>
-                      <Grid item xs={6}>
-                        <List>
-                          <ListItem>
-                            <ListItemText primary={`Gender: ${item.gender}`} />
-                          </ListItem>
-                          <ListItem>
-                            <ListItemText
-                              primary={`Mobile Number: ${item.mobileNumber}`}
-                            />
-                          </ListItem>
-                          <ListItem>
-                            <ListItemText
-                              primary={`Emergency Contact: ${item.emergencyContact.name}, ${item.emergencyContact.mobileNumber} (${item.emergencyContact.relation})`}
-                            />
-                          </ListItem>
-                        </List>
-                      </Grid>
-                    </Grid>
-                  </Container>
-                </ListItem>
-                <Collapse
-                  in={item.username === expandedItem}
-                  timeout="auto"
-                  unmountOnExit
-                >
-                  {item.familyMembers && item.familyMembers.length > 0 && (
-                    <FamilyMembersView item={item} />
-                  )}
-                  {userType === "pharmacist" && (
-                    <Button
-                      variant="contained"
-                      sx={{ m: "30px" }}
-                      onClick={(e) => openChat(e, item._id, item.name)}
-                    >
-                      Chat With Patient
-                    </Button>
-                  )}
-                  {userType === "admin" && (
-                    <Button
-                      variant="contained"
-                      onClick={() => removePatient(item._id)}
-                      sx={{ m: "30px" }}
-                    >
-                      Remove Patient
-                    </Button>
-                  )}
-                  {userType === "doctor" && (
-                    <>
+                    {item.familyMembers && item.familyMembers.length > 0 && (
+                      <FamilyMembersView item={item} />
+                    )}
+                    {userType === "pharmacist" && (
                       <Button
                         variant="contained"
                         sx={{ m: "30px" }}
-                        onClick={() => {
-                          setPage("second");
-                          setSelectedPatient(item);
-                        }}
+                        onClick={(e) => openChat(e, item._id, item.name)}
                       >
-                        View Details
+                        Chat With Patient
                       </Button>
+                    )}
+                    {userType === "admin" && (
                       <Button
                         variant="contained"
+                        onClick={() => removePatient(item._id)}
                         sx={{ m: "30px" }}
                       >
-                        Chat with Patient
+                        Remove Patient
                       </Button>
-                      <Button
-                        variant="contained"
-                        sx={{ m: "30px" }}
-                      >
-                        Call Patient
-                      </Button>
-                    
-                    </>
-                  )}
-                </Collapse>
-              </React.Fragment>
-            ))}
+                    )}
+                    {userType === "doctor" && (
+                      <>
+                        <Button
+                          variant="contained"
+                          sx={{ m: "30px" }}
+                          onClick={() => {
+                            setPage("second");
+                            setSelectedPatient(item);
+                          }}
+                        >
+                          View Details
+                        </Button>
+                        <Button variant="contained" sx={{ m: "30px" }}>
+                          Chat with Patient
+                        </Button>
+                        <Button variant="contained" sx={{ m: "30px" }}>
+                          Call Patient
+                        </Button>
+                      </>
+                    )}
+                  </Collapse>
+                </React.Fragment>
+              ))}
           </List>
           {alert && (
             <Popup

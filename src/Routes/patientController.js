@@ -1590,6 +1590,7 @@ const cancelAppointment = async (req, res) => {
       .findById(appointmentID)
       .populate("doctor patient")
       .exec();
+    const oldStatus = appointment.status
     appointment.status = "cancelled";
     await appointment.save();
 
@@ -1598,7 +1599,7 @@ const cancelAppointment = async (req, res) => {
     const timeDifference = appointmentDate - currentDate;
     const isWithin24Hours = timeDifference < 24 * 60 * 60 * 1000;
     const doctor = await doctorModel.findById(req.user._id);
-    if (!isWithin24Hours || doctor) {
+    if (oldStatus !== 'free' && (!isWithin24Hours || doctor)) {
       const patientID = appointment.patient;
       const patient = await patientModel.findById(patientID);
       patient.wallet += appointment.price;
@@ -1653,7 +1654,7 @@ const cancelAppointment = async (req, res) => {
       console.error("Error sending email:", error);
     }
 
-    return res.json("Appointment cancelled successfully");
+    return res.json({success:true, title:"Appointment Cancelled"});
   } catch (error) {
     return res.json();
   }

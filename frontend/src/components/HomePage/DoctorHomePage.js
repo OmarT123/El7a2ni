@@ -12,30 +12,31 @@ import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
 import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
 import Fab from "@mui/material/Fab";
 import PharmacistsStage from "../AdminEmployees/PharmacistsStage";
-import axios from 'axios'
+import axios from "axios";
 import AppointmentsView from "../AppointmentsView";
 
 const DoctorHomePage = () => {
+  const [showContent, setShowContent] = useState(false);
   const [page, setPage] = useState("home");
   const { user } = useContext(HomePageContext);
-  
+
   useEffect(() => {
-    const login = async() =>{
-      await axios.get("/loginAuthentication").then(async(response) => {
+    const login = async () => {
+      await axios.get("/loginAuthentication").then(async (response) => {
         const { success, type, user } = response.data;
-        if (success && type === 'doctor' && user.status === 'approved') {
-          window.location.href='/doctorContract'
-        }
-        else if (success && type === 'doctor' && user.status === 'rejected'){
-          localStorage.clear()
-          await axios.get('/logout')
-          window.location.href='/'
+        if (success && type === "doctor" && user.status === "approved") {
+          window.location.href = "/doctorContract";
+        } else if (success && type === "doctor" && user.status === "rejected") {
+          localStorage.clear();
+          await axios.get("/logout");
+          window.location.href = "/";
+        } else {
+          setShowContent(true);
         }
       });
-    }
-    login()
+    };
+    login();
   }, []);
-  
 
   const Home = () => {
     return (
@@ -79,27 +80,35 @@ const DoctorHomePage = () => {
 
   return (
     <>
-      <HomeNavBar homeButton={() => setPage("home")} setPage={setPage} />
-      <Container sx={{ mt: 3 }}>
-        <Grid container spacing={5}>
-          {page === "profile" ? (
-            <ProfilePage userData={user} />
-          ) : page === "home" ? (
-            <Home />
-          ) : page === "appointments" ? (
-            <AppointmentsView />
-          ) : page === "patients" ? (
-            <>
-              <PatientsView
-                userType={"doctor"}
-                backButton={() => setPage("home")}
-              />
-            </>
-          ) : (
-            <PharmacistsStage setStage={()=>setPage('home')} together={true} userType='doctor' />
-          )}
-        </Grid>
-      </Container>
+      {showContent && (
+        <>
+          <HomeNavBar homeButton={() => setPage("home")} setPage={setPage} />
+          <Container sx={{ mt: 3 }}>
+            <Grid container spacing={5}>
+              {page === "profile" ? (
+                <ProfilePage userData={user} />
+              ) : page === "home" ? (
+                <Home />
+              ) : page === "appointments" ? (
+                <AppointmentsView backButton={() => setPage("home")} />
+              ) : page === "patients" ? (
+                <>
+                  <PatientsView
+                    userType={"doctor"}
+                    backButton={() => setPage("home")}
+                  />
+                </>
+              ) : (
+                <PharmacistsStage
+                  setStage={() => setPage("home")}
+                  together={true}
+                  userType="doctor"
+                />
+              )}
+            </Grid>
+          </Container>
+        </>
+      )}
     </>
   );
 };
