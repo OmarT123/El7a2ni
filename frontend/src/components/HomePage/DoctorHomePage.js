@@ -13,6 +13,7 @@ import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
 import Fab from "@mui/material/Fab";
 import PharmacistsStage from "../AdminEmployees/PharmacistsStage";
 import axios from 'axios'
+import AppointmentsView from "../AppointmentsView";
 
 const DoctorHomePage = () => {
   const [page, setPage] = useState("home");
@@ -86,7 +87,7 @@ const DoctorHomePage = () => {
           ) : page === "home" ? (
             <Home />
           ) : page === "appointments" ? (
-            "appointments"
+            <AppointmentsView />
           ) : page === "patients" ? (
             <>
               <PatientsView
