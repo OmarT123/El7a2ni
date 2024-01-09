@@ -75,8 +75,8 @@ const LogoStyle = {
 };
 
 const ImageStyle = {
-  width: "100px",
-  height: "90px",
+  width: "75px",
+  height: "80px",
 };
 
 const ContainerStyle = {
@@ -164,7 +164,7 @@ const NavBar = () => {
             <Container sx={ContainerStyle}>
               <Grid container>
                 <Link sx={LogoStyle}>
-                  <img style={ImageStyle} src="logo.png" alt="logo.png" />
+                  <img style={ImageStyle} src="itrylogo-removebg-preview.png" alt="logo.png" />
                 </Link>
               </Grid>
               <Grid container spacing={3} width={2500} color="#111">
