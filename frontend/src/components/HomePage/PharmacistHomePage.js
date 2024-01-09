@@ -25,7 +25,7 @@ const PharmacistHomePage = () => {
       <>
         <Grid container spacing={5} sx={{ minHeight: "100vh" }}>
           <Grid item xs={12} sm={12} />
-          <Grid item xs={12} sm={4}>
+          <Grid item xs={12} sm={4} sx={{marginTop:"-95px"}}>
             <SquareCard
               title="MEDICINE"
               body="Lorem ipsum sit amet consectetur adipiscing elit. Vivamus et erat in lacus convallis sodales."
@@ -35,7 +35,7 @@ const PharmacistHomePage = () => {
               closeFunction={() => setPage("home")}
             />
           </Grid>
-          <Grid item xs={12} sm={4}>
+          <Grid item xs={12} sm={4} sx={{marginTop:"-95px"}}>
             <SquareCard
               title="DOCTORS"
               body="Lorem ipsum sit amet consectetur adipiscing elit. Vivamus et erat in lacus convallis sodales."
@@ -45,7 +45,7 @@ const PharmacistHomePage = () => {
               closeFunction={() => setPage("home")}
             />
           </Grid>
-          <Grid item xs={12} sm={4}>
+          <Grid item xs={12} sm={4} sx={{marginTop:"-95px"}}>
             <SquareCard
               title="PATIENTS"
               body="Lorem ipsum sit amet consectetur adipiscing elit. Vivamus et erat in lacus convallis sodales."

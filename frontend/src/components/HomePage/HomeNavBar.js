@@ -7,8 +7,8 @@ import NotificationBoard from "../NotificationBoard";
 import SideBar from "../SideBar";
 
 const ImageStyle = {
-  width: "100px",
-  height: "90px",
+  width: "75px",
+  height: "80px",
   cursor: "pointer",
 };
 
@@ -40,7 +40,7 @@ const HomeNavBar = ({ homeButton, setPage, user}) => {
           <Toolbar sx={{ alignItems: "center" }}>
             <img
               style={ImageStyle}
-              src="logo.png"
+              src="itrylogo-removebg-preview.png"
               alt="logo.png"
               onClick={homeButton}
             />
