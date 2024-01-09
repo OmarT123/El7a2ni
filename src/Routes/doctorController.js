@@ -247,14 +247,16 @@ const viewPatient = async (req, res) => {
 const exactPatients = async (req, res) => {
   try {
     let id = req.user._id;
+    // console.log('here')
     const { name } = req.query;
+    // console.log(name)
     const searchName = new RegExp(name, "i");
 
     let allMyAppointments = await appointmentModel
       .find({ doctor: id })
       .populate({ path: "patient" });
     let patients = allMyAppointments.map((appointment) => appointment.patient);
-
+    
     let uniquePatientsSet = new Set();
     let filteredPatients = patients.filter((patient) => {
       if (
@@ -267,8 +269,8 @@ const exactPatients = async (req, res) => {
       }
       return false;
     });
-
-    res.json(filteredPatients);
+    
+    res.json({success:true, filteredPatients});
   } catch (err) {
     res.send(err.message);
   }
@@ -425,8 +427,9 @@ const rejectContract = async (req, res) => {
 const viewPatientPrescriptions = async (req, res) => {
   try {
     const doctorId = req.user._id;
+    const id = req.query.id
     const prescriptions = await prescriptionModel
-      .find({ doctor: doctorId })
+      .find({ doctor: doctorId, patient: id })
       .populate({ path: "medicines.medId" })
       .populate({ path: "patient" })
       .exec();

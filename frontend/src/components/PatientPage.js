@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Paper from "@mui/material/Paper";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import axios from "axios";
 import Collapse from "@mui/material/Collapse";
 import Typography from "@mui/material/Typography";
+import html2pdf from "html2pdf.js";
 import UploadIcon from "@mui/icons-material/Upload";
 import {
   Button,
@@ -15,8 +16,32 @@ import {
   Input,
   Select,
   MenuItem,
+  Fab,
 } from "@mui/material";
 import { Container, Grid } from "@mui/material";
+
+import AddIcon from "@mui/icons-material/Add";
+import ClearIcon from "@mui/icons-material/Clear";
+
+const buttonStyle = {
+  backgroundColor: "#1976D2",
+  color: "#fff",
+  borderRadius: "50%",
+  width: "56px",
+  height: "56px",
+  cursor: "pointer",
+  marginTop: "20px",
+  "&:hover": {
+    backgroundColor: "#1565C0",
+  },
+};
+const iconStyle = {
+  fontSize: "2rem",
+};
+
+const pdfStyle = {
+  display: 'none',
+};
 
 const PatientPage = ({ selectedPatient, setSelectedPatient, setAlert }) => {
   const [healthRecords, setHealthRecords] = useState(null);
@@ -27,19 +52,46 @@ const PatientPage = ({ selectedPatient, setSelectedPatient, setAlert }) => {
 
   const PrescriptionItem = ({ prescription, number }) => {
     const [addMedicineExpanded, setAddMedicineExpanded] = useState("");
-    const [selectedMedicine, setSelectedMedicine] = useState("");
-    const [selectedDosage, setSelectedDosage] = useState("");
     const [selectedMedicineId, setSelectedMedicineId] = useState("");
+
+    const prescriptionItemRef = useRef();
+
+    const downloadPrescription = async () => {
+      // Hide buttons before generating PDF
+      const buttons = document.querySelectorAll('.exclude-from-pdf');
+      buttons.forEach((button) => {
+        button.style.display = 'none';
+      });
+    
+      const content = prescriptionItemRef.current;
+    
+      const pdfOptions = {
+        margin: 10,
+        filename: 'Prescription.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      };
+    
+      // Generate PDF
+      const pdf = await html2pdf().from(content).set(pdfOptions).save();
+    
+      // Show buttons again after generating PDF
+      buttons.forEach((button) => {
+        button.style.display = 'block';
+      });
+    };
+    
 
     const handleAddMedicine = async (e) => {
       e.preventDefault();
       const data = new FormData(e.currentTarget);
-      if (selectedMedicineId && data.get('dosage')) {
+      if (selectedMedicineId && data.get("dosage")) {
         try {
           const response = await axios.post("/addToPrescription", {
             prescriptionId: prescription._id,
             medId: selectedMedicineId,
-            dosage: data.get('dosage'),
+            dosage: data.get("dosage"),
           });
           if (response.data.success) {
             setAlert(response.data);
@@ -114,6 +166,7 @@ const PatientPage = ({ selectedPatient, setSelectedPatient, setAlert }) => {
                 type="number"
                 onChange={(e) => setNewDosage(e.target.value)}
                 label="New Dosage"
+                className="exclude-from-pdf"
               />
             </Grid>
             <Grid item sm={2} />
@@ -121,6 +174,7 @@ const PatientPage = ({ selectedPatient, setSelectedPatient, setAlert }) => {
               <Button
                 variant="contained"
                 onClick={(e) => handleDosageUpdate(e, med.medId._id)}
+                className="exclude-from-pdf"
               >
                 Update
               </Button>
@@ -131,6 +185,7 @@ const PatientPage = ({ selectedPatient, setSelectedPatient, setAlert }) => {
                 onClick={(e) => {
                   handleDeleteMedicine(e, prescription._id, med.medId._id);
                 }}
+                className="exclude-from-pdf"
               >
                 Delete
               </Button>
@@ -141,7 +196,11 @@ const PatientPage = ({ selectedPatient, setSelectedPatient, setAlert }) => {
     };
 
     return (
-      <Paper sx={{ padding: "20px", display: "flex", flexDirection: "column" }}>
+      <Paper
+        ref={prescriptionItemRef}
+        sx={{ padding: "20px", display: "flex", flexDirection: "column" }}
+      >
+        <Button className="exclude-from-pdf" onClick={downloadPrescription}>Download</Button>
         <Typography variant="h5">Prescription {number + 1}:</Typography>
         {!prescription.filled && (
           <Typography variant="substitute1">Not Filled</Typography>
@@ -150,18 +209,21 @@ const PatientPage = ({ selectedPatient, setSelectedPatient, setAlert }) => {
           Date: {prescription.createdAt.substr(0, 10)}
         </Typography>
         <List>
-          {prescription.medicines.map((med, index) => (
-            <>
-              <MedicineItem med={med} index={index} />
-            </>
-          ))}
+          {prescription &&
+            prescription.medicines &&
+            prescription.medicines.map((med, index) => (
+              <>
+                <MedicineItem med={med} index={index} />
+              </>
+            ))}
         </List>
         <Button
           variant="contained"
           sx={{ mt: "10px" }}
+          className="exclude-from-pdf"
           onClick={() => setAddMedicineExpanded((prev) => !prev)}
         >
-          Add Medicine
+          {prescription.filled ? "Add Medicine" : "Fill Prescription"}
         </Button>
         <Collapse in={addMedicineExpanded}>
           <Grid
@@ -182,17 +244,18 @@ const PatientPage = ({ selectedPatient, setSelectedPatient, setAlert }) => {
                 onChange={(e) => setSelectedMedicineId(e.target.value)}
                 label="Select Medicine"
               >
-                {medicine.map((med) => (
-                  <MenuItem value={med._id} sx={{ maxHeight: "50px" }}>
-                    <img
-                      src={med.picture}
-                      height="40px"
-                      width="50px"
-                      style={{ marginRight: "30px" }}
-                    />{" "}
-                    {med.name}
-                  </MenuItem>
-                ))}
+                {medicine &&
+                  medicine.map((med) => (
+                    <MenuItem value={med._id} sx={{ maxHeight: "50px" }}>
+                      <img
+                        src={med.picture}
+                        height="40px"
+                        width="50px"
+                        style={{ marginRight: "30px" }}
+                      />{" "}
+                      {med.name}
+                    </MenuItem>
+                  ))}
               </Select>
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -201,7 +264,7 @@ const PatientPage = ({ selectedPatient, setSelectedPatient, setAlert }) => {
                 id="dosage"
                 type="number"
                 label="Dosage"
-                name='dosage'
+                name="dosage"
                 sx={{ mt: 3 }}
               />
             </Grid>
@@ -262,7 +325,9 @@ const PatientPage = ({ selectedPatient, setSelectedPatient, setAlert }) => {
 
   const fetchPrescriptions = async () => {
     try {
-      const response = await axios.get("/viewPatientPrescriptions");
+      const response = await axios.get("/viewPatientPrescriptions", {
+        params: { id: selectedPatient._id },
+      });
       if (response.data.success) {
         setPrescriptions(response.data.prescriptions);
       }
@@ -409,31 +474,36 @@ const PatientPage = ({ selectedPatient, setSelectedPatient, setAlert }) => {
             <Box sx={{ height: "50px" }} />
             <Box>
               <Grid container spacing={3}>
-                {healthRecords.map((hr) => (
-                  <Grid item xs={12} sm={6}>
-                    <iframe
-                      title="PDF Viewer"
-                      src={hr}
-                      width="90%"
-                      height="350px"
-                    />
-                  </Grid>
-                ))}
+                {healthRecords &&
+                  healthRecords.map((hr) => (
+                    <Grid item xs={12} sm={6}>
+                      <iframe
+                        title="PDF Viewer"
+                        src={hr}
+                        width="90%"
+                        height="350px"
+                      />
+                    </Grid>
+                  ))}
               </Grid>
             </Box>
           </>
         )}
 
-        <Typography variant="h5" sx={{ my: "30px" }}>
+        <Typography variant="h5" sx={{ my: "30px", mr: "30px" }}>
           Prescriptions
         </Typography>
         {prescriptions && (
           <Grid container spacing={3}>
-            {prescriptions.map((prescription, index) => (
-              <Grid item xs={12} sm={12} key={index}>
-                <PrescriptionItem prescription={prescription} number={index} />
-              </Grid>
-            ))}
+            {prescriptions &&
+              prescriptions.map((prescription, index) => (
+                <Grid item xs={12} sm={12} key={index}>
+                  <PrescriptionItem
+                    prescription={prescription}
+                    number={index}
+                  />
+                </Grid>
+              ))}
           </Grid>
         )}
       </Container>
