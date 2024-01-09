@@ -56,13 +56,13 @@ const Popup = ({ title, message, onClose, showButtons = true, content }) => {
               <li key={index}>
                 <strong>Medicine:</strong> {report.medicine} |{' '}
                 <strong>Total Quantity Sold:</strong> {report.totalQuantitySold} |{' '}
-                <strong>Total Money Earned:</strong> {report.totalMoneyEarned}
+                <strong>Total Money Earned:</strong> {report.totalMoneyEarned}$
               </li>
             ))}
           </ul>
         )}
         {!content && <p>{message}</p>}
-        {content.medicineReport.length === 0 && !message && <p>There were no sales in the selected month.</p>}
+        {content && content.medicineReport.length === 0 && !message && <p>There were no sales in the selected month.</p>}
         {showButtons && <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
           <Button variant="outlined" onClick={onClose} sx={{ marginRight: '10px' }}>
             No, thanks

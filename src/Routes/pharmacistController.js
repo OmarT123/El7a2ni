@@ -206,8 +206,8 @@ const pharmacistRetrieveNotifications = async (req, res) => {
 
 const getSaleReport = async (req, res) => {
   try {
-    const { medicine, month } = req.body;
-
+    const { medicine, month } = req.query;
+    const medName = await medicineModel.findById(medicine);
     const startOfMonth = new Date(month);
     startOfMonth.setDate(1);
     const endOfMonth = new Date(month);
@@ -221,25 +221,26 @@ const getSaleReport = async (req, res) => {
         $lte: endOfMonth,
       },
     }).populate({ path: 'items.medicine' });
-
     let totalQuantitySold = 0;
     let totalMoneyEarned = 0;
 
     orders.forEach((order) => {
       order.items.forEach((item) => {
-        if (item.medicine.name === medicine) {
+        if (item.medicine.name === medName.name) {
           totalQuantitySold += item.quantity;
           totalMoneyEarned += item.quantity * (1 - order.discount / 100) * item.medicine.price;
         }
       });
-    });
-
-    res.status(200).json({
-      message: 'Sales report generated successfully',
+    });  
+    let medicineReport = [{
+      medicine: medName.name,
       totalQuantitySold: totalQuantitySold,
-      totalMoneyEarned: totalMoneyEarned.toFixed(2),
+      totalMoneyEarned: totalMoneyEarned,
+    }];
+    res.json({
+      message: 'Sales report generated successfully',
       month: month,
-      medicine: medicine,
+      medicineReport: medicineReport
     });
   } catch (error) {
     res.json({ error: error.message });
