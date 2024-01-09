@@ -83,6 +83,7 @@ const PharmacistHomePage = () => {
           ) : (
             <PatientsView
               userType={"pharmacist"}
+              backButton={() => setPage("home")}
               setChat={setChat}
               setChatterID={setChatterID}
               setChatterName={setChatterName}

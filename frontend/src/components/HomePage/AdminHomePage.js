@@ -95,7 +95,7 @@ const AdminHomePage = () => {
             ) : page === "employees" ? (
               <EmployeesView userType={"admin"} />
             ) : page === "patients" ? (
-              <PatientsView userType={"admin"} />
+              <PatientsView userType={"admin"} backButton={() => setPage("home")} />
             ) : page === "admins" ? (
               <AdminsView />
             ) : (
