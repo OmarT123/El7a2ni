@@ -9,7 +9,9 @@ import PersonIcon from "@mui/icons-material/Person";
 import EventNoteIcon from "@mui/icons-material/EventNote";
 import PatientsView from "../PatientsView";
 import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
+import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
 import Fab from "@mui/material/Fab";
+import PharmacistsStage from "../AdminEmployees/PharmacistsStage";
 
 const DoctorHomePage = () => {
   const [page, setPage] = useState("home");
@@ -20,7 +22,6 @@ const DoctorHomePage = () => {
       <>
         <Grid container spacing={5} sx={{ minHeight: "100vh" }}>
           <Grid item xs={12} sm={12} />
-          <Grid item xs={0} sm={2} />
           <Grid item xs={12} sm={4}>
             <SquareCard
               title="APPOINTMENTS"
@@ -31,14 +32,23 @@ const DoctorHomePage = () => {
               closeFunction={() => setPage("home")}
             />
           </Grid>
-          <Grid item xs={0} sm={1} />
-          <Grid item xs={12} sm={3.5}>
+          <Grid item xs={12} sm={4}>
             <SquareCard
               title="PATIENTS"
               body="Lorem ipsum sit amet consectetur adipiscing elit. Vivamus et erat in lacus convallis sodales."
               icon={PersonIcon}
               isLearnMore={false}
               changeFunction={() => setPage("patients")}
+              closeFunction={() => setPage("home")}
+            />
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <SquareCard
+              title="PHARMACISTS"
+              body="Lorem ipsum sit amet consectetur adipiscing elit. Vivamus et erat in lacus convallis sodales."
+              icon={LocalHospitalIcon}
+              isLearnMore={false}
+              changeFunction={() => setPage("pharmacists")}
               closeFunction={() => setPage("home")}
             />
           </Grid>
@@ -58,10 +68,19 @@ const DoctorHomePage = () => {
             <Home />
           ) : page === "appointments" ? (
             "appointments"
-          ) : (
+          ) : page === "patients" ? (
             <>
-              <PatientsView userType={"doctor"} backButton={()=>setPage('home')} />
+              <PatientsView
+                userType={"doctor"}
+                backButton={() => setPage("home")}
+              />
             </>
+          ) : (
+            <PharmacistsStage
+              setStage={() => setPage("home")}
+              together={true}
+              userType="doctor"
+            />
           )}
         </Grid>
       </Container>

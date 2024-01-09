@@ -7,6 +7,7 @@ const medicineModel = require("../Models/Medicine.js");
 const userModel = require("../Models/User.js");
 const healthPackageModel = require("../Models/HealthPackage.js");
 const doctorDocuments = require("../Models/DoctorDocuments.js");
+const familyMemberModel = require('../Models/FamilyMember.js')
 const { default: mongoose } = require("mongoose");
 const bcrypt = require("bcrypt");
 
@@ -214,7 +215,27 @@ const myPatients = async (req, res) => {
         }
         return false;
       });
-
+      // const newPatients = []
+      // patients.map(async(patient) => {
+      //   const familyMembers = patient.familyMembers;
+      //   // const temp = await familyMemberModel.findById(familyMembers[0].toString())
+      //   // console.log(temp)
+      //   const oldFamilyMembers = patient.familyMembers
+      //   const newFamilyMembers = []
+      //   const newPatient = {
+      //     ...patient,
+      //     familyMembers: []
+      //   }
+      //   for (let fm of oldFamilyMembers)
+      //   {
+      //     const familyMember = await familyMemberModel.findById(fm.toString())
+      //     newFamilyMembers.push(familyMember)
+      //   }
+      //   newPatient.familyMembers = newFamilyMembers
+      //   newPatients.push(newPatient)
+      // })
+      // console.log(newPatients)
+      
     res.json(patients);
   } catch (err) {
     res.send(err.message);

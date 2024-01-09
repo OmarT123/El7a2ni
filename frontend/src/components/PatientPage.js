@@ -200,7 +200,7 @@ const PatientPage = ({ selectedPatient, setSelectedPatient, setAlert }) => {
         ref={prescriptionItemRef}
         sx={{ padding: "20px", display: "flex", flexDirection: "column" }}
       >
-        <Button className="exclude-from-pdf" onClick={downloadPrescription}>Download</Button>
+        {prescription.filled && <Button className="exclude-from-pdf" onClick={downloadPrescription}>Download</Button>}
         <Typography variant="h5">Prescription {number + 1}:</Typography>
         {!prescription.filled && (
           <Typography variant="substitute1">Not Filled</Typography>
