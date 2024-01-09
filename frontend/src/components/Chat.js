@@ -78,7 +78,7 @@ function Chat({ partner, name, setChat }) {
   return (
     <div className="chat-window" style={{ position: "fixed", bottom: 16, right: 16 }}>
       {collapse && <div className="chat-header">
-        <p onClick={handleCollapse}> {name} {!collapse && <ChatBubbleIcon sx={{height:'15px'}}/>}{collapse && <ChatIcon sx={{height:'15px'}}/>}{<CloseIcon sx={{height:'15px', marginLeft:'167px'}} onClick={() => setChat(false)}/>}</p>
+        <p onClick={handleCollapse}> {name} {!collapse && <ChatBubbleIcon sx={{height:'15px'}}/>}{collapse && <ChatIcon sx={{height:'15px'}}/>}{<CloseIcon sx={{height:'15px', marginLeft:'150px'}} onClick={() => setChat(false)}/>}</p>
       </div>}
       {!collapse && <div className="chat-header" style={{ position: "fixed", bottom: 16, right: 16 }}>
         <p onClick={handleCollapse}> {name} {!collapse && <ChatBubbleIcon sx={{height:'15px'}}/>}{collapse && <ChatIcon sx={{height:'15px'}}/>}{<CloseIcon sx={{height:'15px', marginLeft:'168px'}} onClick={() => setChat(false)}/>}</p>
@@ -93,7 +93,6 @@ function Chat({ partner, name, setChat }) {
                 id={ 
                   partner === message.author ||
                     message.status === 'Sent' ? "other" : "you"}
-               
               >
                 <div>
                   <div className="message-content">
