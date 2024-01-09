@@ -43,7 +43,7 @@ const iconStyle = {
   fontSize: "2rem",
 };
 
-const PatientsView = ({ userType, backButton }) => {
+const PatientsView = ({ userType, setChat, setChatterID, setChatterName,backButton }) => {
   const [patients, setPatients] = useState([]);
   const [expandedItem, setExpandedItem] = useState(null);
   const [alert, setAlert] = useState(null);
@@ -131,6 +131,15 @@ const PatientsView = ({ userType, backButton }) => {
     }
   };
 
+  const openChat = (e, doctorId, name) => {
+    e.preventDefault();
+    setChat(false);
+    setChatterID('');
+    setChat(true);
+    setChatterID(doctorId);
+    setChatterName(name);
+  }
+
   useEffect(() => {
     fetchPatients();
   }, []);
@@ -162,73 +171,79 @@ const PatientsView = ({ userType, backButton }) => {
             </Typography>
           </Box>
 
-          <List style={listStyle}>
-            {patients.map((item, index) => (
-              <React.Fragment key={index}>
-                <ListItem button onClick={() => handleItemExpand(item)}>
-                  <PersonIcon
-                    sx={{ mr: "15px", width: "50px", height: "50px" }}
-                  />
-                  <Container
-                    maxWidth="md"
-                    sx={{ marginTop: 2, padding: "5px" }}
-                  >
-                    <Typography variant="h5" sx={{ marginBottom: 2 }}>
-                      {item.name}
-                    </Typography>
-                    <Grid container spacing={3}>
-                      <Grid item xs={6}>
-                        <List>
-                          <ListItem>
-                            <ListItemText
-                              primary={`Username: ${item.username}`}
-                            />
-                          </ListItem>
-                          <ListItem>
-                            <ListItemText primary={`Email: ${item.email}`} />
-                          </ListItem>
-                          <ListItem>
-                            <ListItemText
-                              primary={`Birth Date: ${new Date(
-                                item.birthDate
-                              ).toLocaleDateString("en-US", {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                              })}`}
-                            />
-                          </ListItem>
-                        </List>
-                      </Grid>
-                      <Grid item xs={6}>
-                        <List>
-                          <ListItem>
-                            <ListItemText primary={`Gender: ${item.gender}`} />
-                          </ListItem>
-                          <ListItem>
-                            <ListItemText
-                              primary={`Mobile Number: ${item.mobileNumber}`}
-                            />
-                          </ListItem>
-                          <ListItem>
-                            <ListItemText
-                              primary={`Emergency Contact: ${item.emergencyContact.name}, ${item.emergencyContact.mobileNumber} (${item.emergencyContact.relation})`}
-                            />
-                          </ListItem>
-                        </List>
-                      </Grid>
+        <List style={listStyle}>
+          {patients.map((item, index) => (
+            <React.Fragment key={index}>
+              <ListItem button onClick={() => handleItemExpand(item)}>
+                <PersonIcon
+                  sx={{ mr: "15px", width: "50px", height: "50px" }}
+                />
+                <Container maxWidth="md" sx={{ marginTop: 2, padding: "5px" }}>
+                  <Typography variant="h5" sx={{ marginBottom: 2 }}>
+                    {item.name}
+                  </Typography>
+                  <Grid container spacing={3}>
+                    <Grid item xs={6}>
+                      <List>
+                        <ListItem>
+                          <ListItemText
+                            primary={`Username: ${item.username}`}
+                          />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText primary={`Email: ${item.email}`} />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText
+                            primary={`Birth Date: ${new Date(
+                              item.birthDate
+                            ).toLocaleDateString("en-US", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            })}`}
+                          />
+                        </ListItem>
+                      </List>
                     </Grid>
-                  </Container>
-                </ListItem>
-                <Collapse
-                  in={item.username === expandedItem}
-                  timeout="auto"
-                  unmountOnExit
-                >
-                  {item.familyMembers && item.familyMembers.length > 0 && (
-                    <FamilyMembersView item={item} />
-                  )}
-                  {userType === "admin" && (
+                    <Grid item xs={6}>
+                      <List>
+                        <ListItem>
+                          <ListItemText primary={`Gender: ${item.gender}`} />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText
+                            primary={`Mobile Number: ${item.mobileNumber}`}
+                          />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText
+                            primary={`Emergency Contact: ${item.emergencyContact.name}, ${item.emergencyContact.mobileNumber} (${item.emergencyContact.relation})`}
+                          />
+                        </ListItem>
+                      </List>
+                    </Grid>
+                  </Grid>
+                </Container>
+              </ListItem>
+              <Collapse
+                in={item.username === expandedItem}
+                timeout="auto"
+                unmountOnExit
+              >
+                {item.familyMembers && item.familyMembers.length > 0 && (
+                  <FamilyMembersView item={item} />
+                )}
+                {userType === "pharmacist" && (
+                  <Button
+                    variant="contained"
+                    sx={{ m: "30px" }}
+                    onClick={(e) => openChat(e, item._id, item.name)}
+                  >
+                    Chat With Patient
+                  </Button>
+                )}
+                 {userType === "admin" && (
                     <Button
                       variant="contained"
                       onClick={() => removePatient(item._id)}
@@ -249,6 +264,7 @@ const PatientsView = ({ userType, backButton }) => {
                       View Details
                     </Button>
                   )}
+                  
                 </Collapse>
               </React.Fragment>
             ))}

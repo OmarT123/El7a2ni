@@ -16,9 +16,9 @@ const Notification = ({ notification }) => {
   return (
     <Box sx={{ width: "100%" }}>
       <h3 onClick={handleToggle} style={{ cursor: 'pointer' }}>
-        {notification.title} {!isExpanded && <ExpandMoreIcon />}{isExpanded && <ExpandLessIcon/>}
+        {notification.title} {!isExpanded && <ExpandMoreIcon sx={{height:'15px'}}/>}{isExpanded && <ExpandLessIcon sx={{height:'15px'}}/>}
       </h3>
-      <Collapse in={isExpanded}>
+      <Collapse in={isExpanded} sx={{marginTop:'-8px'}}>
         {<p>{notification.message}</p>}
       </Collapse>
     </Box>

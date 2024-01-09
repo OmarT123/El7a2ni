@@ -7,20 +7,24 @@ import ProfilePage from "../ProfilePage";
 import { HomePageContext } from "../../pages/HomePage";
 import { useContext } from "react";
 import MedicationIcon from "@mui/icons-material/Medication";
+import HealingIcon from '@mui/icons-material/Healing';
 import MedicineView from "../MedicineView";
 import DoctorsStage from "../AdminEmployees/DoctorsStage";
+import PatientsView from "../PatientsView";
+import Chat from "../Chat";
 
 const PharmacistHomePage = () => {
   const [page, setPage] = useState("home");
   const { user } = useContext(HomePageContext);
+  const [chat, setChat] = useState(false);
+  const [chatterID, setChatterID] = useState('');
+  const [chatterName, setChatterName] = useState('');
 
   const Home = () => {
     return (
       <>
         <Grid container spacing={5} sx={{ minHeight: "100vh" }}>
           <Grid item xs={12} sm={12} />
-          <Grid item xs={0} sm={2} />
-
           <Grid item xs={12} sm={4}>
             <SquareCard
               title="MEDICINE"
@@ -31,7 +35,6 @@ const PharmacistHomePage = () => {
               closeFunction={() => setPage("home")}
             />
           </Grid>
-          <Grid item xs={0} sm={1} />
           <Grid item xs={12} sm={4}>
             <SquareCard
               title="DOCTORS"
@@ -39,6 +42,16 @@ const PharmacistHomePage = () => {
               icon={LocalHospitalIcon}
               isLearnMore={false}
               changeFunction={() => setPage("doctors")}
+              closeFunction={() => setPage("home")}
+            />
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <SquareCard
+              title="PATIENTS"
+              body="Lorem ipsum sit amet consectetur adipiscing elit. Vivamus et erat in lacus convallis sodales."
+              icon={HealingIcon}
+              isLearnMore={false}
+              changeFunction={() => setPage("patients")}
               closeFunction={() => setPage("home")}
             />
           </Grid>
@@ -58,13 +71,24 @@ const PharmacistHomePage = () => {
             <Home />
           ) : page === "medicine" ? (
             <MedicineView userType={"pharmacist"} />
-          ) : (
+          ) : page === "doctors" ? (
             <DoctorsStage
               setStage={() => setPage("home")}
               together={true}
               userType={"pharmacist"}
+              setChat={setChat}
+              setChatterID={setChatterID}
+              setChatterName={setChatterName}
+            />
+          ) : (
+            <PatientsView
+              userType={"pharmacist"}
+              setChat={setChat}
+              setChatterID={setChatterID}
+              setChatterName={setChatterName}
             />
           )}
+          {chat && <Chat partner={chatterID} name={chatterName} setChat={setChat} />}
         </Grid>
       </Container>
     </>
