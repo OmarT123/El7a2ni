@@ -4,7 +4,7 @@ import HomeNavBar from "./HomeNavBar";
 import { useState } from "react";
 import ProfilePage from "../ProfilePage";
 import { HomePageContext } from "../../pages/HomePage";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import PersonIcon from "@mui/icons-material/Person";
 import EventNoteIcon from "@mui/icons-material/EventNote";
 import PatientsView from "../PatientsView";
@@ -12,10 +12,29 @@ import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
 import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
 import Fab from "@mui/material/Fab";
 import PharmacistsStage from "../AdminEmployees/PharmacistsStage";
+import axios from 'axios'
 
 const DoctorHomePage = () => {
   const [page, setPage] = useState("home");
   const { user } = useContext(HomePageContext);
+  
+  useEffect(() => {
+    const login = async() =>{
+      await axios.get("/loginAuthentication").then(async(response) => {
+        const { success, type, user } = response.data;
+        if (success && type === 'doctor' && user.status === 'approved') {
+          window.location.href='/doctorContract'
+        }
+        else if (success && type === 'doctor' && user.status === 'rejected'){
+          localStorage.clear()
+          await axios.get('/logout')
+          window.location.href='/'
+        }
+      });
+    }
+    login()
+  }, []);
+  
 
   const Home = () => {
     return (
@@ -76,11 +95,7 @@ const DoctorHomePage = () => {
               />
             </>
           ) : (
-            <PharmacistsStage
-              setStage={() => setPage("home")}
-              together={true}
-              userType="doctor"
-            />
+            <PharmacistsStage setStage={()=>setPage('home')} together={true} userType='doctor' />
           )}
         </Grid>
       </Container>

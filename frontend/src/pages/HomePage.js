@@ -14,13 +14,16 @@ const HomePage = ({ scrollToSection }) => {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    axios.get("/loginAuthentication").then((response) => {
-      const { success, type, user } = response.data;
-      if (success) {
-        setUserType(type);
-        setUser(user);
-      }
-    });
+    const login = async() =>{
+      await axios.get("/loginAuthentication").then((response) => {
+        const { success, type, user } = response.data;
+        if (success) {
+          setUserType(type);
+          setUser(user);
+        }
+      });
+    }
+    login()
   }, []);
 
   return (
@@ -31,7 +34,7 @@ const HomePage = ({ scrollToSection }) => {
         ) : userType === "patient" ? (
           "patient page"
         ) : userType === "doctor" ? (
-          <DoctorHomePage />
+          <DoctorHomePage user={user} />
         ) : userType === "pharmacist" ? (
           <PharmacistHomePage />
         ) : (

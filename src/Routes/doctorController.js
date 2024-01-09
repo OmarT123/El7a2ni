@@ -7,7 +7,7 @@ const medicineModel = require("../Models/Medicine.js");
 const userModel = require("../Models/User.js");
 const healthPackageModel = require("../Models/HealthPackage.js");
 const doctorDocuments = require("../Models/DoctorDocuments.js");
-const familyMemberModel = require('../Models/FamilyMember.js')
+const familyMemberModel = require("../Models/FamilyMember.js");
 const { default: mongoose } = require("mongoose");
 const bcrypt = require("bcrypt");
 
@@ -215,27 +215,27 @@ const myPatients = async (req, res) => {
         }
         return false;
       });
-      // const newPatients = []
-      // patients.map(async(patient) => {
-      //   const familyMembers = patient.familyMembers;
-      //   // const temp = await familyMemberModel.findById(familyMembers[0].toString())
-      //   // console.log(temp)
-      //   const oldFamilyMembers = patient.familyMembers
-      //   const newFamilyMembers = []
-      //   const newPatient = {
-      //     ...patient,
-      //     familyMembers: []
-      //   }
-      //   for (let fm of oldFamilyMembers)
-      //   {
-      //     const familyMember = await familyMemberModel.findById(fm.toString())
-      //     newFamilyMembers.push(familyMember)
-      //   }
-      //   newPatient.familyMembers = newFamilyMembers
-      //   newPatients.push(newPatient)
-      // })
-      // console.log(newPatients)
-      
+    // const newPatients = []
+    // patients.map(async(patient) => {
+    //   const familyMembers = patient.familyMembers;
+    //   // const temp = await familyMemberModel.findById(familyMembers[0].toString())
+    //   // console.log(temp)
+    //   const oldFamilyMembers = patient.familyMembers
+    //   const newFamilyMembers = []
+    //   const newPatient = {
+    //     ...patient,
+    //     familyMembers: []
+    //   }
+    //   for (let fm of oldFamilyMembers)
+    //   {
+    //     const familyMember = await familyMemberModel.findById(fm.toString())
+    //     newFamilyMembers.push(familyMember)
+    //   }
+    //   newPatient.familyMembers = newFamilyMembers
+    //   newPatients.push(newPatient)
+    // })
+    // console.log(newPatients)
+
     res.json(patients);
   } catch (err) {
     res.send(err.message);
@@ -277,7 +277,7 @@ const exactPatients = async (req, res) => {
       .find({ doctor: id })
       .populate({ path: "patient" });
     let patients = allMyAppointments.map((appointment) => appointment.patient);
-    
+
     let uniquePatientsSet = new Set();
     let filteredPatients = patients.filter((patient) => {
       if (
@@ -290,8 +290,8 @@ const exactPatients = async (req, res) => {
       }
       return false;
     });
-    
-    res.json({success:true, filteredPatients});
+
+    res.json({ success: true, filteredPatients });
   } catch (err) {
     res.send(err.message);
   }
@@ -431,7 +431,11 @@ const acceptContract = async (req, res) => {
   try {
     let doctorId = req.user._id;
     await doctorModel.findByIdAndUpdate(doctorId, { status: "accepted" });
-    res.json("The contract has been accepted");
+    res.json({
+      success: true,
+      title: "Contract Accepted",
+      message: "Welcome to El7a2ny",
+    });
   } catch (err) {
     res.json(err.message);
   }
@@ -440,7 +444,11 @@ const rejectContract = async (req, res) => {
   try {
     let doctorId = req.user._id;
     await doctorModel.findByIdAndUpdate(doctorId, { status: "rejected" });
-    res.json("The contract has been rejected");
+    res.json({
+      success: true,
+      title: "Contract Rejected",
+      message: "Sorry to see you go",
+    });
   } catch (err) {
     res.json(err.message);
   }
@@ -448,7 +456,7 @@ const rejectContract = async (req, res) => {
 const viewPatientPrescriptions = async (req, res) => {
   try {
     const doctorId = req.user._id;
-    const id = req.query.id
+    const id = req.query.id;
     const prescriptions = await prescriptionModel
       .find({ doctor: doctorId, patient: id })
       .populate({ path: "medicines.medId" })
