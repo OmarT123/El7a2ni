@@ -158,34 +158,34 @@ const handleAfterBuy = async (cart, id) => {
         addNotification('Pharmacist', '', 'Stock alert', `Medicine "${medicine.name}" is out of stock. Please restock.`, expiryTime, purchaseTime)
 
         const pharmacists = await pharmacistModel.find();
-        for(pharmacist of pharmacists){
-        const transporter = nodemailer.createTransport({
-          service: process.env.NODEMAILER_SERVICE,
-          auth: {
-            user: process.env.NODEMAILER_EMAIL,
-            pass: process.env.NODEMAILER_PASSWORD,
-          },
-          tls: {
-            rejectUnauthorized: false,
-          },
-        });
-        const mailOptions = {
-          from: process.env.NODEMAILER_EMAIL,
-          to: pharmacist.email,
-          subject: 'Stock alert',
-          text: `Medicine "${medicine.name}" is out of stock. Please restock.`,
-        };
-        try {
-          const info = await transporter.sendMail(mailOptions);
-        }
-        catch (error) {
-          console.error('Error sending email:', error);
-        }
+        for (pharmacist of pharmacists) {
+          const transporter = nodemailer.createTransport({
+            service: process.env.NODEMAILER_SERVICE,
+            auth: {
+              user: process.env.NODEMAILER_EMAIL,
+              pass: process.env.NODEMAILER_PASSWORD,
+            },
+            tls: {
+              rejectUnauthorized: false,
+            },
+          });
+          const mailOptions = {
+            from: process.env.NODEMAILER_EMAIL,
+            to: pharmacist.email,
+            subject: 'Stock alert',
+            text: `Medicine "${medicine.name}" is out of stock. Please restock.`,
+          };
+          try {
+            const info = await transporter.sendMail(mailOptions);
+          }
+          catch (error) {
+            console.error('Error sending email:', error);
+          }
         }
       }
-        await medicine.save();
-      }
-    
+      await medicine.save();
+    }
+
     const patient = await patientModel.findById(id);
     patient.cart.items = [];
     patient.cart.amountToBePaid = 0;
@@ -889,6 +889,74 @@ const viewPatientAppointments = async (req, res) => {
   }
 };
 
+const payWithCardCart = async (req, res) => {
+  const id = req.user._id;
+  const patient = await patientModel.findById(id).populate({ path: 'cart.items.medicine' })
+  let ratio = 1
+  if (patient.healthPackage) {
+    const package = await healthPackageModel.findById(patient.healthPackage.healthPackageID)
+    ratio = 1 - (package.medicineDiscount / 100)
+  }
+  const items = patient.cart.items
+  const address = req.query.address
+  const firstName = req.query.firstName
+  const lastName = req.query.lastName
+  const session = await stripe.checkout.sessions.create({
+    payment_method_types: ['card'],
+    mode: 'payment',
+    line_items: items.map(item => {
+      const storeItem = {};
+      return {
+        price_data: {
+          currency: "eur",
+          product_data: {
+            name: item.medicine.name
+          },
+          unit_amount: (item.medicine.price * 100 * ratio)
+        },
+        quantity: item.quantity
+      }
+    }),
+    success_url: `http://localhost:3000/SuccessfulCheckout`,
+    cancel_url: `http://localhost:3000/cancelCheckout`,
+  })
+  if (address && !patient.deliveryAddress.includes(address)) {
+    patient.deliveryAddress.push(address)
+    await patient.save();
+  }
+  createOrder(firstName, lastName, id, address, items, patient.cart.amountToBePaid, "Credit Card")
+  handleAfterBuy(patient.cart, id)
+  res.json({ url: session.url })
+}
+
+const payWithWalletCart = async (req, res) => {
+  const patientId = req.user._id;
+  const address = req.query.address
+  const firstName = req.query.firstName
+  const lastName = req.query.lastName
+  const patient = await patientModel.findById(patientId)
+  const items = patient.cart.items
+  const price = patient.cart.amountToBePaid
+  try {
+    if (patient.wallet < price) {
+      return res.json({ success: false, url: '/checkout', message: "Insufficient funds!" })
+    }
+    const newWallet = patient.wallet - price
+    const updatedPatient = await patientModel.findByIdAndUpdate(patient._id, { wallet: newWallet })
+    await patient.save();
+    if (address && !patient.deliveryAddress.includes(address)) {
+      patient.deliveryAddress.push(address)
+      await patient.save();
+    }
+    createOrder(firstName, lastName, patientId, address, items, patient.cart.amountToBePaid, "wallet")
+    handleAfterBuy(patient.cart, patientId)
+    res.json({ success: true, url: '/SuccessfulCheckout', message: "done" })
+  }
+  catch (err) {
+    res.json(err.message)
+  }
+}
+
 const payWithCard = async (req, res) => {
   const patientId = req.user._id;
   const patient = await patientModel.findById(patientId)
@@ -936,6 +1004,15 @@ const payWithWallet = async (req, res) => {
 }
 
 const createOrder = async (firstName, lastName, patientId, address, items, total, method) => {
+  let package_Id = null
+  let discount = 0
+  const patient = await patientModel.findById(patientId);
+  if (patient.healthPackage) {
+    package_Id = patient.healthPackage.healthPackageID;
+    let package = await healthPackageModel.findById(package_Id)
+    discount = package.medicineDiscount;
+
+  }
   const order = await orderModel.create({
     patient: patientId,
     address: address,
@@ -944,7 +1021,8 @@ const createOrder = async (firstName, lastName, patientId, address, items, total
     paymentMethod: method,
     status: "Preparing",
     First_Name: firstName,
-    Last_Name: lastName
+    Last_Name: lastName,
+    discount: discount
   })
   await order.save()
 }
@@ -1427,7 +1505,7 @@ const cancelAppointment = async (req, res) => {
     catch (error) {
       console.error('Error sending email:', error);
     }
-    
+
     return res.json('Appointment cancelled successfully');
   } catch (error) {
     return res.json();
@@ -1505,14 +1583,14 @@ const getChattingRoom = async (req, res) => {
   const partner1Id = (req.user._id).toString();
   const partner2Id = req.query.partner;
   try {
-  
+
     let room = await ChattingRoomModel.findOne({
       $or: [
-        { $and: [{ partner1Id :partner1Id}, { partner2Id :partner2Id}] },
-        { $and: [{ partner1Id: partner2Id }, { partner2Id: partner1Id }] }, 
+        { $and: [{ partner1Id: partner1Id }, { partner2Id: partner2Id }] },
+        { $and: [{ partner1Id: partner2Id }, { partner2Id: partner1Id }] },
       ],
     });
-    
+
     if (!room && partner1Id !== partner2Id) {
       room = await ChattingRoomModel.create({ partner1Id, partner2Id });
     }
@@ -1524,9 +1602,9 @@ const getChattingRoom = async (req, res) => {
 
 const sendMessage = async (req, res) => {
   try {
-    const  messageContent = req.body.messageContent;
-    const  receiverId     =req.body.receiverId;
-    const  senderId = (req.user._id).toString(); 
+    const messageContent = req.body.messageContent;
+    const receiverId = req.body.receiverId;
+    const senderId = (req.user._id).toString();
 
     let sender = await patientModel.findById(senderId) || await pharmacistModel.findById(senderId) || await doctorModel.findById(senderId);
     if (!sender) {
@@ -1551,7 +1629,7 @@ const sendMessage = async (req, res) => {
         status: 'Sent',
         content: messageContent,
       });
-  
+
       senderChats.push(chatWithReceiver);
     }
 
@@ -1591,11 +1669,11 @@ const sendMessage = async (req, res) => {
 
 const getMessages = async (req, res) => {
   try {
-    const senderId = req.user._id.toString(); 
-    const receiverId = req.query.receiverId; 
+    const senderId = req.user._id.toString();
+    const receiverId = req.query.receiverId;
 
-    let senderMessages =[];
-    
+    let senderMessages = [];
+
     let sender = await patientModel.findById(senderId) || await pharmacistModel.findById(senderId) || await doctorModel.findById(senderId);
     if (!sender) {
       throw new Error('Sender not found');
@@ -1608,10 +1686,10 @@ const getMessages = async (req, res) => {
 
     let senderChat = sender.chats.find(chat => chat.partner === receiverId);
     if (senderChat) {
-    senderMessages = senderChat.messages;
-    console.log('Messages retrieved successfully');
-  }
-    res.json({ oldMessages:senderMessages});
+      senderMessages = senderChat.messages;
+      console.log('Messages retrieved successfully');
+    }
+    res.json({ oldMessages: senderMessages });
   } catch (error) {
     console.error('Error:', error.message);
     res.json({ message: error.message });
@@ -1619,7 +1697,7 @@ const getMessages = async (req, res) => {
 };
 
 const patientRetrieveNotifications = async (req, res) => {
-  const notifications = await notificationSystemModel.find({type: 'Patient', Id: req.user._id.toString()});
+  const notifications = await notificationSystemModel.find({ type: 'Patient', Id: req.user._id.toString() });
   return res.json(notifications);
 }
 
@@ -1671,5 +1749,7 @@ module.exports = {
   getChattingRoom,
   sendMessage,
   getMessages,
-  patientRetrieveNotifications
+  patientRetrieveNotifications,
+  payWithWalletCart,
+  payWithCardCart
 };
