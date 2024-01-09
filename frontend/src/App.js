@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState } from "react";
 import { animateScroll as scroll } from "react-scroll";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
@@ -8,7 +8,7 @@ import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import HomePage from "./pages/HomePage";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
-import ResetPassword from './pages/ResetPassword';
+import ResetPassword from "./pages/ResetPassword";
 
 const ScrollTop = (props) => {
   const { children, window } = props;
@@ -31,7 +31,7 @@ const ScrollTop = (props) => {
       <div
         onClick={scrollToTop}
         role="presentation"
-        style={{ position: "fixed", bottom: 16, right: 16 }}
+        style={{ position: "fixed", bottom: 16, left: 16 }}
       >
         {children}
       </div>
@@ -39,7 +39,6 @@ const ScrollTop = (props) => {
   );
 };
 const App = () => {
-
   return (
     <>
       <CssBaseline />
@@ -48,7 +47,7 @@ const App = () => {
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
-          <Route path='/resetPassword' element={<ResetPassword />} />
+          <Route path="/resetPassword" element={<ResetPassword />} />
         </Routes>
         <ScrollTop>
           <Fab color="primary" size="large" aria-label="scroll back to top">
