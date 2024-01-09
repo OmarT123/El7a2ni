@@ -23,7 +23,12 @@ const listStyle = {
   marginTop: 16,
 };
 
-const PharmacistsStage = ({ setAlert, setStage }) => {
+const PharmacistsStage = ({
+  setAlert,
+  setStage,
+  together = false,
+  userType,
+}) => {
   const [unapprovedPharmacists, setUnapprovedPharmacists] = useState([]);
   const [approvedPharmacists, setApprovedPharmacists] = useState([]);
 
@@ -89,12 +94,12 @@ const PharmacistsStage = ({ setAlert, setStage }) => {
     const [licensePDF, setLicensePDF] = useState(false);
     const [degreePDF, setDegreePDF] = useState(false);
 
-    const handleItemExpand = async(item) => {
+    const handleItemExpand = async (item) => {
       setExpandedItem(item.username === expandedItem ? null : item.username);
       setIdPDF(false);
       setLicensePDF(false);
       setDegreePDF(false);
-      console.log('function')
+      console.log("function");
       if (
         selectedPharmacist &&
         (selectedPharmacist.username === item.username ||
@@ -102,14 +107,14 @@ const PharmacistsStage = ({ setAlert, setStage }) => {
       )
         return;
       const response = await axios.get("/getUnapprovedPharmacists");
-      console.log(response.data)
+      console.log(response.data);
       if (response.data.success) {
         console.log(response.data.pharmacistsWithDocuments);
         const pharmacistWithDocs = response.data.pharmacistsWithDocuments.find(
           (ph) => pharmacistWithDocs.username === item.username
         );
-        console.log(pharmacistWithDocs)
-        setSelectedPharmacist(pharmacistWithDocs)
+        console.log(pharmacistWithDocs);
+        setSelectedPharmacist(pharmacistWithDocs);
       }
     };
     return (
@@ -176,14 +181,24 @@ const PharmacistsStage = ({ setAlert, setStage }) => {
           timeout="auto"
           unmountOnExit
         >
-          <Button
-            variant="contained"
-            onClick={(e) => removePharmacist(e, item._id)}
-            sx={{ m: "30px" }}
-          >
-            Remove Pharmacist
-          </Button>
-          {item.status === "pending" && (
+          {userType === "admin" && (
+            <Button
+              variant="contained"
+              onClick={(e) => removePharmacist(e, item._id)}
+              sx={{ m: "30px" }}
+            >
+              Remove Pharmacist
+            </Button>
+          )}
+          {userType === "doctor" && (
+            <Button
+              variant="contained"
+              sx={{ m: "30px" }}
+            >
+              Chat with Pharmacist
+            </Button>
+          )}
+          {item.status === "pending" && userType==='admin' &&(
             <>
               <Button
                 variant="contained"
@@ -301,18 +316,22 @@ const PharmacistsStage = ({ setAlert, setStage }) => {
           Pharmacists
         </Typography>
 
-        <Typography variant="h5" sx={{ ml: "30px" }}>
-          Unapproved
-        </Typography>
+        {!together && (
+          <Typography variant="h5" sx={{ ml: "30px" }}>
+            Unapproved
+          </Typography>
+        )}
         <List style={listStyle}>
           {unapprovedPharmacists.map((item, index) => (
             <PharmacistListItem item={item} key={index} />
           ))}
         </List>
 
-        <Typography variant="h5" sx={{ ml: "30px" }}>
-          Approved
-        </Typography>
+        {!together && (
+          <Typography variant="h5" sx={{ ml: "30px" }}>
+            Approved
+          </Typography>
+        )}
         <List style={listStyle}>
           {approvedPharmacists.map((item, index) => (
             <PharmacistListItem item={item} key={index} />

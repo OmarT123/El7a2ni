@@ -9,6 +9,7 @@ import HomePage from "./pages/HomePage";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import ResetPassword from "./pages/ResetPassword";
+import ContractView from "./pages/ContractView";
 
 const ScrollTop = (props) => {
   const { children, window } = props;
@@ -48,12 +49,15 @@ const App = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/resetPassword" element={<ResetPassword />} />
+          <Route path="/doctorContract" element={<ContractView />} />
         </Routes>
-        <ScrollTop>
-          <Fab color="primary" size="large" aria-label="scroll back to top">
-            <KeyboardArrowUpIcon />
-          </Fab>
-        </ScrollTop>
+        {window.location.pathname !== "/doctorContract" && (
+          <ScrollTop>
+            <Fab color="primary" size="large" aria-label="scroll back to top">
+              <KeyboardArrowUpIcon />
+            </Fab>
+          </ScrollTop>
+        )}
       </BrowserRouter>
     </>
   );

@@ -64,7 +64,7 @@ const EmployeesView = ({ userType }) => {
           userType={userType}
         />
       ) : (
-        <PharmacistsStage setAlert={setAlert} setStage={setStage} />
+        <PharmacistsStage setAlert={setAlert} setStage={setStage} userType={"admin"} />
       )}
       {alert && (
         <Popup
