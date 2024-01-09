@@ -1,16 +1,17 @@
 import { Box, Container, Grid } from "@mui/material";
 import SquareCard from "../SquareCard";
 import HomeNavBar from "./HomeNavBar";
-import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
 import { useState } from "react";
 import ProfilePage from "../ProfilePage";
 import { HomePageContext } from "../../pages/HomePage";
 import { useContext } from "react";
-import MedicationIcon from "@mui/icons-material/Medication";
-import MedicineView from "../MedicineView";
-import DoctorsStage from "../AdminEmployees/DoctorsStage";
+import PersonIcon from "@mui/icons-material/Person";
+import EventNoteIcon from "@mui/icons-material/EventNote";
+import PatientsView from "../PatientsView";
+import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
+import Fab from "@mui/material/Fab";
 
-const PharmacistHomePage = () => {
+const DoctorHomePage = () => {
   const [page, setPage] = useState("home");
   const { user } = useContext(HomePageContext);
 
@@ -20,25 +21,24 @@ const PharmacistHomePage = () => {
         <Grid container spacing={5} sx={{ minHeight: "100vh" }}>
           <Grid item xs={12} sm={12} />
           <Grid item xs={0} sm={2} />
-
           <Grid item xs={12} sm={4}>
             <SquareCard
-              title="MEDICINE"
+              title="APPOINTMENTS"
               body="Lorem ipsum sit amet consectetur adipiscing elit. Vivamus et erat in lacus convallis sodales."
-              icon={MedicationIcon}
+              icon={EventNoteIcon}
               isLearnMore={false}
-              changeFunction={() => setPage("medicine")}
+              changeFunction={() => setPage("appointments")}
               closeFunction={() => setPage("home")}
             />
           </Grid>
           <Grid item xs={0} sm={1} />
-          <Grid item xs={12} sm={4}>
+          <Grid item xs={12} sm={3.5}>
             <SquareCard
-              title="DOCTORS"
+              title="PATIENTS"
               body="Lorem ipsum sit amet consectetur adipiscing elit. Vivamus et erat in lacus convallis sodales."
-              icon={LocalHospitalIcon}
+              icon={PersonIcon}
               isLearnMore={false}
-              changeFunction={() => setPage("doctors")}
+              changeFunction={() => setPage("patients")}
               closeFunction={() => setPage("home")}
             />
           </Grid>
@@ -49,21 +49,19 @@ const PharmacistHomePage = () => {
 
   return (
     <>
-      <HomeNavBar homeButton={() => setPage("home")} setPage={setPage}/>
+      <HomeNavBar homeButton={() => setPage("home")} setPage={setPage} />
       <Container sx={{ mt: 3 }}>
         <Grid container spacing={5}>
           {page === "profile" ? (
             <ProfilePage userData={user} />
           ) : page === "home" ? (
             <Home />
-          ) : page === "medicine" ? (
-            <MedicineView userType={"pharmacist"} />
+          ) : page === "appointments" ? (
+            "appointments"
           ) : (
-            <DoctorsStage
-              setStage={() => setPage("home")}
-              together={true}
-              userType={"pharmacist"}
-            />
+            <>
+              <PatientsView userType={"doctor"} backButton={()=>setPage('home')} />
+            </>
           )}
         </Grid>
       </Container>
@@ -71,4 +69,4 @@ const PharmacistHomePage = () => {
   );
 };
 
-export default PharmacistHomePage;
+export default DoctorHomePage;

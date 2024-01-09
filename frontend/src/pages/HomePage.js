@@ -5,7 +5,7 @@ import GuestHomePage from "../components/HomePage/GuestHomePage";
 import AdminHomePage from "../components/HomePage/AdminHomePage";
 import { createContext } from "react";
 import PharmacistHomePage from "../components/HomePage/PharmacistHomePage";
-import PdfViewer from "../components/PdfViewer";
+import DoctorHomePage from "../components/HomePage/DoctorHomePage";
 
 export const HomePageContext = createContext();
 
@@ -31,7 +31,7 @@ const HomePage = ({ scrollToSection }) => {
         ) : userType === "patient" ? (
           "patient page"
         ) : userType === "doctor" ? (
-          "doctor page"
+          <DoctorHomePage />
         ) : userType === "pharmacist" ? (
           <PharmacistHomePage />
         ) : (
