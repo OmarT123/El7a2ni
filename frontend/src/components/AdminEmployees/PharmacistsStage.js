@@ -202,7 +202,7 @@ const PharmacistsStage = ({
               Remove Pharmacist
             </Button>
           )}
-          {userType === "doctor" && (
+          {(userType === "doctor" || userType === "patient") && (
             <Button
               variant="contained"
               sx={{ m: "30px" }}

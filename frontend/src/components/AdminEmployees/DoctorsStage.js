@@ -188,7 +188,7 @@ const DoctorsStage = ({ setAlert, setStage, together = false, userType, setChat,
           timeout="auto"
           unmountOnExit
         >
-          {userType === "pharmacist" && (
+          {(userType === "pharmacist" || userType === "patient") && (
             <Button 
             variant="contained" 
             sx={{ m: "30px" }}

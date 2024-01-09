@@ -665,9 +665,6 @@ const MedicineView = ({ userType }) => {
                 </Button>
               </Grid>
               <Grid item xs={12} sm={4} align="left">
-                <Button variant="contained">Sales Report</Button>
-              </Grid>
-              <Grid item xs={12} sm={4} align="left">
                 <Button variant="contained" onClick={handleArchive}>
                   {selectedMedicine.archived ? "Unarchive" : "archive"}
                 </Button>
