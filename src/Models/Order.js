@@ -46,8 +46,14 @@ const orderSchema = new Schema(
     Last_Name: {
         type: String,
         required: true
+    },
+    discount:{
+        type: Number,
+        default:0
     }
-  }
+    
+  }, 
+   { timestamps: true }
 );
 
 const Order = mongoose.model("Order", orderSchema);

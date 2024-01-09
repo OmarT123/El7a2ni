@@ -3,6 +3,7 @@ const medicineModel = require("../Models/Medicine.js");
 const userModel = require("../Models/User.js");
 const pharmacistDocuments = require("../Models/PharmacistDocuments.js");
 const notificationSystemModel = require("../Models/NotificationSystem.js");
+const orderModel = require('../Models/Order.js')
 const { default: mongoose } = require("mongoose");
 const bcrypt = require("bcrypt");
 require("dotenv").config();
@@ -203,12 +204,106 @@ const pharmacistRetrieveNotifications = async (req, res) => {
   return res.json(notifications);
 };
 
+const getSaleReport = async (req, res) => {
+  try {
+    const { medicine, month } = req.body;
+
+    const startOfMonth = new Date(month);
+    startOfMonth.setDate(1);
+    const endOfMonth = new Date(month);
+    endOfMonth.setMonth(endOfMonth.getMonth() + 1);
+    endOfMonth.setDate(0);
+
+    const orders = await orderModel.find({
+      status: { $ne: "Cancelled" },
+      createdAt: {
+        $gte: startOfMonth,
+        $lte: endOfMonth,
+      },
+    }).populate({ path: 'items.medicine' });
+
+    let totalQuantitySold = 0;
+    let totalMoneyEarned = 0;
+
+    orders.forEach((order) => {
+      order.items.forEach((item) => {
+        if (item.medicine.name === medicine) {
+          totalQuantitySold += item.quantity;
+          totalMoneyEarned += item.quantity * (1 - order.discount / 100) * item.medicine.price;
+        }
+      });
+    });
+
+    res.status(200).json({
+      message: 'Sales report generated successfully',
+      totalQuantitySold: totalQuantitySold,
+      totalMoneyEarned: totalMoneyEarned.toFixed(2),
+      month: month,
+      medicine: medicine,
+    });
+  } catch (error) {
+    res.json({ error: error.message });
+  }
+};
+
+const getMonthlyMedicineReport = async (req, res) => {
+  try {
+    const { month } = req.query;
+    const startOfMonth = new Date(month);
+    startOfMonth.setDate(1);
+    const endOfMonth = new Date(month);
+    endOfMonth.setMonth(endOfMonth.getMonth() + 1);
+    endOfMonth.setDate(0);
+
+    const orders = await orderModel.find({
+      status: { $ne: "Cancelled" },
+      createdAt: {
+        $gte: startOfMonth,
+        $lte: endOfMonth,
+      },
+    }).populate({ path: 'items.medicine' });
+
+    const medicineReport = {};
+
+    orders.forEach((order) => {
+      order.items.forEach((item) => {
+        const medicineName = item.medicine.name;
+        const quantity = item.quantity;
+        const moneyEarned = quantity * (1 - order.discount / 100) * item.medicine.price;
+
+        if (!medicineReport[medicineName]) {
+          medicineReport[medicineName] = {
+            totalQuantitySold: quantity,
+            totalMoneyEarned: moneyEarned,
+          };
+        } else {
+          medicineReport[medicineName].totalQuantitySold += quantity;
+          medicineReport[medicineName].totalMoneyEarned += moneyEarned;
+        }
+      });
+    });
+
+    const formattedReport = Object.entries(medicineReport).map(([medicine, report]) => ({
+      medicine: medicine,
+      totalQuantitySold: report.totalQuantitySold,
+      totalMoneyEarned: report.totalMoneyEarned.toFixed(2),
+    }));
+
+    res.status(200).json({
+      message: 'Monthly medicine report generated successfully',
+      month: month,
+      medicineReport: formattedReport,
+    });
+  } catch (error) {
+    res.json({ error: error.message });
+  }
+};
+
 const archiveMedicine = async (req, res) => {
   const medicineID = req.body.id;
   const medicine = await medicineModel.findById(medicineID);
-  if (!medicine)
-  {
-    return res.json({success: false})
+  if (!medicine) {
+    return res.json({ success: false })
   }
   if (medicine.archived === true) {
     medicine.archived = false;
@@ -238,4 +333,6 @@ module.exports = {
   uploadMedicineImage,
   archiveMedicine,
   pharmacistRetrieveNotifications,
+  getSaleReport,
+  getMonthlyMedicineReport
 };

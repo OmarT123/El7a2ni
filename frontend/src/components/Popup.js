@@ -2,7 +2,7 @@ import React from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 
-const Popup = ({ title, message, onClose, showButtons = true }) => {
+const Popup = ({ title, message, onClose, showButtons = true, content }) => {
   return (
     <Box
       sx={{
@@ -50,7 +50,19 @@ const Popup = ({ title, message, onClose, showButtons = true }) => {
         >
           <h2 style={{ color: '#4E4FEB', fontWeight: 'bold' }}>{title}</h2>
         </Box>
-        <p>{message}</p>
+        {content && content.medicineReport && (
+          <ul>
+            {content.medicineReport.map((report, index) => (
+              <li key={index}>
+                <strong>Medicine:</strong> {report.medicine} |{' '}
+                <strong>Total Quantity Sold:</strong> {report.totalQuantitySold} |{' '}
+                <strong>Total Money Earned:</strong> {report.totalMoneyEarned}
+              </li>
+            ))}
+          </ul>
+        )}
+        {!content && <p>{message}</p>}
+        {content.medicineReport.length === 0 && !message && <p>There were no sales in the selected month.</p>}
         {showButtons && <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
           <Button variant="outlined" onClick={onClose} sx={{ marginRight: '10px' }}>
             No, thanks

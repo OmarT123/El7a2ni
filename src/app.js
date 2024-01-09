@@ -206,6 +206,8 @@ const {
   uploadMedicineImage,
   archiveMedicine,
   pharmacistRetrieveNotifications,
+  getSaleReport,
+  getMonthlyMedicineReport
 } = require("./Routes/pharmacistController");
 
 const {
@@ -257,6 +259,8 @@ const {
   sendMessage,
   getMessages,
   patientRetrieveNotifications,
+  payWithWalletCart,
+  payWithCardCart
 } = require("./Routes/patientController");
 
 const {
@@ -458,6 +462,8 @@ app.get(
   getUserFromTokenMiddleware,
   patientRetrieveNotifications
 );
+app.get("/payWithWalletCart", getUserFromTokenMiddleware, payWithWalletCart);
+app.get("/payWithCardCart", getUserFromTokenMiddleware, payWithCardCart);
 
 //Doctor
 app.get(
@@ -539,6 +545,8 @@ app.get(
 app.put("/uploadMedicineImage", uploadMedicineImage);
 app.put("/archiveMedicine", archiveMedicine);
 app.get("/pharmacistRetrieveNotifications", pharmacistRetrieveNotifications);
+app.get("/getSaleReport", getSaleReport);
+app.get("/getMonthlyMedicineReport", getMonthlyMedicineReport);
 
 //user
 

@@ -223,6 +223,19 @@ const MedicineView = ({ userType }) => {
     const [stockQuantity, setStockQuantity] = useState("");
     const [activeIngredient, setActiveIngredient] = useState("");
     const [medicinalUse, setMedicinalUse] = useState("");
+    const [salesReportDateExpanded, setSalesReportDateExpanded] = useState(false);
+    const [salesReport, setSalesReport] = useState('');
+
+    const handleSalesReportClick = () => {
+      setSalesReportDateExpanded(!salesReportDateExpanded);
+    };
+
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      const data = new FormData(e.currentTarget);
+      const response = await axios.get("/getMonthlyMedicineReport", {params: { month: data.get("salesReportDate") }});
+      setSalesReport(response.data);
+    }
 
     const handleItemExpand = (item) => {
       setExpandedItem(item.name === expandedItem ? null : item.name);
@@ -259,6 +272,9 @@ const MedicineView = ({ userType }) => {
         }
       }
     };
+    const closePopup = () => {
+      setAlert(null);
+    };
 
     return (
       <>
@@ -277,6 +293,26 @@ const MedicineView = ({ userType }) => {
                 <AddIcon style={iconStyle} />
               )}
             </Fab>
+            {userType !== "patient" && !salesReportDateExpanded && !addMedicineExpanded && <Button variant="contained" sx={{ m: "30px", marginLeft: '200px' }} onClick={handleSalesReportClick}>
+              Sales Report
+            </Button>}
+            <Box component={"form"} onSubmit={(e) => handleSubmit(e)} sx={{ display: 'flex', alignItems: 'center' }}>
+            {salesReportDateExpanded && !addMedicineExpanded && <TextField
+              id="salesReportDate"
+              label="Sales Report Date"
+              type="date"
+              placeholder="Sales Report Date"
+              required
+              name="salesReportDate"
+              InputLabelProps={{
+                shrink: true,
+              }}
+              sx={{ width: "70%", marginLeft: '200px', marginTop:'25px' }}
+            />}
+            {salesReportDateExpanded && !addMedicineExpanded && <Button variant="contained" sx={{ m: "30px", marginTop:'54px' }} type="submit">
+              Submit
+            </Button>}
+            </Box>
           </Box>
           <Collapse in={addMedicineExpanded} timeout="auto" unmountOnExit>
             <Box
@@ -376,7 +412,7 @@ const MedicineView = ({ userType }) => {
                           )}
                           <p>
                             Require Prescription :{" "}
-                            {item.prescriptionMedicine? 'true':'false'}
+                            {item.prescriptionMedicine ? 'true' : 'false'}
                           </p>
 
                           <p>Medicinal Use: {item.medicinalUse}</p>
@@ -399,7 +435,7 @@ const MedicineView = ({ userType }) => {
                     timeout="auto"
                     unmountOnExit
                   >
-                    {userType === "admin" && (
+                    {userType === "pharmacist" && (
                       <Button variant="contained" sx={{ m: "30px" }}>
                         Sales Report
                       </Button>
@@ -418,6 +454,7 @@ const MedicineView = ({ userType }) => {
               ))}
           </List>
         </Paper>
+        {salesReport && <Popup title={"Sales report on: " +salesReport.month.substr(0, 7)} content={salesReport} onClose={() => setSalesReport(null)} showButtons={false}/>}
       </>
     );
   };
@@ -686,6 +723,7 @@ const MedicineView = ({ userType }) => {
           showButtons={false}
         />
       )}
+      
     </>
   );
 };

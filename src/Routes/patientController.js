@@ -945,6 +945,74 @@ const viewPatientAppointments = async (req, res) => {
   }
 };
 
+const payWithCardCart = async (req, res) => {
+  const id = req.user._id;
+  const patient = await patientModel.findById(id).populate({ path: 'cart.items.medicine' })
+  let ratio = 1
+  if (patient.healthPackage) {
+    const package = await healthPackageModel.findById(patient.healthPackage.healthPackageID)
+    ratio = 1 - (package.medicineDiscount / 100)
+  }
+  const items = patient.cart.items
+  const address = req.query.address
+  const firstName = req.query.firstName
+  const lastName = req.query.lastName
+  const session = await stripe.checkout.sessions.create({
+    payment_method_types: ['card'],
+    mode: 'payment',
+    line_items: items.map(item => {
+      const storeItem = {};
+      return {
+        price_data: {
+          currency: "eur",
+          product_data: {
+            name: item.medicine.name
+          },
+          unit_amount: (item.medicine.price * 100 * ratio)
+        },
+        quantity: item.quantity
+      }
+    }),
+    success_url: `http://localhost:3000/SuccessfulCheckout`,
+    cancel_url: `http://localhost:3000/cancelCheckout`,
+  })
+  if (address && !patient.deliveryAddress.includes(address)) {
+    patient.deliveryAddress.push(address)
+    await patient.save();
+  }
+  createOrder(firstName, lastName, id, address, items, patient.cart.amountToBePaid, "Credit Card")
+  handleAfterBuy(patient.cart, id)
+  res.json({ url: session.url })
+}
+
+const payWithWalletCart = async (req, res) => {
+  const patientId = req.user._id;
+  const address = req.query.address
+  const firstName = req.query.firstName
+  const lastName = req.query.lastName
+  const patient = await patientModel.findById(patientId)
+  const items = patient.cart.items
+  const price = patient.cart.amountToBePaid
+  try {
+    if (patient.wallet < price) {
+      return res.json({ success: false, url: '/checkout', message: "Insufficient funds!" })
+    }
+    const newWallet = patient.wallet - price
+    const updatedPatient = await patientModel.findByIdAndUpdate(patient._id, { wallet: newWallet })
+    await patient.save();
+    if (address && !patient.deliveryAddress.includes(address)) {
+      patient.deliveryAddress.push(address)
+      await patient.save();
+    }
+    createOrder(firstName, lastName, patientId, address, items, patient.cart.amountToBePaid, "wallet")
+    handleAfterBuy(patient.cart, patientId)
+    res.json({ success: true, url: '/SuccessfulCheckout', message: "done" })
+  }
+  catch (err) {
+    res.json(err.message)
+  }
+}
+
 const payWithCard = async (req, res) => {
   const patientId = req.user._id;
   const patient = await patientModel.findById(patientId);
@@ -993,15 +1061,16 @@ const payWithWallet = async (req, res) => {
   }
 };
 
-const createOrder = async (
-  firstName,
-  lastName,
-  patientId,
-  address,
-  items,
-  total,
-  method
-) => {
+const createOrder = async (firstName, lastName, patientId, address, items, total, method) => {
+  let package_Id = null
+  let discount = 0
+  const patient = await patientModel.findById(patientId);
+  if (patient.healthPackage) {
+    package_Id = patient.healthPackage.healthPackageID;
+    let package = await healthPackageModel.findById(package_Id)
+    discount = package.medicineDiscount;
+
+  }
   const order = await orderModel.create({
     patient: patientId,
     address: address,
@@ -1011,9 +1080,10 @@ const createOrder = async (
     status: "Preparing",
     First_Name: firstName,
     Last_Name: lastName,
-  });
-  await order.save();
-};
+    discount: discount
+  })
+  await order.save()
+}
 
 const pastOrders = async (req, res) => {
   try {
@@ -1777,7 +1847,6 @@ const getMessages = async (req, res) => {
   try {
     const senderId = req.user._id.toString();
     const receiverId = req.query.receiverId;
-
     let senderMessages = [];
 
     let sender =
@@ -1865,4 +1934,6 @@ module.exports = {
   sendMessage,
   getMessages,
   patientRetrieveNotifications,
+  payWithWalletCart,
+  payWithCardCart
 };
