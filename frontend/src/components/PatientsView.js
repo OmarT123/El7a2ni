@@ -6,11 +6,15 @@ import ListItemText from "@mui/material/ListItemText";
 import axios from "axios";
 import Collapse from "@mui/material/Collapse";
 import Typography from "@mui/material/Typography";
-import { Button, TextField, Box } from "@mui/material";
+import { Button, TextField, Box, Avatar } from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import Popup from "./Popup";
 import { Container, Grid } from "@mui/material";
+import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
+import Fab from "@mui/material/Fab";
+import PatientPage from "./PatientPage";
+// import PatientsSearchBar from "./PatientsSearchBar";
 
 const paperStyle = {
   width: "1200px",
@@ -40,15 +44,54 @@ const iconStyle = {
   fontSize: "2rem",
 };
 
-const PatientsView = ({ userType, setChat, setChatterID, setChatterName }) => {
+const PatientsView = ({
+  userType,
+  setChat,
+  setChatterID,
+  setChatterName,
+  backButton,
+}) => {
   const [patients, setPatients] = useState([]);
   const [expandedItem, setExpandedItem] = useState(null);
   const [alert, setAlert] = useState(null);
+  const [page, setPage] = useState("first");
+  const [selectedPatient, setSelectedPatient] = useState(null);
+  const [searchName, setSearchName] = useState("");
+  const [searchMedicinal, setSearchMedicinal] = useState("");
+  const [expandSearchOptions, setExpandSearchOptions] = useState(false);
+  const [showResetButton, setShowResetButton] = useState(false);
+
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    const body = {};
+    if (searchName !== "") {
+      body["name"] = searchName;
+      const response = await axios.get("/viewmypatientsbyname", {
+        params: body,
+      });
+      // console.log(response.data.filteredPatients)
+      if (response.data.success) {
+        setPatients(response.data.filteredPatients);
+        setShowResetButton(true);
+      }
+    }
+  };
+  const handleExpandOptionsClick = () => {
+    setExpandSearchOptions(!expandSearchOptions);
+  };
+  const handleResetSearchClick = async (e) => {
+    e.preventDefault();
+    setSearchName("");
+    const response = await axios.get("/viewmypatients");
+    setPatients(response.data);
+    setShowResetButton(false);
+  };
 
   const FamilyMembersView = ({ item }) => {
+    console.log(item);
     return (
       <Box>
-        <Typography variant="h6" sx={{ padding: "2px" }}>
+        <Typography variant="h6" sx={{ padding: "2px", m: "30px" }}>
           Family Members
         </Typography>
         {item.familyMembers.map((fam) => (
@@ -97,9 +140,14 @@ const PatientsView = ({ userType, setChat, setChatterID, setChatterName }) => {
 
   const fetchPatients = async () => {
     try {
-      await axios.get("/getAllPatients").then((res) => {
-        setPatients(res.data);
-      });
+      if (userType === "doctor") {
+        const response = await axios.get("/viewmypatients");
+        setPatients(response.data);
+      } else {
+        await axios.get("/getAllPatients").then((res) => {
+          setPatients(res.data);
+        });
+      }
     } catch (error) {
       console.error("Add Admin error:", error);
     }
@@ -124,11 +172,11 @@ const PatientsView = ({ userType, setChat, setChatterID, setChatterName }) => {
   const openChat = (e, doctorId, name) => {
     e.preventDefault();
     setChat(false);
-    setChatterID('');
+    setChatterID("");
     setChat(true);
     setChatterID(doctorId);
     setChatterName(name);
-  }
+  };
 
   useEffect(() => {
     fetchPatients();
@@ -140,107 +188,273 @@ const PatientsView = ({ userType, setChat, setChatterID, setChatterName }) => {
 
   return (
     <>
-      <Paper style={paperStyle} elevation={3}>
-        <Box sx={{ display: "flex", flexDirection: "row" }}>
-          <Typography variant="h4" sx={{ m: "30px" }}>
-            Patients
-          </Typography>
-        </Box>
+      {page === "first" ? (
+        <Paper style={paperStyle} elevation={3}>
+          <Box
+            style={{
+              width: "100%",
+              borderBottom: "2px solid rgba(0, 0, 0, 0.12)",
+              boxSizing: "border-box",
+              paddingBottom: "15px",
+              marginBottom: "15px",
+            }}
+          >
+            <Box display="flex" alignItems="center" padding="12px">
+              <TextField
+                label="Search"
+                variant="outlined"
+                value={searchName}
+                onChange={(e) => setSearchName(e.target.value)}
+                margin="dense"
+                InputProps={{
+                  style: {
+                    color: "black",
+                    borderBottom: "none",
+                  },
+                }}
+                sx={{ width: "79%" }}
+              />
+              <Box marginLeft="8px" display="flex">
+                <Button
+                  variant="outlined"
+                  onClick={handleSearch}
+                  style={{
+                    color: "black",
+                    cursor: "pointer",
+                    minHeight: "60px",
+                  }}
+                  sx={{
+                    height: "55px",
+                    "&:hover": { backgroundColor: "#2196F3", color: "white" },
+                  }}
+                >
+                  Search
+                </Button>
+                <Button
+                  variant="outlined"
+                  onClick={handleExpandOptionsClick}
+                  style={{
+                    color: "black",
+                    marginLeft: "8px",
+                    cursor: "pointer",
+                  }}
+                  sx={{
+                    "&:hover": { backgroundColor: "#2196F3", color: "white" },
+                  }}
+                >
+                  {expandSearchOptions ? "Hide Options" : "Show Options"}
+                </Button>
+                {showResetButton && (
+                  <Button
+                    variant="outlined"
+                    onClick={handleResetSearchClick}
+                    style={{
+                      color: "black",
+                      marginLeft: "8px",
+                      cursor: "pointer",
+                    }}
+                    sx={{
+                      "&:hover": { backgroundColor: "#2196F3", color: "white" },
+                    }}
+                  >
+                    Reset Search
+                  </Button>
+                )}
+              </Box>
+            </Box>
+            <Collapse in={expandSearchOptions}>
+              <TextField
+                label="Medicinal Use..."
+                variant="outlined"
+                margin="dense"
+                id="medicinalUse"
+                name="medicinalUse"
+                value={searchMedicinal}
+                onChange={(e) => setSearchMedicinal(e.target.value)}
+                InputProps={{
+                  style: {
+                    borderBottom: "none",
+                  },
+                }}
+                sx={{ marginLeft: "11px", width: "77.5%" }}
+              />
+            </Collapse>
+          </Box>
+          <Fab
+            onClick={backButton}
+            color="primary"
+            size="small"
+            sx={{
+              position: "absolute",
+              top: "25%",
+              left: "6%",
+              transform: "translateY(-50%)",
+            }}
+          >
+            <KeyboardArrowLeftIcon />
+          </Fab>
+          <Box sx={{ display: "flex", flexDirection: "row" }}>
+            <Typography variant="h4" sx={{ m: "30px" }}>
+              Patients
+            </Typography>
+          </Box>
 
-        <List style={listStyle}>
-          {patients.map((item, index) => (
-            <React.Fragment key={index}>
-              <ListItem button onClick={() => handleItemExpand(item)}>
-                <PersonIcon
-                  sx={{ mr: "15px", width: "50px", height: "50px" }}
-                />
-                <Container maxWidth="md" sx={{ marginTop: 2, padding: "5px" }}>
-                  <Typography variant="h5" sx={{ marginBottom: 2 }}>
-                    {item.name}
-                  </Typography>
-                  <Grid container spacing={3}>
-                    <Grid item xs={6}>
-                      <List>
-                        <ListItem>
-                          <ListItemText
-                            primary={`Username: ${item.username}`}
-                          />
-                        </ListItem>
-                        <ListItem>
-                          <ListItemText primary={`Email: ${item.email}`} />
-                        </ListItem>
-                        <ListItem>
-                          <ListItemText
-                            primary={`Birth Date: ${new Date(
-                              item.birthDate
-                            ).toLocaleDateString("en-US", {
-                              year: "numeric",
-                              month: "long",
-                              day: "numeric",
-                            })}`}
-                          />
-                        </ListItem>
-                      </List>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <List>
-                        <ListItem>
-                          <ListItemText primary={`Gender: ${item.gender}`} />
-                        </ListItem>
-                        <ListItem>
-                          <ListItemText
-                            primary={`Mobile Number: ${item.mobileNumber}`}
-                          />
-                        </ListItem>
-                        <ListItem>
-                          <ListItemText
-                            primary={`Emergency Contact: ${item.emergencyContact.name}, ${item.emergencyContact.mobileNumber} (${item.emergencyContact.relation})`}
-                          />
-                        </ListItem>
-                      </List>
-                    </Grid>
-                  </Grid>
-                </Container>
-              </ListItem>
-              <Collapse
-                in={item.username === expandedItem}
-                timeout="auto"
-                unmountOnExit
-              >
-                {item.familyMembers && item.familyMembers.length > 0 && (
-                  <FamilyMembersView item={item} />
-                )}
-                {userType === "pharmacist" && (
-                  <Button
-                    variant="contained"
-                    sx={{ m: "30px" }}
-                    onClick={(e) => openChat(e, item._id, item.name)}
+          <List style={listStyle}>
+            {patients.map((item, index) => (
+              <React.Fragment key={index}>
+                <ListItem button onClick={() => handleItemExpand(item)}>
+                  <PersonIcon
+                    sx={{ mr: "15px", width: "50px", height: "50px" }}
+                  />
+                  <Container
+                    maxWidth="md"
+                    sx={{ marginTop: 2, padding: "5px" }}
                   >
-                    Chat With Patient
-                  </Button>
-                )}
-                {userType === "admin" && (
-                  <Button
-                    variant="contained"
-                    onClick={() => removePatient(item._id)}
-                    sx={{ m: "30px" }}
-                  >
-                    Remove Patient
-                  </Button>
-                )}
-              </Collapse>
-            </React.Fragment>
-          ))}
-        </List>
-        {alert && (
-          <Popup
-            onClose={closePopup}
-            title={alert.title}
-            message={alert.message}
-            showButtons={false}
+                    <Typography variant="h5" sx={{ marginBottom: 2 }}>
+                      {item.name}
+                    </Typography>
+                    <Grid container spacing={3}>
+                      <Grid item xs={6}>
+                        <List>
+                          <ListItem>
+                            <ListItemText
+                              primary={`Username: ${item.username}`}
+                            />
+                          </ListItem>
+                          <ListItem>
+                            <ListItemText primary={`Email: ${item.email}`} />
+                          </ListItem>
+                          <ListItem>
+                            <ListItemText
+                              primary={`Birth Date: ${new Date(
+                                item.birthDate
+                              ).toLocaleDateString("en-US", {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              })}`}
+                            />
+                          </ListItem>
+                        </List>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <List>
+                          <ListItem>
+                            <ListItemText primary={`Gender: ${item.gender}`} />
+                          </ListItem>
+                          <ListItem>
+                            <ListItemText
+                              primary={`Mobile Number: ${item.mobileNumber}`}
+                            />
+                          </ListItem>
+                          <ListItem>
+                            <ListItemText
+                              primary={`Emergency Contact: ${item.emergencyContact.name}, ${item.emergencyContact.mobileNumber} (${item.emergencyContact.relation})`}
+                            />
+                          </ListItem>
+                        </List>
+                      </Grid>
+                    </Grid>
+                  </Container>
+                </ListItem>
+                <Collapse
+                  in={item.username === expandedItem}
+                  timeout="auto"
+                  unmountOnExit
+                >
+                  {item.familyMembers && item.familyMembers.length > 0 && (
+                    <FamilyMembersView item={item} />
+                  )}
+                  {userType === "pharmacist" && (
+                    <Button
+                      variant="contained"
+                      sx={{ m: "30px" }}
+                      onClick={(e) => openChat(e, item._id, item.name)}
+                    >
+                      Chat With Patient
+                    </Button>
+                  )}
+                  {userType === "admin" && (
+                    <Button
+                      variant="contained"
+                      onClick={() => removePatient(item._id)}
+                      sx={{ m: "30px" }}
+                    >
+                      Remove Patient
+                    </Button>
+                  )}
+                  {userType === "doctor" && (
+                    <>
+                      <Button
+                        variant="contained"
+                        sx={{ m: "30px" }}
+                        onClick={() => {
+                          setPage("second");
+                          setSelectedPatient(item);
+                        }}
+                      >
+                        View Details
+                      </Button>
+                      <Button
+                        variant="contained"
+                        sx={{ m: "30px" }}
+                      >
+                        Chat with Patient
+                      </Button>
+                      <Button
+                        variant="contained"
+                        sx={{ m: "30px" }}
+                      >
+                        Call Patient
+                      </Button>
+                    
+                    </>
+                  )}
+                </Collapse>
+              </React.Fragment>
+            ))}
+          </List>
+          {alert && (
+            <Popup
+              onClose={closePopup}
+              title={alert.title}
+              message={alert.message}
+              showButtons={false}
+            />
+          )}
+        </Paper>
+      ) : (
+        <>
+          <Fab
+            onClick={() => {
+              setPage("first");
+            }}
+            color="primary"
+            size="small"
+            sx={{
+              position: "absolute",
+              top: "25%",
+              left: "6%",
+              transform: "translateY(-50%)",
+            }}
+          >
+            <KeyboardArrowLeftIcon />
+          </Fab>
+          <PatientPage
+            selectedPatient={selectedPatient}
+            setSelectedPatient={setSelectedPatient}
+            setAlert={setAlert}
           />
-        )}
-      </Paper>
+        </>
+      )}
+      {alert && (
+        <Popup
+          onClose={() => setAlert(null)}
+          title={alert.title}
+          message={alert.message}
+          showButtons={false}
+        />
+      )}
     </>
   );
 };
