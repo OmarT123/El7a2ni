@@ -28,9 +28,21 @@ const PharmacistsStage = ({
   setStage,
   together = false,
   userType,
+  setChat,
+  setChatterID,
+  setChatterName,
 }) => {
   const [unapprovedPharmacists, setUnapprovedPharmacists] = useState([]);
   const [approvedPharmacists, setApprovedPharmacists] = useState([]);
+
+  const openChat = (e, doctorId, name) => {
+    e.preventDefault();
+    setChat(false);
+    setChatterID("");
+    setChat(true);
+    setChatterID(doctorId);
+    setChatterName(name);
+  };
 
   const fetchPharmacists = async () => {
     const response = await axios.get("/getAllPharmacists");
@@ -190,10 +202,11 @@ const PharmacistsStage = ({
               Remove Pharmacist
             </Button>
           )}
-          {userType === "doctor" && (
+          {(userType === "doctor" || userType === "patient") && (
             <Button
               variant="contained"
               sx={{ m: "30px" }}
+              onClick={(e) => openChat(e, item._id, item.name)}
             >
               Chat with Pharmacist
             </Button>

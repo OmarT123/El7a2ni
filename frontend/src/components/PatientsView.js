@@ -381,6 +381,7 @@ const PatientsView = ({
                         variant="contained"
                         onClick={() => removePatient(item._id)}
                         sx={{ m: "30px" }}
+                        onClick={(e) => openChat(e, item._id, item.name)}
                       >
                         Remove Patient
                       </Button>

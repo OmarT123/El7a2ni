@@ -6,7 +6,7 @@ import { useState } from "react";
 import ProfilePage from "../ProfilePage";
 import { HomePageContext } from "../../pages/HomePage";
 import { useContext } from "react";
-import MedicationIcon from "@mui/icons-material/Medication";
+import VaccinesIcon from '@mui/icons-material/Vaccines';
 import HealingIcon from '@mui/icons-material/Healing';
 import MedicineView from "../MedicineView";
 import DoctorsStage from "../AdminEmployees/DoctorsStage";
@@ -29,7 +29,7 @@ const PharmacistHomePage = () => {
             <SquareCard
               title="MEDICINE"
               body="Lorem ipsum sit amet consectetur adipiscing elit. Vivamus et erat in lacus convallis sodales."
-              icon={MedicationIcon}
+              icon={VaccinesIcon}
               isLearnMore={false}
               changeFunction={() => setPage("medicine")}
               closeFunction={() => setPage("home")}
@@ -83,6 +83,7 @@ const PharmacistHomePage = () => {
           ) : (
             <PatientsView
               userType={"pharmacist"}
+              backButton={() => setPage("home")}
               setChat={setChat}
               setChatterID={setChatterID}
               setChatterName={setChatterName}

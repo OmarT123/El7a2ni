@@ -6,6 +6,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import SupervisorAccountIcon from "@mui/icons-material/SupervisorAccount";
 import HealthAndSafetyIcon from "@mui/icons-material/HealthAndSafety";
 import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
+import VaccinesIcon from '@mui/icons-material/Vaccines';
 import MedicineView from "../MedicineView";
 import HomeNavBar from "./HomeNavBar";
 import AdminsView from "../AdminsView";
@@ -28,7 +29,7 @@ const AdminHomePage = () => {
           <SquareCard
             title="MEDICINE"
             body="Lorem ipsum sit amet consectetur adipiscing elit. Vivamus et erat in lacus convallis sodales."
-            icon={MedicationIcon}
+            icon={VaccinesIcon}
             isLearnMore={false}
             changeFunction={() => setPage("medicine")}
             closeFunction={() => setPage("home")}
@@ -69,7 +70,7 @@ const AdminHomePage = () => {
           <SquareCard
             title="HEALTH PACKAGES"
             body="Lorem ipsum sit amet consectetur adipiscing elit. Vivamus et erat in lacus convallis sodales."
-            icon={HealthAndSafetyIcon}
+            icon={MedicationIcon}
             isLearnMore={false}
             changeFunction={() => setPage("healthPackages")}
             closeFunction={() => setPage("home")}
@@ -95,7 +96,7 @@ const AdminHomePage = () => {
             ) : page === "employees" ? (
               <EmployeesView userType={"admin"} />
             ) : page === "patients" ? (
-              <PatientsView userType={"admin"} />
+              <PatientsView userType={"admin"} backButton={() => setPage("home")} />
             ) : page === "admins" ? (
               <AdminsView />
             ) : (

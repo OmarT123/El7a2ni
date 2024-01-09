@@ -77,7 +77,7 @@ const SignUp = () => {
                 window.location.href = "/";
               }}
             >
-              <img src="logo.png" width="100px" height="100px" />
+              <img src="itrylogo-removebg-preview.png" width="45px" height="50px" />
             </Avatar>
             <Box
               sx={{
