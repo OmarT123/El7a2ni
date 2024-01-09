@@ -17,21 +17,50 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 
 const ProfilePage = ({ userData }) => {
-  const [expand, setExpand] = useState(false);
+  const [expandPassword, setExpandPassword] = useState(false);
+  const [expandEdit, setExpandEdit] = useState(false);
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [showOldPassword, setShowOldPassword] = useState("");
   const [showNewPassword, setShowNewPassword] = useState("");
+  const [email, setEmail] = useState("");
+  const [affiliation, setAffiliation] = useState("");
+  const [hourlyRate, setHourlyRate] = useState("");
   const [alert, setAlert] = useState(null);
 
-  const changePassword = async () => {
+  const editDetails = async (e) => {
+    e.preventDefault();
+    const data = new FormData(e.currentTarget);
+    const newData = {};
+    if (data.get("email")) newData["email"] = data.get("email");
+    if (data.get("hourlyRate")) newData["hourlyRate"] = data.get("hourlyRate");
+    if (data.get("affiliation"))
+      newData["affiliation"] = data.get("affiliation");
+
+    const response = await axios.put("/editDoctor", newData);
+    if (response.data.success) {
+      setEmail("email");
+      setHourlyRate(data.get("hourlyRate"));
+      setAffiliation(data.get("affiliation"));
+      setAlert(response.data);
+      setExpandEdit(false);
+    } else {
+      setAlert({
+        title: "Something went Wrong",
+        message: "Please try again at a later time",
+      });
+    }
+  };
+
+  const changePassword = async (e) => {
+    e.preventDefault();
     try {
       const response = await axios.put("/changePassword", {
         oldPassword,
         newPassword,
       });
       setAlert(response.data);
-      if (response.data.success) setExpand(false);
+      if (response.data.success) setExpandPassword(false);
     } catch (error) {
       console.error("Change Password error:", error);
     }
@@ -126,20 +155,36 @@ const ProfilePage = ({ userData }) => {
               )}
             </Grid>
             <Grid item xs={0} sm={6} />
-            <Grid item xs={12} sm={12}>
+            {userData.speciality && (
+              <Grid item xs={12} sm={6}>
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    setExpandEdit((prev) => !prev);
+                    setExpandPassword(false);
+                  }}
+                >
+                  Edit Details
+                </Button>
+              </Grid>
+            )}
+            <Grid item xs={12} sm={6}>
               <Button
                 variant="contained"
-                onClick={() => setExpand((prev) => !prev)}
+                onClick={() => {
+                  setExpandPassword((prev) => !prev);
+                  setExpandEdit(false);
+                }}
               >
                 Change Password
               </Button>
             </Grid>
           </Grid>
         </Box>
-        <Collapse in={expand} timeout="auto" unmountOnExit>
+        <Collapse in={expandPassword} timeout="auto" unmountOnExit>
           <Grid container spacing={3} sx={{ mt: 3 }}>
             <Grid item xs={12} sm={6}>
-            <TextField
+              <TextField
                 label="Old Password"
                 variant="outlined"
                 type={showOldPassword ? "text" : "password"}
@@ -151,7 +196,7 @@ const ProfilePage = ({ userData }) => {
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton
-                        onClick={() => setShowOldPassword(prev=>!prev)}
+                        onClick={() => setShowOldPassword((prev) => !prev)}
                         edge="end"
                       >
                         {showOldPassword ? (
@@ -178,7 +223,7 @@ const ProfilePage = ({ userData }) => {
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton
-                        onClick={() => setShowNewPassword(prev=>!prev)}
+                        onClick={() => setShowNewPassword((prev) => !prev)}
                         edge="end"
                       >
                         {showNewPassword ? (
@@ -198,6 +243,37 @@ const ProfilePage = ({ userData }) => {
               </Button>
             </Grid>
           </Grid>
+        </Collapse>
+        <Collapse in={expandEdit} timeout="auto" unmountOnExit>
+          <Box component="form" noValidate onSubmit={editDetails}>
+            <Grid container spacing={3} sx={{ mt: 3 }}>
+              <Grid item xs={12} sm={4}>
+                <TextField fullWidth name="email" label="Email" id="email" />
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <TextField
+                  fullWidth
+                  type="number"
+                  name="hourlyRate"
+                  label="Hourly Rate"
+                  id="hourlyRate"
+                />
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <TextField
+                  fullWidth
+                  label="Affiliation"
+                  name="affiliation"
+                  id="afilliation"
+                />
+              </Grid>
+              <Grid item xs={12} sm={12}>
+                <Button variant="contained" type="submit">
+                  Save Details
+                </Button>
+              </Grid>
+            </Grid>
+          </Box>
         </Collapse>
       </Container>
       {alert && (
