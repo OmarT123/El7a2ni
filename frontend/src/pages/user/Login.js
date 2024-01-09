@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
+
 const Login = () => {
   const [username, setName] = useState('');
   const [password, setPassword] = useState('');
@@ -8,6 +9,7 @@ const Login = () => {
   const [showContent, setShowContent] = useState(true);
 
   useEffect(() => {
+    // localStorage.clear()
     
     const userToken = localStorage.getItem('userToken');
 
@@ -30,14 +32,22 @@ const Login = () => {
 
       if (response.data.success) {
         localStorage.setItem('userToken', response.data.token);
+
         axios
           .get('/loginAuthentication')
           .then((response) => {
-            const { success, type , user } = response.data;
-            if (type === 'doctor' && user.status === 'approved')
-              window.location.href = '/doctorContract'
-            else
-              window.location.href = '/Home';
+            const { success, type , user } = response.
+        data;
+    
+   
+         if (type === 'doctor' && user.status === 'approved') {
+          window.location.href = '/doctorContract';
+        } else {
+              // window.location.href = '/Home';
+          
+        }
+        
+            
           })
       }
     } catch (error) {

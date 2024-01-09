@@ -6,8 +6,14 @@ const patientSchema = new Schema(
     username: {
       type: String,
       required: true,
-      uniqure : true
+      unique : true
     },
+    socketId :{
+      type: String,
+      unique : true,
+      default : ""
+    },
+
     name: {
       type: String,
       required: true,

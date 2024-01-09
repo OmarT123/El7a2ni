@@ -3,17 +3,15 @@ const Schema = mongoose.Schema;
 
 const videoChatRoomSchema = new Schema(
   {
-    roomId: {
-      type: String,
-      required: true,
-      unique : true
-    },
+
+    
+ 
     patientId: {
-      type: mongoose.Types.ObjectId,
+      type: String,
       required: true,
     },
     doctorId : {
-        type: mongoose.Types.ObjectId,
+        type: String,
         required : true
       
     }

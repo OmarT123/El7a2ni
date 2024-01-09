@@ -9,6 +9,8 @@ const doctorDocuments = require("../Models/DoctorDocuments.js");
 const { default: mongoose } = require("mongoose");
 const bcrypt = require('bcrypt');
 
+
+
 const createPrescription = async(req,res)=>{
   try {
     let prescription = await prescriptionModel.create({filled:req.body.filled, patient:req.body.patient,doctor:req.body.doctor,medicines:req.body.medicines})
@@ -386,5 +388,5 @@ module.exports = {
   ViewDoctorWallet,
   viewDoctorAppointments,
   acceptContract,
-  rejectContract
+  rejectContract 
 };

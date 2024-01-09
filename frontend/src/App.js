@@ -36,8 +36,7 @@ import ViewMyWallet from './pages/patient/ViewMyWallet';
 import ViewDoctorWallet from './pages/doctor/ViewDoctorWallet';
 import DoctorApplication from './pages/admin/DoctorApplication';
 import DoctorContract from './pages/doctor/DoctorContract';
-import VideoChatPatient from './pages/patient/StartVideoCall';
-import VideoChatDoctor from './pages/doctor/VideoChatDoctor';
+// import VideoChatRoomDoc from './pages/doctor/VideoChatRoomDoc';
 
 // imported from the pharamcy : 
 import UnApprovedPharmacists from './pages/admin/UnApprovedPharmacists'
@@ -64,7 +63,7 @@ import MyCart from './pages/patient/MyCart' ;
 import Checkout from './pages/patient/Checkout';
 import PastOrders from './pages/patient/PastOrders';
 import SuccessfulCheckout from './pages/patient/SuccessfulCheckout';
-import StartVideoCall from './pages/patient/StartVideoCall';
+import VideoChatRoom from './pages/patient/VideoChatRoom';
 
 // user 
 
@@ -147,7 +146,9 @@ function App() {
             <Route path="/doctorContract" element={<DoctorContract />} />
             {/* <Route path = "/VideoChatPatient" element = {<VideoChatPatient/>}/> */}
             {/* <Route path = "/VideoChatDoctor" element = {<VideoChatDoctor/>}/> */}
-            <Route path="/StartVideoCall" element={<StartVideoCall />} />
+            <Route path="/VideoChatRoom" element={<VideoChatRoom />} />
+            {/* <Route path="/VideoChatRoomDoc" element={<VideoChatRoomDoc />} /> */}
+
 
 
 

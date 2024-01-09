@@ -2,18 +2,19 @@
 import React, { useEffect, useRef, useState } from "react";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import Button from "@mui/material/Button";
+import axios from "axios";
 import IconButton from "@mui/material/IconButton";
 import TextField from "@mui/material/TextField";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import PhoneIcon from "@mui/icons-material/Phone";
 import Peer from "simple-peer";
 import io from "socket.io-client";
-import "../VideoChat.css";
-import "../process.js"
+import "../../VideoChat.css";
+import "../../process.js"
 
 const socket = io.connect('http://localhost:4000');
 
-function VideoChatRoom({roomId}) {
+function VideoChatPatient() {
   const [me, setMe] = useState("");
   const [stream, setStream] = useState(null);
   const [receivingCall, setReceivingCall] = useState(false);
@@ -43,26 +44,32 @@ function VideoChatRoom({roomId}) {
         //   myVideo.current.srcObject = userMediaStream;
         // }
 
-        // socket.on("me", (id) => {
-        //   setMe(id);
-        // });
+        socket.on("me", async (id) => {
+        console.log(id)
+        setMe(id);
+        await axios.put('/updateSocketId', {socketId : id});
 
-        socket.emit("joinRoom", { roomId });
+        });
+
 
         socket.on("callUser", (data) => {
           setReceivingCall(true);
           setCaller(data.from);
-          // setmyName(data.name);
+          setmyName(data.name);
           setCallerSignal(data.signal);
         });
+
+
       } catch (error) {
         console.error("Error accessing media devices:", error);
       }
     };
 
     initializeMediaDevices();
-  }, [roomId]);
-  const callUser = (id) => {
+  }, []);
+  const callUser =async (id) => {
+   const response= await axios.get('/getSocketId',{params : {userId : id}})
+   console.log("socket id to be called :"+response.data)
     const peer = new Peer({
       initiator: true,
       trickle: false,
@@ -71,7 +78,7 @@ function VideoChatRoom({roomId}) {
   
     peer.on("signal", (data) => {
       socket.emit("callUser", {
-        userToCall: id,
+        userToCall: response.data,
         signalData: data,
         from: me,
         name: myName,
@@ -137,11 +144,14 @@ function VideoChatRoom({roomId}) {
       <div className="container">
       <div className="video-container">
   <div className="video">
+  <h3 style={{ textAlign: "center", color: "#fff" }}>My Camera</h3>
     {stream && <video playsInline muted ref={myVideo} autoPlay style={{ width: "400px"  }} />}
   </div>
   <div className="video">
   
     {callAccepted && !callEnded ?
+      // <h3 style={{ textAlign: "center", color: "#fff" }}>Partner Camera</h3> &&
+
     <video playsInline ref={userVideo} autoPlay style={{ width: "400px" }} /> : null}
   </div>
 </div>
@@ -197,4 +207,4 @@ function VideoChatRoom({roomId}) {
   );
 }
 
-export default VideoChatRoom;
+export default VideoChatPatient;

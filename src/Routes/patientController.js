@@ -14,6 +14,7 @@ const notificationSystemModel=require ('../Models/NotificationSystem.js')
 const stripe = require("stripe")(process.env.STRIPE_PRIVATE_KEY)
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt');
+const VideoChatRoom = require("../Models/VideoChatRoom.js");
 require("dotenv").config();
 
 
@@ -140,6 +141,67 @@ const cartvalue = async (patientId) => {
     throw new Error(error.message);
   }
 };
+const updateSocketId = async(req,res)=>{
+  const { socketId } = req.body;
+    const userId  = req.user._id;
+  try{
+    const user = await userModel.findOne({userId:userId});
+    if (!user) {
+      // User with the specified ID not found
+      // return res.send({ success: false, message: 'User not found' });
+    }
+
+
+    if(user.type ==='patient'){
+      // console.log("patient id ")
+      const patient = await patientModel.findByIdAndUpdate(userId,{socketId : socketId})
+ 
+
+      await patient.save();
+      res.send({ success: true, message: 'Socket ID updated for patient' });  
+    }
+    else if (user.type ==='doctor'){
+      const doctor = await doctorModel.findByIdAndUpdate(userId,{socketId : socketId})
+      await doctor.save();
+      res.send({ success: true, message: 'Socket ID updated for doctor' }); 
+    }
+ }
+  catch(err){
+    res.json(err);
+  }
+ 
+}
+const getSocketId = async(req,res)=>{
+  const userId  = req.query.userId;
+  console.log("user id to be called "+userId)
+  let userIdConverted = new mongoose.Types.ObjectId(req.query.userId);
+  try{
+      const user = await userModel.findOne({userId:userIdConverted});
+      if (!user) {
+        console.log("no user")
+      }
+  
+      console.log(user.type);
+  
+      if(user.type ==='patient'){
+        const patient = await patientModel.findById(userIdConverted)
+        console.log("socekt id for patient :"+patient.socketId)
+        res.json(patient.socketId);  
+
+      }
+      else if (user.type ==='doctor'){
+        console.log("d5lt fe user type doctor")
+        const doctor = await doctorModel.findById(userIdConverted)
+        console.log("socekt id for doctor :"+doctor.socketId)
+        res.json(doctor.socketId);  
+      }
+
+  }
+  catch(err){
+    res.json(err);
+  }
+ 
+}
 
 const handleAfterBuy = async (cart, id) => {
   try {
@@ -1301,6 +1363,55 @@ function calculateAge(birthDate) {
 
   return age;
 }
+// const getVideoChattingRoomDoctor = async (req, res) => {
+//   const partner1Id = (req.user._id).toString();
+//   console.log(partner1Id)
+//   const partner2Id = req.query.partner;
+//   console.log(partner2Id)
+
+//   try {
+  
+//     let room = await VideoChatRoom.findOne({
+//    patientId :partner1Id, doctorId :partner2Id},
+//    );
+//     console.log(room);
+    
+//     if (!room && partner1Id !== partner2Id) {
+//       room = await VideoChatRoom.create({ doctorId :partner1Id,  patientId:partner2Id });
+
+//       room.save();
+//     }
+//     res.json(room);
+//   } catch (error) {
+//     res.json({ error: 'Error retrieving chat room', message: error.message });
+//   }
+// };
+
+
+const getVideoChattingRoom = async (req, res) => {
+  const partner1Id = (req.user._id).toString();
+  console.log(partner1Id)
+  const partner2Id = req.query.partner;
+  console.log(partner2Id)
+
+  try {
+  
+    let room = await VideoChatRoom.findOne({
+   patientId :partner1Id, doctorId :partner2Id},
+   );
+    console.log(room);
+    
+    if (!room && partner1Id !== partner2Id) {
+      room = await VideoChatRoom.create({ patientId :partner1Id,  doctorId:partner2Id });
+
+      await room.save();
+    }
+    res.json(room );
+  } catch (error) {
+    res.json({ error: 'Error retrieving chat room', message: error.message });
+  }
+};
+
 
 module.exports = {
   createFamilyMember,
@@ -1344,5 +1455,8 @@ module.exports = {
   cashOnDelivery,
   pastOrders,
   cancelOrder,
-  deleteHealthRecord
+  deleteHealthRecord,
+  getVideoChattingRoom,
+  updateSocketId,
+  getSocketId
 };

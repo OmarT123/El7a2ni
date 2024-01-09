@@ -1,11 +1,16 @@
 const express = require("express");
+const app = express();
 const mongoose = require("mongoose");
 mongoose.set("strictQuery", false);
 const cookieParser = require('cookie-parser');
 const http = require("http");
-const socketIO = require("socket.io");
-
+const {Server} = require("socket.io");
 require("dotenv").config();
+const cors = require('cors');
+
+
+
+// ...rest of your server code
 
 
 
@@ -17,17 +22,10 @@ if (!MongoURI) {
   process.exit(1);
 }
 
-const app = express();
 const port = process.env.PORT || "4000";
 app.use(express.json({ limit: '5000mb' }));
 app.use(express.urlencoded({ limit: '5000mb', extended: true }));
 const server = http.createServer(app);
-const io = socketIO(server, {
-  cors: {
-    origin: "http://localhost:3000",
-    methods: ["GET", "POST"],
-  },
-});
 
 
 mongoose
@@ -41,19 +39,20 @@ mongoose
   .catch((err) => console.log(err));
 
 app.use(express.json());
-app.use(cookieParser());
 
-const VideoChatRoom = require("./Models/VideoChatRoom");
+app.use(cookieParser());
+const io = require("socket.io")(server, {
+  cors: {
+    origin: "http://localhost:3000", // Replace with your client's origin
+    methods: ["GET", "POST"],
+  },
+});
+
+app.use(cors());
+
 
 io.on("connection", (socket) => {
-  socket.on("startCall", async ({ patientId, doctorId }) => {
-    const roomId = socket.id;
-    await VideoChatRoom.create({ roomId, patientId, doctorId });
-    io.to(socket.id).emit("roomCreated", { roomId });
-  });
-  socket.on("joinRoom", ({ roomId }) => {
-    socket.join(roomId);
-  });
+  socket.emit("me", socket.id);
 
   socket.on("callEnded", (data) => {
     io.to(data.to).emit("callEnded");
@@ -63,7 +62,7 @@ io.on("connection", (socket) => {
     io.to(data.userToCall).emit("callUser", {
       signal: data.signalData,
       from: data.from,
-      callerName: data.callerName,
+      name: data.name,
     });
   });
 
@@ -71,6 +70,7 @@ io.on("connection", (socket) => {
     io.to(data.to).emit("callAccepted", data.signal);
   });
 });
+
 
 
 
@@ -149,7 +149,7 @@ const {
   cancelOrder,
   deleteHealthRecord,
   getMedicines,
-  getSubMedicines
+  getSubMedicines,getVideoChattingRoom,updateSocketId,getSocketId
 
 } = require("./Routes/patientController");
 
@@ -189,13 +189,7 @@ const{ login, logout ,changePassword ,getUserFromTokenMiddleware ,resetPassword,
 
 //VideoChat 
 
-app.get('/VideoChatRoom',(req,res)=>{
-  res.redirect(`/${uuidV4()}`)
-})
 
-app.get('/VideoChatRoom',(req,res)=>{
-  res.render('VideoChatRoom',{roomId : req.params.room})
-})
 
 io.on('connection',socket=> {
   socket.on('join-room', (roomId,userId)=>{
@@ -237,6 +231,8 @@ app.get("/viewPharmacist", getUserFromTokenMiddleware,getPharmacist);
 
 
 //Patient
+app.put("/updateSocketId",getUserFromTokenMiddleware ,updateSocketId);
+app.get("/getSocketId",getSocketId);
 app.post("/addFamilyMember",getUserFromTokenMiddleware, createFamilyMember);
 app.get("/searchDoctor",getUserFromTokenMiddleware, searchForDoctorByNameSpeciality);
 app.get("/filterAppointmentsForPatient",getUserFromTokenMiddleware, filterAppointmentsForPatient);
@@ -281,11 +277,13 @@ app.get("/pastOrders",getUserFromTokenMiddleware,pastOrders);
 app.put("/cancelOrder",getUserFromTokenMiddleware,cancelOrder)
 app.put("/deleteHealthRecord", getUserFromTokenMiddleware, deleteHealthRecord);
 
-app.get("/getMedicines",getMedicines)
-app.get("/getSubMedicines",getSubMedicines)
+app.get("/getMedicines",getUserFromTokenMiddleware,getMedicines)
+app.get("/getSubMedicines",getUserFromTokenMiddleware,getSubMedicines)
+app.get("/getVideoChattingRoom",getUserFromTokenMiddleware,getVideoChattingRoom)
 
 //Doctor
 app.get("/filterAppointmentsForDoctor",getUserFromTokenMiddleware ,filterAppointmentsForDoctor);
+
 app.post("/addAppointment",getUserFromTokenMiddleware,createAppointment);
 app.post("/addDoctor", addDoctor);
 app.put("/editDoctor",getUserFromTokenMiddleware, editDoctor);
@@ -311,7 +309,7 @@ app.put("/editMedicine",getUserFromTokenMiddleware, editMedicine);
 app.post("/addMedicine", getUserFromTokenMiddleware,addMedicine);
 app.get("/filterByMedicinalUsePharmacist",getUserFromTokenMiddleware, filterByMedicinalUsePharmacist);
 app.get("/medicinequantityandsales",getUserFromTokenMiddleware, medicinequantityandsales);
-app.put("/uploadMedicineImage", uploadMedicineImage);
+app.put("/uploadMedicineImage",getUserFromTokenMiddleware, uploadMedicineImage);
 
 //user 
 
