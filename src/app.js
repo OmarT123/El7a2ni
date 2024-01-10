@@ -96,7 +96,7 @@ schedule.scheduleJob("0 0 * * *", async () => {
 
 io.on("connection", (socket) => {
   console.log(`User Connected: ${socket.id}`);
-
+  socket.emit("me", socket.id);
   socket.on("join_room", (data) => {
     socket.join(data);
     console.log(`User with ID: ${socket.id} joined room: ${data}`);
@@ -110,11 +110,6 @@ io.on("connection", (socket) => {
     console.log("User Disconnected", socket.id);
   });
 
-  socket.on("startCall", async ({ patientId, doctorId }) => {
-    const roomId = socket.id;
-    await VideoChatRoom.create({ roomId, patientId, doctorId });
-    io.to(socket.id).emit("roomCreated", { roomId });
-  });
   socket.on("joinRoom", ({ roomId }) => {
     socket.join(roomId);
   });
@@ -127,7 +122,7 @@ io.on("connection", (socket) => {
     io.to(data.userToCall).emit("callUser", {
       signal: data.signalData,
       from: data.from,
-      callerName: data.callerName,
+      name: data.name,
     });
   });
 
@@ -264,6 +259,8 @@ const {
   payWithWalletCart,
   payWithCardCart,
   rescheduleAppointmentAsPatient,
+  getSocketId,
+  updateSocketId,
 } = require("./Routes/patientController");
 
 const {
@@ -358,6 +355,8 @@ app.get("/viewAllPharmacists", getUserFromTokenMiddleware, viewAllPharmacists);
 app.get("/viewPharmacist", getUserFromTokenMiddleware, getPharmacist);
 
 //Patient
+app.put("/updateSocketId",getUserFromTokenMiddleware ,updateSocketId);
+app.get("/getSocketId",getSocketId);
 app.post("/addFamilyMember", getUserFromTokenMiddleware, createFamilyMember);
 app.put(
   "/rescheduleAppointmentAsPatient",

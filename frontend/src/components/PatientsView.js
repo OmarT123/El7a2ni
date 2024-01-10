@@ -50,6 +50,8 @@ const PatientsView = ({
   setChatterID,
   setChatterName,
   backButton,
+  startVideoChat,
+  setStage,
 }) => {
   const [patients, setPatients] = useState([]);
   const [expandedItem, setExpandedItem] = useState(null);
@@ -161,7 +163,7 @@ const PatientsView = ({
       } else {
         await axios.get("/getAllPatients").then((res) => {
           setPatients(res.data);
-          console.log(res.data)
+          console.log(res.data);
         });
       }
     } catch (error) {
@@ -400,7 +402,14 @@ const PatientsView = ({
                         <Button variant="contained" sx={{ m: "30px" }}>
                           Chat with Patient
                         </Button>
-                        <Button variant="contained" sx={{ m: "30px" }}>
+                        <Button
+                          variant="contained"
+                          sx={{ m: "30px" }}
+                          onClick={() => {
+                            startVideoChat();
+                            setStage("videocall");
+                          }}
+                        >
                           Call Patient
                         </Button>
                       </>

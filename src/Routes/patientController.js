@@ -1170,9 +1170,9 @@ const payWithWalletCart = async (req, res) => {
 const payWithCard = async (req, res) => {
   const patientId = req.user._id;
   const patient = await patientModel.findById(patientId);
-  const url = req.query.url;
+  // const url = req.query.url;
   const item = req.query.item;
-  const type = req.query.type;
+  // const type = req.query.type;
   const price = item.price;
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
@@ -1189,10 +1189,11 @@ const payWithCard = async (req, res) => {
         quantity: 1,
       },
     ],
-    success_url: `http://localhost:3000/${url}`,
+    success_url: `http://localhost:3000/SuccessfulCheckout`,
     cancel_url: `http://localhost:3000/cancelCheckout`,
   });
-  res.json({ url: session.url });
+  // res.json({ url: session.url });
+  res.json({success:true,url:session.url, title: 'Payment Successfull'})
 };
 
 const payWithWallet = async (req, res) => {
@@ -2136,6 +2137,68 @@ const checkAppointmentAvailability = async (doctorId, newDateTime) => {
   return !existingAppointment;
 };
 
+const updateSocketId = async(req,res)=>{
+  const { socketId } = req.body;
+    const userId  = req.user._id;
+  try{
+    const user = await userModel.findOne({userId:userId});
+    if (!user) {
+      // User with the specified ID not found
+      // return res.send({ success: false, message: 'User not found' });
+    }
+
+
+    if(user.type ==='patient'){
+      // console.log("patient id ")
+      const patient = await patientModel.findByIdAndUpdate(userId,{socketId : socketId})
+
+
+      await patient.save();
+      res.send({ success: true, message: 'Socket ID updated for patient' });  
+    }
+    else if (user.type ==='doctor'){
+      const doctor = await doctorModel.findByIdAndUpdate(userId,{socketId : socketId})
+      await doctor.save();
+      res.send({ success: true, message: 'Socket ID updated for doctor' }); 
+    }
+ }
+  catch(err){
+    res.json(err);
+  }
+
+}
+const getSocketId = async(req,res)=>{
+  const userId  = req.query.userId;
+  console.log("user id to be called "+userId)
+  let userIdConverted = new mongoose.Types.ObjectId(req.query.userId);
+  try{
+      const user = await userModel.findOne({userId:userIdConverted});
+      if (!user) {
+        console.log("no user")
+      }
+
+      console.log(user.type);
+
+      if(user.type ==='patient'){
+        const patient = await patientModel.findById(userIdConverted)
+        console.log("socekt id for patient :"+patient.socketId)
+        res.json(patient.socketId);  
+
+      }
+      else if (user.type ==='doctor'){
+        console.log("d5lt fe user type doctor")
+        const doctor = await doctorModel.findById(userIdConverted)
+        console.log("socekt id for doctor :"+doctor.socketId)
+        res.json(doctor.socketId);  
+      }
+
+  }
+  catch(err){
+    res.json(err);
+  }
+
+}
+
 module.exports = {
   createFamilyMember,
   searchForDoctorByNameSpeciality,
@@ -2188,4 +2251,6 @@ module.exports = {
   payWithWalletCart,
   payWithCardCart,
   rescheduleAppointmentAsPatient,
+  updateSocketId,
+  getSocketId
 };

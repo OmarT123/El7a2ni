@@ -6,7 +6,7 @@ const patientSchema = new Schema(
     username: {
       type: String,
       required: true,
-      uniqure : true
+      unique : true
     },
     name: {
       type: String,
@@ -31,6 +31,11 @@ const patientSchema = new Schema(
     mobileNumber: {
       type: String,
       required: true,
+    },
+    socketId :{
+      type: String,
+      unique : true,
+      default : ""
     },
     emergencyContact: {
       type: {
