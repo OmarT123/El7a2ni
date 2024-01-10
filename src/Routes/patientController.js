@@ -643,13 +643,13 @@ const filterPrescriptionByDateDoctorStatus = async (req, res) => {
       const doctors = await doctorModel.find({ name: searchQuery });
 
       if (!doctors || doctors.length === 0) {
-        return res.json("Doctor is not Found!!");
+        return res.json({success: false, message : "Doctor is not Found!!"});
       }
 
       const doctorIds = doctors.map((doctor) => doctor._id);
       baseQuery["doctor"] = { $in: doctorIds };
     } catch (error) {
-      return res.status(500).json(error.message);
+      return res.json({success: false, message : error.message});
     }
   }
 
@@ -672,7 +672,7 @@ const filterPrescriptionByDateDoctorStatus = async (req, res) => {
       .exec();
 
     if (prescriptions.length === 0) {
-      return res.json("No prescriptions found!");
+      return res.json({success: false, message: "No prescriptions found!"});
     }
     let extendedPrescriptions = [];
     for (prescription of prescriptions) {
@@ -682,11 +682,10 @@ const filterPrescriptionByDateDoctorStatus = async (req, res) => {
         doctor: doctorr.name,
       };
       extendedPrescriptions.push(extendedPrescription);
-      console.log(extendedPrescription);
     }
-    return res.json(extendedPrescriptions);
+    return res.json({success: true, prescriptions: extendedPrescriptions});
   } catch (err) {
-    return res.json("Internal Server Error");
+    return res.json({success: false, message: "Internal Server Error"});
   }
 };
 
@@ -765,9 +764,9 @@ const viewMyPrescriptions = async (req, res) => {
       .populate({ path: "medicines.medId" })
       .populate({ path: "doctor" })
       .exec();
-    res.json(prescriptions);
+    res.json({success: true, prescriptions :prescriptions});
   } catch (err) {
-    res.json(err.message);
+    res.json({success: false, message: err.message});
   }
 };
 
@@ -1714,19 +1713,19 @@ const addPrescriptionToCart = async (req, res) => {
   for (requestedMedicine of medicines) {
     const medicine = await medicineModel.findById(requestedMedicine.medId);
     if (medicine.archived === true)
-      return res.json({
+      return res.json({success: false,
         message:
           "One of the medicine is currently not being sold by our pharmacy, please buy these medicines seperately.",
       });
     if (requestedMedicine.dosage > medicine.stockQuantity) {
-      return res.json({
+      return res.json({success: false,
         message:
           "Requested quantity of a certain medicine exceeds available stock, please buy these medicines seperately.",
       });
     }
 
     const existingCartItemIndex = patient.cart.items.findIndex(
-      (item) => item.medicine.toString() === requestedMedicine._id.toString()
+      (item) => item.medicine.toString() === requestedMedicine.medId.toString()
     );
     if (existingCartItemIndex !== -1) {
       if (
@@ -1734,7 +1733,7 @@ const addPrescriptionToCart = async (req, res) => {
           requestedMedicine.dosage >
         medicine.stockQuantity
       )
-        return res.json({
+        return res.json({success: false,
           message:
             "Requested quantity of a certain medicine exceeds available stock, please buy these medicines seperately.",
         });
@@ -1743,7 +1742,7 @@ const addPrescriptionToCart = async (req, res) => {
           requestedMedicine.dosage;
     } else {
       patient.cart.items.push({
-        medicine: requestedMedicine._id,
+        medicine: requestedMedicine.medId,
         quantity: requestedMedicine.dosage,
       });
     }
@@ -1768,7 +1767,7 @@ const addPrescriptionToCart = async (req, res) => {
   }
   prescription.sentToPharmacy = true;
   await prescription.save();
-  res.json({ message: "Prescriptions items added to cart successfully." });
+  res.json({ success: true, message: "Prescriptions items added to cart successfully." });
   //end here
 };
 
