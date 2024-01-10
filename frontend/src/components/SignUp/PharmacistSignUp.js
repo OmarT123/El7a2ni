@@ -45,6 +45,7 @@ const PharmacistSignUp = () => {
               autoComplete="firstName"
               name="firstName"
               required
+              type="text"
               fullWidth
               id="firstName"
               label="First Name"
@@ -55,6 +56,7 @@ const PharmacistSignUp = () => {
               required
               fullWidth
               id="lastName"
+              type="text"
               label="Last Name"
               name="lastName"
               autoComplete="family-name"
@@ -64,6 +66,7 @@ const PharmacistSignUp = () => {
             <TextField
               required
               fullWidth
+              type="text"
               id="username"
               label="Username"
               name="username"
@@ -74,6 +77,7 @@ const PharmacistSignUp = () => {
             <TextField
               required
               fullWidth
+              type="email"
               id="email"
               label="Email Address"
               name="email"
@@ -169,8 +173,9 @@ const PharmacistSignUp = () => {
           <Grid item xs={12} sm={6}>
             <TextField
               id="hourlyRate"
-              label="Hourly Rate"
-              placeholder="Hourly Rate"
+              label="Hourly Rate in $"
+              placeholder="Hourly Rate in $"
+              type="number"
               required
               name="hourlyRate"
               InputLabelProps={{
@@ -185,6 +190,7 @@ const PharmacistSignUp = () => {
               fullWidth
               id="affiliation"
               label="Affiliation"
+              type="text"
               name="affiliation"
               autoComplete="affiliation"
             />
@@ -194,6 +200,7 @@ const PharmacistSignUp = () => {
               fullWidth
               name="edu1"
               label="Educational Background"
+              type="text"
               id="edu1"
               autoComplete="Educational Background"
             />
@@ -203,6 +210,7 @@ const PharmacistSignUp = () => {
               fullWidth
               name="edu2"
               label="Educational Background"
+              type="text"
               id="edu2"
               autoComplete="Educational Background"
             />
@@ -211,6 +219,7 @@ const PharmacistSignUp = () => {
             <TextField
               fullWidth
               name="edu3"
+              type="text"
               label="Educational Background"
               id="edu3"
               autoComplete="Educational Background"

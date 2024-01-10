@@ -46,6 +46,7 @@ const PatientSignUp = () => {
               autoComplete="given-name"
               name="firstName"
               required
+              type="text"
               fullWidth
               value={name}
               onChange={(e)=>setName(e.target.value)}
@@ -59,6 +60,7 @@ const PatientSignUp = () => {
               required
               fullWidth
               id="lastName"
+              type="text"
               label="Last Name"
               name="lastName"
               autoComplete="family-name"
@@ -70,6 +72,7 @@ const PatientSignUp = () => {
               fullWidth
               id="username"
               label="Username"
+              type="text"
               name="username"
               autoComplete="username"
             />
@@ -79,6 +82,7 @@ const PatientSignUp = () => {
               required
               fullWidth
               id="email"
+              type="email"
               label="Email Address"
               name="email"
               autoComplete="email"
@@ -196,6 +200,7 @@ const PatientSignUp = () => {
               required
               fullWidth
               id="mobileNumber"
+              type="number"
               label="Mobile Number"
               name="mobileNumber"
               autoComplete="mobileNumber"
@@ -207,6 +212,7 @@ const PatientSignUp = () => {
               fullWidth
               name="nationalId"
               label="National ID"
+              type="number"
               id="nationalId"
               autoComplete="nationalId"
             />
@@ -286,6 +292,7 @@ const PatientSignUp = () => {
               fullWidth
               id="emergencyName"
               label="Name"
+              type="text"
               name="emergencyName"
               autoComplete="emergencyName"
             />
@@ -297,6 +304,7 @@ const PatientSignUp = () => {
               fullWidth
               id="emergencyMobileNumber"
               label="Mobile Number"
+              type="number"
               name="emergencyMobileNumber"
               autoComplete="emergencyMobileNumber"
             />
@@ -305,6 +313,7 @@ const PatientSignUp = () => {
             <Select
               id="emergencyRelation"
               label="Relation"
+              type="text"
               name="emergencyRelation"
               required
               sx={{ width: "100%" }}
