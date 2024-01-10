@@ -26,7 +26,7 @@ const Login = () => {
   const [alert, setAlert] = useState(null);
 
   useEffect(async () => {
-    // localStorage.clear()
+    //  localStorage.clear()
     // await axios.get('/logout')
     const userToken = localStorage.getItem("userToken");
 

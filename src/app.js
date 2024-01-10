@@ -193,6 +193,7 @@ const {
   deleteFromPrescription,
   approveRequest,
   doctorRetrieveNotifications,
+  rescheduleAppointmentForPatient
 } = require("./Routes/doctorController");
 
 const {
@@ -207,7 +208,8 @@ const {
   archiveMedicine,
   pharmacistRetrieveNotifications,
   getSaleReport,
-  getMonthlyMedicineReport
+  getMonthlyMedicineReport,
+  setPrescriptionMedicine
 } = require("./Routes/pharmacistController");
 
 const {
@@ -466,6 +468,7 @@ app.get("/payWithWalletCart", getUserFromTokenMiddleware, payWithWalletCart);
 app.get("/payWithCardCart", getUserFromTokenMiddleware, payWithCardCart);
 
 //Doctor
+app.put('/rescheduleAppointmentForPatient',getUserFromTokenMiddleware,rescheduleAppointmentForPatient)
 app.get(
   "/filterAppointmentsForDoctor",
   getUserFromTokenMiddleware,
@@ -544,6 +547,7 @@ app.get(
 );
 app.put("/uploadMedicineImage", uploadMedicineImage);
 app.put("/archiveMedicine", archiveMedicine);
+app.put("/setPrescriptionMedicine", setPrescriptionMedicine);
 app.get("/pharmacistRetrieveNotifications", pharmacistRetrieveNotifications);
 app.get("/getSaleReport", getSaleReport);
 app.get("/getMonthlyMedicineReport", getMonthlyMedicineReport);
