@@ -277,6 +277,22 @@ const getMonthlyMedicineReport = async (req, res) => {
 
 
 
+  const archiveMedicine = async (req, res) => {
+    const medicineID = req.body.id;
+    const medicine = await medicineModel.findById(medicineID);
+    if(medicine.archived === true){
+      medicine.archived = false;
+      await medicine.save();
+      return res.json("Medicine unarchived successfully.")
+    }
+    else{
+      medicine.archived = true;
+      await medicine.save();
+      return res.json("Medicine archived successfully.")
+    }
+    
+  }
+
 module.exports = {
   addPharmacist,
   searchMedicinePharmacist,
@@ -288,5 +304,6 @@ module.exports = {
   uploadMedicineImage,
   pharmacistRetrieveNotifications,
   getSaleReport,
-  getMonthlyMedicineReport
+  getMonthlyMedicineReport,
+  archiveMedicine,
 };

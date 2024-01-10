@@ -9,14 +9,14 @@ const userModel = require("../Models/User.js")
 const orderModel = require('../Models/Order.js')
 const adminModel = require('../Models/Admin');
 const healthRecordsModel = require('../Models/HealthRecords.js');
+const pharmacistModel = require('../Models/Pharmacist.js');
 const mongoose = require("mongoose");
-const notificationSystemModel=require ('../Models/NotificationSystem.js') 
+const notificationSystemModel = require('../Models/NotificationSystem.js')
 const stripe = require("stripe")(process.env.STRIPE_PRIVATE_KEY)
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt');
 require("dotenv").config();
 const ChattingRoomModel = require('../Models/ChattingRoom.js');
-const pharmacistModel =require('../Models/Pharmacist.js');
 
 
 const addPatient = async (req, res) => {
@@ -66,9 +66,9 @@ const filterByMedicinalUsePatient = async (req, res) => {
   const medUse = new RegExp(searchName, "i")
 
   try {
-    const results= await medicineModel.find({medicinalUse:medUse})
-    if(results.length == 0){
-      res.json("Medicine is not Found !!" );
+    const results = await medicineModel.find({ medicinalUse: medUse })
+    if (results.length == 0) {
+      res.json("Medicine is not Found !!");
     }
     else {
       res.json(results);
@@ -89,10 +89,10 @@ const searchMedicinePatient = async (req, res) => {
 
   try {
     const results = await medicineModel.find({ name: searchQuery, stockQuantity: { $gt: 0 } });
-   
+
     if (results.length === 0) {
       return res.json("Medicine is not Found !!");
-    } 
+    }
     else {
       return res.json(results);
     }
@@ -149,13 +149,40 @@ const handleAfterBuy = async (cart, id) => {
       medicine.amountSold += quantityBought;
       medicine.stockQuantity -= quantityBought;
       if (medicine.stockQuantity <= 0) {
-        const expiryTime = new Date(); 
-        const purchaseTime =new Date(); 
-        expiryTime.setFullYear(expiryTime.getFullYear() + 1); 
-        addNotification('Pharmacist','','Stock alert',`Medicine "${medicine.name}" is out of stock. Please restock.`,expiryTime,purchaseTime)
-      await medicine.save();
-    }
-  }
+        const expiryTime = new Date();
+        const purchaseTime = new Date();
+        expiryTime.setFullYear(expiryTime.getFullYear() + 1);
+        addNotification('Pharmacist', '', 'Stock alert', `Medicine "${medicine.name}" is out of stock. Please restock.`, expiryTime, purchaseTime)
+
+        const pharmacists = await pharmacistModel.find();
+        for(pharmacist of pharmacists){
+        const transporter = nodemailer.createTransport({
+          service: process.env.NODEMAILER_SERVICE,
+          auth: {
+            user: process.env.NODEMAILER_EMAIL,
+            pass: process.env.NODEMAILER_PASSWORD,
+          },
+          tls: {
+            rejectUnauthorized: false,
+          },
+        });
+        const mailOptions = {
+          from: process.env.NODEMAILER_EMAIL,
+          to: pharmacist.email,
+          subject: 'Stock alert',
+          text: `Medicine "${medicine.name}" is out of stock. Please restock.`,
+        };
+        try {
+          const info = await transporter.sendMail(mailOptions);
+        }
+        catch (error) {
+          console.error('Error sending email:', error);
+        }
+        }
+      }
+        await medicine.save();
+      }
+    
     const patient = await patientModel.findById(id);
     patient.cart.items = [];
     patient.cart.amountToBePaid = 0;
@@ -223,7 +250,7 @@ const addToCart = async (req, res) => {
         let prescriptions = [];
         const date = new Date();
         prescriptions = await prescriptionModel.find({ patient: patientId });
-    
+
         const filteredPrescriptions = prescriptions.filter((prescription) => {
           const prescriptionDate = new Date(prescription.dateFilled);
           const timeDifference = date.getTime() - prescriptionDate.getTime();
@@ -238,7 +265,7 @@ const addToCart = async (req, res) => {
             }
           }
         }
-        if(!isFound)
+        if (!isFound)
           return res.json({ message: "The specified prescription medicine wasn't found in any of your recent prescriptions." });
       } catch (error) {
         console.error('Error fetching prescriptions:', error.message);
@@ -259,43 +286,43 @@ const addToCart = async (req, res) => {
     }
 
 
- if(quantity>0){
-    const existingCartItemIndex = patient.cart.items.findIndex(item => item.medicine.toString() === medicineId.toString());
-    if (existingCartItemIndex !== -1) {
-      if (patient.cart.items[existingCartItemIndex].quantity + quantity > medicine.stockQuantity)
-        return res.json({ message: "Requested quantity exceeds available stock", cart: oldcart });
-      else
-        patient.cart.items[existingCartItemIndex].quantity += quantity;
-    } else {
+    if (quantity > 0) {
+      const existingCartItemIndex = patient.cart.items.findIndex(item => item.medicine.toString() === medicineId.toString());
+      if (existingCartItemIndex !== -1) {
+        if (patient.cart.items[existingCartItemIndex].quantity + quantity > medicine.stockQuantity)
+          return res.json({ message: "Requested quantity exceeds available stock", cart: oldcart });
+        else
+          patient.cart.items[existingCartItemIndex].quantity += quantity;
+      } else {
 
-      patient.cart.items.push({ medicine: medicineId, quantity });
+        patient.cart.items.push({ medicine: medicineId, quantity });
+      }
+
+      let price = medicine.price;
+      let package_Id = null
+      if (patient.healthPackage) {
+        package_Id = patient.healthPackage.healthPackageID;
+      }
+
+
+      if (!package_Id)
+        patient.cart.amountToBePaid += price * quantity;
+      else {
+        let package = await healthPackageModel.findById(package_Id)
+        let ratio = package.medicineDiscount;
+        let percentage = 1 - ratio / 100;
+        patient.cart.amountToBePaid += (((price) * quantity) * percentage);
+      }
+
+
+      await patient.save();
+      let modifiedcart = await cartvalue(patientId);
+
+      res.json({
+        message: 'Medicine added to cart successfully',
+        cart: modifiedcart
+      });
     }
-
-    let price = medicine.price;
-    let package_Id = null
-    if (patient.healthPackage) {
-      package_Id = patient.healthPackage.healthPackageID;
-    }
-
-
-    if (!package_Id)
-      patient.cart.amountToBePaid += price * quantity;
-    else {
-      let package = await healthPackageModel.findById(package_Id)
-      let ratio = package.medicineDiscount;
-      let percentage = 1 - ratio / 100;
-      patient.cart.amountToBePaid += (((price) * quantity) * percentage);
-    }
-
-
-    await patient.save();
-    let modifiedcart = await cartvalue(patientId);
-
-    res.json({
-      message: 'Medicine added to cart successfully',
-      cart: modifiedcart
-    });
-  }
   } catch (error) {
     res.json({ error: error.message });
   }
@@ -367,33 +394,33 @@ const addNotification = async (type, Id, title, message, showtime, expiryTime) =
     expiryTime,
   });
   await notification.save();
-}; 
+};
 
 const getMedicines = async (req, res) => {
 
-try {
-
-  const results = await medicineModel.find({ archived: false });
-  res.json(results);
+  try {
+    const results = await medicineModel.find({ archived: false });
+    res.json(results);
   }
   catch (error) {
-  res.status(500).json(error.message);
-}
+    res.status(500).json(error.message);
+  }
 }
 
 const getSubMedicines = async (req, res) => {
-const activeIngredient = req.query.activeIngredient;
+  const activeIngredient = req.query.activeIngredient;
 
-try {
-  const results = await medicineModel.find({ activeIngredient, stockQuantity: { $gt: 0 } });
-  if (results.length === 0) {
-    res.json({ medicines: results, message: "There is no substitute!" });
-  } else {
-    res.json({ medicines: results, message: "Done" });
+  try {
+    const results = await medicineModel.find({ activeIngredient, stockQuantity: { $gt: 0 } });
+    if (results.length === 0) {
+      res.json({ medicines: results, message: "There is no substitute!" });
+    } else {
+      res.json({ medicines: results, message: "Done" });
+    }
+    console.log(results)
+  } catch (error) {
+    res.status(500).json(error.message);
   }
-} catch (error) {
-  res.status(500).json(error.message);
-}
 };
 
 const increaseByOne = async (req, res) => {
@@ -604,34 +631,33 @@ const filterAppointmentsForPatient = async (req, res) => {
   if (statusToBeFiltered) {
     filterQuery["status"] = statusToBeFiltered;
   }
-    const id = req.user._id;
-    filterQuery["patient"] = new mongoose.Types.ObjectId(id);
-    try {
-      const filteredAppointments = await appointmentModel
-        .find(filterQuery)
-        .populate({ path: "doctor" });
-      if (filteredAppointments.length === 0) {
-        return res.json("No matching appointments found for the Patient.");
-      }
-      const currentDate = new Date();
-      let upcomingAppointments = [];
-      let pastAppointments = [];
-      for(appointment of filteredAppointments)
-      {
-        if (appointment.date < currentDate)
-          pastAppointments.push(appointment)
-        else
-          upcomingAppointments.push(appointment)
-      }
-      const appointmentData = {
-        upcomingAppointments,
-        pastAppointments,
-      };
-      res.json(appointmentData);
-    } catch (err) {
-      console.error(err);
-      res.json({ error: "An error occurred while retrieving appointments." });
+  const id = req.user._id;
+  filterQuery["patient"] = new mongoose.Types.ObjectId(id);
+  try {
+    const filteredAppointments = await appointmentModel
+      .find(filterQuery)
+      .populate({ path: "doctor" });
+    if (filteredAppointments.length === 0) {
+      return res.json("No matching appointments found for the Patient.");
     }
+    const currentDate = new Date();
+    let upcomingAppointments = [];
+    let pastAppointments = [];
+    for (appointment of filteredAppointments) {
+      if (appointment.date < currentDate)
+        pastAppointments.push(appointment)
+      else
+        upcomingAppointments.push(appointment)
+    }
+    const appointmentData = {
+      upcomingAppointments,
+      pastAppointments,
+    };
+    res.json(appointmentData);
+  } catch (err) {
+    console.error(err);
+    res.json({ error: "An error occurred while retrieving appointments." });
+  }
 };
 
 const selectDoctorFromFilterSearch = async (req, res) => {
@@ -1071,21 +1097,56 @@ const reserveAppointment = async (req, res) => {
   let discount = 1;
   const patient = await patientModel.findById(patientId);
   const followup = req.body.f
-  if(patient.healthPackage){
+  if (patient.healthPackage) {
     const healthPackageID = patient.healthPackage.healthPackageID.toString()
     const healthPackage = await healthPackageModel.findById(healthPackageID).catch(err => console.log(err.message))
     discount = 1 - healthPackage.doctorDiscount / 100;
-    }
+  }
+  let appointment;
   try {
-    if(followup)
-      await appointmentModel.findByIdAndUpdate(appointmentId, { patient: new mongoose.Types.ObjectId(patientId), status: "requested", attendantName: name, price: (doctor.hourlyRate + 10 / 100 * clinicMarkup) * discount }, { new: true })
+    if (followup)
+      appointment = await appointmentModel.findByIdAndUpdate(appointmentId, { patient: new mongoose.Types.ObjectId(patientId), status: "requested", attendantName: name, price: (doctor.hourlyRate + 10 / 100 * clinicMarkup) * discount }, { new: true })
     else
-      await appointmentModel.findByIdAndUpdate(appointmentId, { patient: new mongoose.Types.ObjectId(patientId), status: "upcoming", attendantName: name, price: (doctor.hourlyRate + 10 / 100 * clinicMarkup) * discount }, { new: true })
+      appointment = await appointmentModel.findByIdAndUpdate(appointmentId, { patient: new mongoose.Types.ObjectId(patientId), status: "upcoming", attendantName: name, price: (doctor.hourlyRate + 10 / 100 * clinicMarkup) * discount }, { new: true })
     await prescriptionModel.create({
       doctor: appointment.doctor,
       patient: new mongoose.Types.ObjectId(patientId),
       appointment: appointmentId
-    }) 
+    })
+    const expiryTime = new Date();
+    const notificationDate = new Date();
+    expiryTime.setFullYear(expiryTime.getFullYear() + 1);
+    addNotification('Doctor', doctorID, 'Appointment Scheduled', `A new appointment at date ${appointment.date} with patient ${name} has been scheduled.`, expiryTime, notificationDate)
+    addNotification('Patient', patientId, 'Appointment Booked', `You have booked an appointment with Dr.${doctor.name} on ${appointment.date}.`, expiryTime, notificationDate)
+    const transporter = nodemailer.createTransport({
+      service: process.env.NODEMAILER_SERVICE,
+      auth: {
+        user: process.env.NODEMAILER_EMAIL,
+        pass: process.env.NODEMAILER_PASSWORD,
+      },
+      tls: {
+        rejectUnauthorized: false,
+      },
+    });
+    const mailOptionsPatient = {
+      from: process.env.NODEMAILER_EMAIL,
+      to: appointment.patient.email,
+      subject: 'Appointment Booked',
+      text: `You have booked an appointment with Dr.${doctor.name} on ${appointment.date}.`,
+    };
+    const mailOptionsDoctor = {
+      from: process.env.NODEMAILER_EMAIL,
+      to: appointment.doctor.email,
+      subject: 'Appointment Scheduled',
+      text: `A new appointment at date ${appointment.date} with patient ${name} has been scheduled.`,
+    };
+    try {
+      await transporter.sendMail(mailOptionsPatient);
+      await transporter.sendMail(mailOptionsDoctor);
+    }
+    catch (error) {
+      console.error('Error sending email:', error);
+    }
     res.json('updated Successfully')
   } catch (err) {
     res.json(err.message)
@@ -1255,11 +1316,11 @@ const uploadHealthRecord = async (req, res) => {
       id = req.query.id;
 
     let healthRecord = req.body.base64;
-    let patient = await healthRecordsModel.findOne({patient : id});
+    let patient = await healthRecordsModel.findOne({ patient: id });
     if (patient)
       patient.HealthRecords.push(healthRecord);
     else
-       patient = await healthRecordsModel.create({patient : id, HealthRecords : [healthRecord]});
+      patient = await healthRecordsModel.create({ patient: id, HealthRecords: [healthRecord] });
     await patient.save();
     res.json('Health record added successfully');
   } catch (error) {
@@ -1274,7 +1335,7 @@ const getHealthRecords = async (req, res) => {
     if (req.query.id && req.query.id !== "null")
       id = req.query.id;
 
-    let patient = await healthRecordsModel.findOne({patient : id});
+    let patient = await healthRecordsModel.findOne({ patient: id });
     let healthRecords = [];
     if (patient)
       healthRecords = patient.HealthRecords;
@@ -1285,17 +1346,17 @@ const getHealthRecords = async (req, res) => {
 }
 
 const deleteHealthRecord = async (req, res) => {
-  try{
+  try {
     let id = req.user._id;
     if (req.query.id && req.query.id !== "null")
       id = req.query.id;
     const index = req.body.index;
-    let patient = await healthRecordsModel.findOne({patient : id});
+    let patient = await healthRecordsModel.findOne({ patient: id });
     patient.HealthRecords.splice(index, 1);
     await patient.save();
     res.json("Health Record deleted succesfully.")
 
-  } catch (error){
+  } catch (error) {
     res.json('Internal server error');
   }
 }
@@ -1370,7 +1431,7 @@ const linkFamilyMemberAccount = async (req, res) => {
 const cancelAppointment = async (req, res) => {
   try {
     const appointmentID = req.body.appointmentID;
-    const appointment = await appointmentModel.findById(appointmentID);
+    const appointment = await appointmentModel.findById(appointmentID).populate('doctor patient').exec();
     appointment.status = 'cancelled';
     await appointment.save();
 
@@ -1378,14 +1439,49 @@ const cancelAppointment = async (req, res) => {
     const currentDate = new Date();
     const timeDifference = appointmentDate - currentDate;
     const isWithin24Hours = timeDifference < 24 * 60 * 60 * 1000;
-    const doctor = await doctorModel.findById(req.user_.id)
+    const doctor = await doctorModel.findById(req.user._id)
     if (!isWithin24Hours || doctor) {
       const patientID = appointment.patient;
       const patient = await patientModel.findById(patientID);
       patient.wallet += appointment.price;
       await patient.save();
-    } 
+    }
 
+    const expiryTime = new Date();
+    const notificationDate = new Date();
+    expiryTime.setFullYear(expiryTime.getFullYear() + 1);
+    addNotification('Doctor', appointment.doctor._id, 'Appointment Cancelled', `Your appointment with patient ${appointment.attendantName} on ${appointment.date} has been cancelled.`, expiryTime, notificationDate)
+    addNotification('Patient', appointment.patient._id, 'Appointment Cancelled', `Your appointment with Dr.${appointment.doctor.name} on ${appointment.date} has been cancelled.`, expiryTime, notificationDate)
+    const transporter = nodemailer.createTransport({
+      service: process.env.NODEMAILER_SERVICE,
+      auth: {
+        user: process.env.NODEMAILER_EMAIL,
+        pass: process.env.NODEMAILER_PASSWORD,
+      },
+      tls: {
+        rejectUnauthorized: false,
+      },
+    });
+    const mailOptionsPatient = {
+      from: process.env.NODEMAILER_EMAIL,
+      to: appointment.patient.email,
+      subject: 'Appointment Cancelled',
+      text: `Your appointment with Dr.${appointment.doctor.name} on ${appointment.date} has been cancelled.`,
+    };
+    const mailOptionsDoctor = {
+      from: process.env.NODEMAILER_EMAIL,
+      to: appointment.doctor.email,
+      subject: 'Appointment Cancelled',
+      text: `Your appointment with patient ${appointment.attendantName} on ${appointment.date} has been cancelled.`,
+    };
+    try {
+      await transporter.sendMail(mailOptionsPatient);
+      await transporter.sendMail(mailOptionsDoctor);
+    }
+    catch (error) {
+      console.error('Error sending email:', error);
+    }
+    
     return res.json('Appointment cancelled successfully');
   } catch (error) {
     return res.json();
@@ -1399,12 +1495,12 @@ const addPrescriptionToCart = async (req, res) => {
   const patient = await patientModel.findById(patientID);
   const medicines = prescription.medicines
   //start here
-  for(requestedMedicine of medicines){
+  for (requestedMedicine of medicines) {
     const medicine = await medicineModel.findById(requestedMedicine.medId);
     if (medicine.archived === true)
-      return res.json({message: "One of the medicine is currently not being sold by our pharmacy, please buy these medicines seperately."});
+      return res.json({ message: "One of the medicine is currently not being sold by our pharmacy, please buy these medicines seperately." });
     if (requestedMedicine.dosage > medicine.stockQuantity) {
-      return res.json({ message: "Requested quantity of a certain medicine exceeds available stock, please buy these medicines seperately."});
+      return res.json({ message: "Requested quantity of a certain medicine exceeds available stock, please buy these medicines seperately." });
     }
 
     const existingCartItemIndex = patient.cart.items.findIndex(item => item.medicine.toString() === requestedMedicine._id.toString());
@@ -1415,7 +1511,7 @@ const addPrescriptionToCart = async (req, res) => {
         patient.cart.items[existingCartItemIndex].quantity += requestedMedicine.dosage;
     } else {
 
-      patient.cart.items.push({ medicine: requestedMedicine._id, quantity : requestedMedicine.dosage });
+      patient.cart.items.push({ medicine: requestedMedicine._id, quantity: requestedMedicine.dosage });
     }
 
     let price = medicine.price;
@@ -1439,7 +1535,7 @@ const addPrescriptionToCart = async (req, res) => {
   }
   prescription.sentToPharmacy = true;
   await prescription.save();
-  res.json({ message: 'Prescriptions items added to cart successfully.'});
+  res.json({ message: 'Prescriptions items added to cart successfully.' });
   //end here
 }
 
@@ -1574,6 +1670,10 @@ const getMessages = async (req, res) => {
   }
 };
 
+const patientRetrieveNotifications = async (req, res) => {
+  const notifications = await notificationSystemModel.find({type: 'Patient', Id: req.user._id.toString()});
+  return res.json(notifications);
+}
 
 module.exports = {
   createFamilyMember,
@@ -1624,5 +1724,6 @@ module.exports = {
   sendMessage,
   getMessages,
   payWithWalletCart,
-  payWithCardCart
+  payWithCardCart,
+  patientRetrieveNotifications
 };
