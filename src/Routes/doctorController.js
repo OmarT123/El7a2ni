@@ -387,6 +387,7 @@ const viewDoctorAppointments = async (req, res) => {
       })
       .populate({ path: "patient" });
 
+
     const completedAppointments = await appointmentModel
       .find({
         doctor: doctorID,

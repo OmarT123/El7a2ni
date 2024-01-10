@@ -293,7 +293,7 @@ const MedicineView = ({ userType }) => {
             <Typography variant="h4" sx={{ m: "30px" }}>
               Medicine
             </Typography>
-            <Fab
+            {userType === 'pharmacist' && <Fab
               style={buttonStyle}
               onClick={() => setAddMedicineExpanded((prev) => !prev)}
             >
@@ -302,7 +302,7 @@ const MedicineView = ({ userType }) => {
               ) : (
                 <AddIcon style={iconStyle} />
               )}
-            </Fab>
+            </Fab>}
             {userType !== "patient" && !salesReportDateExpanded && !addMedicineExpanded && <Button variant="contained" sx={{ m: "30px", marginLeft: '200px' }} onClick={handleSalesReportClick}>
               Sales Report
             </Button>}
@@ -569,6 +569,25 @@ const MedicineView = ({ userType }) => {
         });
       }
     };
+    const prescriptionMedicine = async (e) => {
+      e.preventDefault();
+      const body = { id: selectedMedicine._id };
+      const response = await axios.put("/setPrescriptionMedicine", body);
+      if (response.data.success) {
+        const newPrescription = !selectedMedicine.prescriptionMedicine;
+        setAlert(response.data);
+        setSelectedMedicine({ ...selectedMedicine, prescriptionMedicine: newPrescription });
+      } else {
+        setAlert({
+          title: "Something Went Wrong",
+          message: "Please try again at a later time",
+        });
+      }
+    };
+
+
+
+
     return (
       <>
         <Fab
@@ -659,14 +678,22 @@ const MedicineView = ({ userType }) => {
               <Grid item xs={0} sm={6} />
 
               <Grid item xs={0} sm={12} />
-              <Grid item xs={12} sm={4} align="left">
+              <Grid item xs={12} sm={3} align="left">
                 <Button variant="contained" onClick={editMedicine}>
                   {editMode ? "Save" : "Edit"} Medicine
                 </Button>
               </Grid>
-              <Grid item xs={12} sm={4} align="left">
+              <Grid item xs={12} sm={3} align="left">
+                <Button variant="contained">Sales Report</Button>
+              </Grid>
+              <Grid item xs={12} sm={3} align="left">
                 <Button variant="contained" onClick={handleArchive}>
                   {selectedMedicine.archived ? "Unarchive" : "archive"}
+                </Button>
+              </Grid>
+              <Grid item xs={12} sm={3} align="left">
+                <Button variant="contained" onClick={prescriptionMedicine}>
+                  {selectedMedicine.prescriptionMedicine ? "Set to a Non-prescription medicine " : "Set to a prescription medicine"}
                 </Button>
               </Grid>
             </Grid>

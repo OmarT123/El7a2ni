@@ -207,7 +207,8 @@ const {
   archiveMedicine,
   pharmacistRetrieveNotifications,
   getSaleReport,
-  getMonthlyMedicineReport
+  getMonthlyMedicineReport,
+  setPrescriptionMedicine
 } = require("./Routes/pharmacistController");
 
 const {
@@ -544,6 +545,7 @@ app.get(
 );
 app.put("/uploadMedicineImage", uploadMedicineImage);
 app.put("/archiveMedicine", archiveMedicine);
+app.put("/setPrescriptionMedicine", setPrescriptionMedicine);
 app.get("/pharmacistRetrieveNotifications", pharmacistRetrieveNotifications);
 app.get("/getSaleReport", getSaleReport);
 app.get("/getMonthlyMedicineReport", getMonthlyMedicineReport);

@@ -14,7 +14,7 @@ const addMedicine = async (req, res) => {
   let stockQuantity = req.body.stockQuantity;
   let medicinalUse = req.body.medicinalUse;
   let name = req.body.name;
-  let amountSold = req.body.amountSold;
+
 
   try {
     let medicine = await medicineModel.create({
@@ -322,7 +322,28 @@ const archiveMedicine = async (req, res) => {
     });
   }
 };
-
+const setPrescriptionMedicine = async (req, res) => {
+  const medicineID = req.body.id;
+  const medicine = await medicineModel.findById(medicineID);
+  if (!medicine) {
+    return res.json({ success: false })
+  }
+  if (medicine.prescriptionMedicine === true) {
+    medicine.prescriptionMedicine = false;
+    await medicine.save();
+    return res.json({
+      success: true,
+      title: "Medicine now is not a prescription medicine.",
+    });
+  } else {
+    medicine.prescriptionMedicine = true;
+    await medicine.save();
+    return res.json({
+      success: true,
+      title: "Medicine now is a prescription medicine.",
+    });
+  }
+};
 module.exports = {
   addPharmacist,
   searchMedicinePharmacist,
@@ -335,5 +356,6 @@ module.exports = {
   archiveMedicine,
   pharmacistRetrieveNotifications,
   getSaleReport,
-  getMonthlyMedicineReport
+  getMonthlyMedicineReport,
+  setPrescriptionMedicine
 };
