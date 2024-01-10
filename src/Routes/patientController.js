@@ -881,30 +881,26 @@ const viewMySubscribedHealthPackage = async (req, res) => {
       .populate("healthPackage")
       .exec();
 
-    if (!patient) {
-      console.log("Patient not found");
-      return;
-    }
-
     const extendedHealthPackages = [];
-
+    let extendedHealthPackage = {};
     const healthPackagePatient = patient.healthPackage;
-    if (healthPackagePatient == undefined) return res.json([]);
+    if (healthPackagePatient == undefined) return res.json({success: false, message: "The package you or your family members own is no longer on the system, please contact staff for support."});
     else {
       const status = healthPackagePatient.status;
       const endDate = healthPackagePatient.endDate;
       const healthPackage = await healthPackageModel.findById(
         healthPackagePatient.healthPackageID
       );
-      const extendedHealthPackage = {
+      extendedHealthPackage = {
         ...healthPackage.toObject(), // Spread properties from healthPackage
         status: status,
         endDate: endDate,
         patientName: patient.name,
+        patientID: patient._id
       };
       extendedHealthPackages.push(extendedHealthPackage);
     }
-
+    const familyMembersHealthPackages = [];
     // Process family members' health packages
     for (const familyMemberId of patient.familyMembers) {
       const familyMember = await familyModel
@@ -925,15 +921,16 @@ const viewMySubscribedHealthPackage = async (req, res) => {
             patientName: familyMember.name,
             status: status,
             endDate: endDate,
+            patientID: familyMember._id
           };
-          extendedHealthPackages.push(extendedHealthPackage);
+          familyMembersHealthPackages.push(extendedHealthPackage);
         }
       }
     }
 
-    res.json(extendedHealthPackages);
+    res.json({success: true, myHealthPackage : extendedHealthPackage, familyMembersHealthPackages: familyMembersHealthPackages});
   } catch (err) {
-    res.json(err.message);
+    res.json({success: false, message: err.message});
   }
 };
 
@@ -1198,11 +1195,8 @@ const payWithCard = async (req, res) => {
 const payWithWallet = async (req, res) => {
   const patientId = req.user._id;
   const price = req.query.price;
-  // const url = req.query.url;
-  // const type = req.query.type;
   try {
     const patient = await patientModel.findById(patientId);
-    console.log(patient.wallet, price)
     if (patient.wallet < price) {
       return res.json({ success: false, title: "Insufficient funds!" });
     }
