@@ -147,9 +147,9 @@ const viewMyCart = async (req, res) => {
 
     const cart = patient.cart;
 
-    res.json({ cart: cart, wallet: patient.wallet });
+    res.json({ success: true, cart: cart, wallet: patient.wallet });
   } catch (error) {
-    res.json({ error: error.message });
+    res.json({success: false, error: error.message });
   }
 };
 
@@ -271,11 +271,12 @@ const cancelOrder = async (req, res) => {
 const addToCart = async (req, res) => {
   const stringMedicineId = req.body.medicineId;
   const medicineId = new mongoose.Types.ObjectId(stringMedicineId);
-  const quantity = req.body.quantity;
+  const quantity = parseInt(req.body.quantity);
 
   try {
     const medicine = await medicineModel.findById(stringMedicineId);
     const patientId = req.user._id;
+    const patient = await patientModel.findById(patientId);
     let oldcart = await cartvalue(patientId);
     if (medicine.prescriptionMedicine === true) {
       try {
@@ -303,26 +304,28 @@ const addToCart = async (req, res) => {
           return res.json({
             message:
               "The specified prescription medicine wasn't found in any of your recent prescriptions.",
+              success: false,
+              title: "Disallowed action"
+
           });
       } catch (error) {
         console.error("Error fetching prescriptions:", error.message);
       }
     }
     if (!medicine) {
-      return res.json({ message: "Medicine not found" });
+      return res.json({ message: "Medicine not found",
+      success: false,
+      title: "Medicine Error"});
     }
 
     if (quantity > medicine.stockQuantity) {
       return res.json({
         message: "Requested quantity exceeds available stock",
-        cart: oldcart,
+              success: false,
+              title: "Quantity Problem"
       });
     }
 
-    const patient = await patientModel.findById(patientId);
-    if (!patient) {
-      return res.json({ message: "Patient not found" });
-    }
 
     if (quantity > 0) {
       const existingCartItemIndex = patient.cart.items.findIndex(
@@ -335,7 +338,8 @@ const addToCart = async (req, res) => {
         )
           return res.json({
             message: "Requested quantity exceeds available stock",
-            cart: oldcart,
+            success: false,
+            title: "Quantity Problem"
           });
         else patient.cart.items[existingCartItemIndex].quantity += quantity;
       } else {
@@ -361,11 +365,14 @@ const addToCart = async (req, res) => {
 
       res.json({
         message: "Medicine added to cart successfully",
-        cart: modifiedcart,
+        success: true,
+        title: "Successful add"
       });
     }
   } catch (error) {
-    res.json({ error: error.message });
+    res.json({ message: error.message,
+      success: false,
+      title: "An error occurred" });
   }
 };
 
