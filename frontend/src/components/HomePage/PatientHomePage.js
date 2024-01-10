@@ -16,6 +16,7 @@ import DoctorsStage from "../AdminEmployees/DoctorsStage";
 import HealthPackagesView from "../HealthPackagesView";
 import PatientPage from "../PatientPage";
 import PharmacistsStage from "../AdminEmployees/PharmacistsStage";
+import AppointmentsView from "../AppointmentsView";
 import MyCart from "../MyCart";
 import Chat from "../Chat";
 import Orders from '../Orders'
@@ -29,6 +30,7 @@ const PatientHomePage = () => {
     const [chatterID, setChatterID] = useState('');
     const [chatterName, setChatterName] = useState('');
     const [alert, setAlert] = useState(null);
+    const [doctor, setDoctor] = useState("");
 
     const closePopup = () => {
         setAlert(null);
@@ -75,7 +77,7 @@ const PatientHomePage = () => {
                         body="Lorem ipsum sit amet consectetur adipiscing elit. Vivamus et erat in lacus convallis sodales."
                         icon={MedicationIcon}
                         isLearnMore={false}
-                        changeFunction={() => setPage("healthPackage")}
+                        changeFunction={() => setPage("healthPackages")}
                         closeFunction={() => setPage("home")}
                     />
                 </Grid>
@@ -119,12 +121,14 @@ const PatientHomePage = () => {
                         />
                     ) : page === "doctors" ? (
                         <DoctorsStage
-                            setStage={() => setPage("home")}
+                            setStage={(path) => setPage(path)}
                             together={true}
                             userType={"patient"}
                             setChat={setChat}
                             setChatterID={setChatterID}
                             setChatterName={setChatterName}
+                            setAlert={setAlert}
+                            setDoctor={setDoctor}
                         />
                     ) : page === "pharmacists" ? (
                         <PharmacistsStage
@@ -136,8 +140,8 @@ const PatientHomePage = () => {
                             setChatterName={setChatterName}
                         />
                     ) : page === "appointments" ? (
-                        <AppointmentsView userType='patient' backButton={()=>setPage('home')}/>
-                    ) : page === "healthPackages " ? (
+                        <AppointmentsView backButton={() => setPage("home")} userType={"patient"} doctor={doctor} />
+                    ) : page === "healthPackages" ? (
                         <HealthPackagesView userType={"patient"} />
                     ) : page === "medicalFile" ?(
                        <PatientPage
