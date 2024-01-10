@@ -21,7 +21,6 @@ import MyCart from "../MyCart";
 import Chat from "../Chat";
 import Orders from '../Orders'
 import Popup from "../Popup";
-import AppointmentsView from "../AppointmentsView";
 
 const PatientHomePage = () => {
     const [page, setPage] = useState("home");
