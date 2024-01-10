@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import Paper from "@mui/material/Paper";
 import axios from "axios";
 import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
@@ -22,6 +22,7 @@ import {
   IconButton,
   Container,
 } from "@mui/material";
+import { HomePageContext } from "../pages/HomePage";
 import Popup from "./Popup";
 
 const paperStyle = {
@@ -52,7 +53,7 @@ const iconStyle = {
   fontSize: "2rem",
 };
 
-const AppointmentsView = ({ backButton, userType }) => {
+const AppointmentsView = ({ backButton, userType, doctor }) => {
   const [paymentMethod, setPaymentMethod] = useState("");
   const [cancelledAppointments, setCancelledAppointments] = useState([]);
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
@@ -71,24 +72,47 @@ const AppointmentsView = ({ backButton, userType }) => {
   const [followupExpanded, setFollowupExpanded] = useState(false);
   const [rescheduleExpanded, setRescheduleExpanded] = useState(false);
   const [selectedFamilyMember, setSelectedFamilyMember] = useState("");
+  const [familyMembers, setFamilyMembers] = useState([]);
+  const { user } = useContext(HomePageContext);
 
-  const scheduleFollowUpPatient = (e, appointment) => {
+  const viewDoctorFreeAppointments = async () => {
+    const body = {};
+    body["name"] = doctor.name;
+    const response = await axios.get("/viewFreeAppointmentsByName", {
+      params: body,
+    });
+    const result = response.data;
+    const newFormat = result.map((item) => ({
+      ...item.appointment,
+      price: item.price,
+    }));
+
+    const patientFamilyMembers = await axios.get("/getFamilyMembers");
+    console.log(patientFamilyMembers.data)
+    setFamilyMembers(patientFamilyMembers.data);
+
+    setFreeAppointments(newFormat);
+  };
+
+  const scheduleFollowUpPatient = (e, appointment, f) => {
     e.preventDefault();
 
     const bookAppointment = async () => {
       const body = {};
       body["appointmentId"] = appointment._id;
-      const name = appointment.attendantName;
+      let name = appointment.attendantName;
+      if (selectedFamilyMember) name = selectedFamilyMember;
       body["name"] = name;
-      body["f"] = true;
+      body["f"] = f;
       body["date"] = `${selectedDate}T${selectedTime}:00.000Z`;
       // console.log(body)
       const response = await axios.put("/reserveAppointment", body);
       setAlert(response.data);
       if (response.data.success) {
-        console.log("heres");
+        // console.log("heres");
         setExpandedItem(null);
         fetchAppointments();
+        setSelectedFamilyMember(false);
       }
       // console.log(response.data);
     };
@@ -116,7 +140,7 @@ const AppointmentsView = ({ backButton, userType }) => {
       // body["type"] = "appointment";
       const response = await axios.get("/payWithWallet", { params: body });
       if (response.data.success) {
-        console.log("done");
+        // console.log("done");
         bookAppointment();
       } else {
         setAlert({ title: "Payment Failed", message: "Insufficient funds" });
@@ -338,7 +362,7 @@ const AppointmentsView = ({ backButton, userType }) => {
     const response = await axios.put("/approveRequest", {
       appointmentID: appointmentID,
     });
-    console.log(response.data);
+    // console.log(response.data);
     if (response.data.success) {
       setAlert(response.data);
       fetchAppointments();
@@ -384,7 +408,7 @@ const AppointmentsView = ({ backButton, userType }) => {
     const response = await axios.put("/cancelAppointment", {
       appointmentID: appointmentID,
     });
-    console.log(response.data);
+    // console.log(response.data);
     if (response.data.success) {
       setAlert(response.data);
       fetchAppointments();
@@ -397,8 +421,11 @@ const AppointmentsView = ({ backButton, userType }) => {
   };
 
   useEffect(() => {
-    fetchAppointments();
+    if (doctor) viewDoctorFreeAppointments();
+    else fetchAppointments();
   }, []);
+
+  // console.log(userType)
 
   return (
     <>
@@ -412,71 +439,73 @@ const AppointmentsView = ({ backButton, userType }) => {
             marginBottom: "15px",
           }}
         >
-          <Box display="flex" alignItems="center" padding="12px">
-            <TextField
-              id="date"
-              label="Date"
-              type="date"
-              placeholder="Date"
-              value={filterDate}
-              onChange={(e) => setFilterDate(e.target.value)}
-              InputLabelProps={{
-                shrink: true,
-              }}
-              sx={{ width: "40%", my: 3, mr: "5%" }}
-            />
-            <InputLabel id="select-label">Status</InputLabel>
-            <Select
-              labelId="select-label"
-              id="status"
-              value={filterStatus}
-              label="Status"
-              onChange={(e) => setFilterStatus(e.target.value)}
-              sx={{ width: "30%" }}
-            >
-              <MenuItem value={"upcoming"}>Upcoming</MenuItem>
-              <MenuItem value={"free"}>Free</MenuItem>
-              <MenuItem value={"requested"}>Requested</MenuItem>
-              <MenuItem value={"completed"}>Completed</MenuItem>
-              <MenuItem value={"cancelled"}>Cancelled</MenuItem>
-            </Select>
-            <Box marginLeft="8px" display="flex" sx={{ width: "20%" }}>
-              <Button
-                variant="outlined"
-                onClick={filterAppointments}
-                style={{
-                  color: "black",
-                  cursor: "pointer",
-                  minHeight: "60px",
+          {!doctor && (
+            <Box display="flex" alignItems="center" padding="12px">
+              <TextField
+                id="date"
+                label="Date"
+                type="date"
+                placeholder="Date"
+                value={filterDate}
+                onChange={(e) => setFilterDate(e.target.value)}
+                InputLabelProps={{
+                  shrink: true,
                 }}
-                sx={{
-                  height: "55px",
-                  "&:hover": { backgroundColor: "#2196F3", color: "white" },
-                }}
+                sx={{ width: "40%", my: 3, mr: "5%" }}
+              />
+              <InputLabel id="select-label">Status</InputLabel>
+              <Select
+                labelId="select-label"
+                id="status"
+                value={filterStatus}
+                label="Status"
+                onChange={(e) => setFilterStatus(e.target.value)}
+                sx={{ width: "30%" }}
               >
-                Filter Appointments
-              </Button>
-              {showResetButton && (
+                <MenuItem value={"upcoming"}>Upcoming</MenuItem>
+                <MenuItem value={"free"}>Free</MenuItem>
+                <MenuItem value={"requested"}>Requested</MenuItem>
+                <MenuItem value={"completed"}>Completed</MenuItem>
+                <MenuItem value={"cancelled"}>Cancelled</MenuItem>
+              </Select>
+              <Box marginLeft="8px" display="flex" sx={{ width: "20%" }}>
                 <Button
                   variant="outlined"
-                  onClick={handleResetSearchClick}
+                  onClick={filterAppointments}
                   style={{
                     color: "black",
-                    marginLeft: "8px",
                     cursor: "pointer",
+                    minHeight: "60px",
                   }}
                   sx={{
+                    height: "55px",
                     "&:hover": { backgroundColor: "#2196F3", color: "white" },
                   }}
                 >
-                  Reset Search
+                  Filter Appointments
                 </Button>
-              )}
+                {showResetButton && (
+                  <Button
+                    variant="outlined"
+                    onClick={handleResetSearchClick}
+                    style={{
+                      color: "black",
+                      marginLeft: "8px",
+                      cursor: "pointer",
+                    }}
+                    sx={{
+                      "&:hover": { backgroundColor: "#2196F3", color: "white" },
+                    }}
+                  >
+                    Reset Search
+                  </Button>
+                )}
+              </Box>
             </Box>
-          </Box>
+          )}
         </Box>
         <Fab
-          onClick={backButton}
+          onClick={() => backButton(doctor ? "doctors" : "home")}
           color="primary"
           size="small"
           sx={{
@@ -555,7 +584,7 @@ const AppointmentsView = ({ backButton, userType }) => {
             </Button>
           </Box>
         </Collapse>
-
+        {upcomingAppointments.length === 0 && cancelledAppointments.length === 0 && freeAppointments.length === 0 && completedAppointments.length === 0 && requestedAppointments.length === 0 && <Typography variant='h5'>No Appointments Available</Typography>}
         {upcomingAppointments.length > 0 && (
           <>
             <Typography variant="h5" sx={{ m: "30px" }}>
@@ -765,13 +794,75 @@ const AppointmentsView = ({ backButton, userType }) => {
                     timeout="auto"
                     unmountOnExit
                   >
-                    <Button
-                      variant="contained"
-                      sx={{ m: "30px" }}
-                      onClick={(e) => cancelAppointment(e, item._id)}
-                    >
-                      Remove Slot
-                    </Button>
+                    {userType === "doctor" && (
+                      <Button
+                        variant="contained"
+                        sx={{ m: "30px" }}
+                        onClick={(e) => cancelAppointment(e, item._id)}
+                      >
+                        Remove Slot
+                      </Button>
+                    )}
+                    {userType === "patient" && (
+                      <Box sx={{ display: "flex", flexDirection: "row" }}>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            width: "40%",
+                          }}
+                        >
+                          <InputLabel id="select-label">Time</InputLabel>
+                          <Select
+                            labelId="select-label"
+                            id="select"
+                            value={paymentMethod}
+                            label="Payment Method"
+                            onChange={(e) => setPaymentMethod(e.target.value)}
+                            fullWidth
+                            sx={{ height: "55%" }}
+                          >
+                            <MenuItem value={"card"}>Card</MenuItem>
+                            <MenuItem value={"wallet"}>Wallet</MenuItem>
+                          </Select>
+                        </Box>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            width: "40%",
+                          }}
+                        >
+                          <InputLabel id="family-label">
+                            Attendant Name
+                          </InputLabel>
+                          <Select
+                            labelId="family-label"
+                            id="select"
+                            value={selectedFamilyMember}
+                            label="Attendant Name"
+                            onChange={(e) =>
+                              setSelectedFamilyMember(e.target.value)
+                            }
+                            fullWidth
+                            sx={{ height: "55%" }}
+                          >
+                            {familyMembers.length > 0 && familyMembers.map((fm) => {return(
+                              <MenuItem value={fm}>{fm}</MenuItem>
+                            )})}
+                          </Select>
+                        </Box>
+                        <Button
+                          variant="contained"
+                          sx={{ m: "30px" }}
+                          onClick={(e) =>
+                            scheduleFollowUpPatient(e, item, false)
+                          }
+                        >
+                          Reserve Slot
+                        </Button>
+                      </Box>
+                    )}
                   </Collapse>
                 </React.Fragment>
               ))}
@@ -1037,7 +1128,7 @@ const AppointmentsView = ({ backButton, userType }) => {
                           variant="contained"
                           onClick={(e) =>
                             userType === "patient"
-                              ? scheduleFollowUpPatient(e, item)
+                              ? scheduleFollowUpPatient(e, item, true)
                               : createFreeAppointment(e, item.patient._id)
                           }
                           sx={{ width: "100%" }}
