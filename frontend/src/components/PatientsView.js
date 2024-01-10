@@ -52,6 +52,7 @@ const PatientsView = ({
   backButton,
   startVideoChat,
   setStage,
+  setShowCall
 }) => {
   const [patients, setPatients] = useState([]);
   const [expandedItem, setExpandedItem] = useState(null);
@@ -405,12 +406,12 @@ const PatientsView = ({
                         <Button
                           variant="contained"
                           sx={{ m: "30px" }}
-                          onClick={() => {
-                            startVideoChat();
-                            setStage("videocall");
+                          onClick={(e) => {
+                            startVideoChat(item._id);
+                            setShowCall(true)
                           }}
                         >
-                          Call Patient
+                          Video Call Patient
                         </Button>
                       </>
                     )}

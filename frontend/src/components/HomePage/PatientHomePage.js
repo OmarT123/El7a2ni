@@ -37,6 +37,7 @@ import VideoChatRoom from "../VideoChatRoom.js";
 
 const socket = io.connect("http://localhost:4000");
 
+
 const PatientHomePage = () => {
   const [page, setPage] = useState("home");
   const { user } = useContext(HomePageContext);
@@ -57,8 +58,30 @@ const PatientHomePage = () => {
   const myVideo = useRef(null);
   const userVideo = useRef(null);
   const connectionRef = useRef(null);
+  const [showCall, setShowCall] = useState(false);
+  useEffect(() => {
+    const setupSocket = async () => {
+        await socket.on("me", async (id) => {
+          console.log(id);
+          setMe(id);
+          await axios.put("/updateSocketId", { socketId: id });
+        });
+  
+        await socket.on("callUser", (data) => {
+          console.log("calllllllllll");
+          setReceivingCall(true);
+          setCaller(data.from);
+          setmyName(data.name);
+          setCallerSignal(data.signal);
+        });
+      };
+  
+      setupSocket()
 
-  const initializeMediaDevices = async (id) => {
+   },[])
+
+  
+      const initializeMediaDevices = async (id) => {
     try {
       // const userMediaStream = await
       navigator.mediaDevices
@@ -69,30 +92,26 @@ const PatientHomePage = () => {
             myVideo.current.srcObject = stream;
           }
         });
-        setIdToCall(id)
+      setIdToCall(id);
       // setStream(userMediaStream);
 
       // if (myVideo.current) {
       //   myVideo.current.srcObject = userMediaStream;
       // }
 
-      socket.on("me", async (id) => {
-        console.log(id);
-        setMe(id);
-        await axios.put("/updateSocketId", { socketId: id });
-      });
-      setmyName("patient name");
+     
+      setmyName(user.name);
 
-      socket.on("callUser", (data) => {
-        setReceivingCall(true);
-        setCaller(data.from);
-        setmyName(data.name);
-        setCallerSignal(data.signal);
-      });
+    
     } catch (error) {
       console.error("Error accessing media devices:", error);
     }
   };
+  const resetCall = ()=>{
+    
+ 
+  }
+
 
   const callUser = async (id) => {
     const response = await axios.get("/getSocketId", {
@@ -157,9 +176,20 @@ const PatientHomePage = () => {
       userVideo.current.srcObject = null;
     }
 
+
     if (connectionRef.current) {
       connectionRef.current.destroy();
     }
+    setMe("")
+    setStream(null)
+    setReceivingCall(false)
+    setCaller("")
+    setCallerSignal() 
+    setCallAccepted(false)
+    setIdToCall("")
+    setmyName("")
+    setShowCall(false)
+
 
     // Inform the server that the call has ended
     socket.emit("callEnded", { to: caller });
@@ -266,8 +296,8 @@ const PatientHomePage = () => {
               setChatterName={setChatterName}
               setAlert={setAlert}
               setDoctor={setDoctor}
+              setShowCall={setShowCall}
               startVideoChat={initializeMediaDevices}
-
             />
           ) : page === "pharmacists" ? (
             <PharmacistsStage
@@ -293,12 +323,30 @@ const PatientHomePage = () => {
             />
           ) : page === "MyCart" ? (
             <MyCart setPage={(path) => setPage(path)} />
-          ) : page === "orders" ? (
-            <Orders />
           ) : (
+            <Orders />
+          )}
+          {showCall && (
             <>
+            {console.log('I should render')}
               <VideoChatRoom
-              stream={stream} myVideo={myVideo} callAccepted={callAccepted} callEnded={callEnded} userVideo={userVideo} me={me} idToCall={idToCall} setIdToCall={setIdToCall} leaveCall={leaveCall} callUser={callUser} myName={myName} receivingCall={receivingCall} answerCall={answerCall} />
+                stream={stream}
+                myVideo={myVideo}
+                callAccepted={callAccepted}
+                callEnded={callEnded}
+                userVideo={userVideo}
+                me={me}
+                idToCall={idToCall}
+                setIdToCall={setIdToCall}
+                leaveCall={leaveCall}
+                callUser={callUser}
+                myName={myName}
+                receivingCall={receivingCall}
+                answerCall={answerCall}
+                setShowCall={setShowCall}
+
+                // style={{position: 'absolute', top:'50%', left: '50%'}}
+              />
             </>
           )}
           {chat && (
@@ -313,15 +361,18 @@ const PatientHomePage = () => {
             />
           )}
           {receivingCall && !callAccepted ? (
-          <div className="caller">
-            <Typography variant="h6" style={{ textAlign: "center", color: "#fff" }}>
-              {myName} is calling...
-            </Typography>
-            <Button variant="contained" color="primary" onClick={answerCall}>
-              Answer
-            </Button>
-          </div>
-        ) : null}
+            <div className="caller">
+              <Typography
+                variant="h6"
+                style={{ textAlign: "center", color: "#fff" }}
+              >
+                {myName} is calling...
+              </Typography>
+              <Button variant="contained" color="primary" onClick={()=>{answerCall(); setShowCall(true)}}>
+                Answer
+              </Button>
+            </div>
+          ) : null}
         </Grid>
       </Container>
     </>

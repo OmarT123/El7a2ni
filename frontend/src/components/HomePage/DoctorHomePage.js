@@ -51,8 +51,44 @@ const DoctorHomePage = () => {
   const myVideo = useRef(null);
   const userVideo = useRef(null);
   const connectionRef = useRef(null);
+  const [showCall, setShowCall] = useState(false);
 
-  const initializeMediaDevices = async () => {
+  useEffect( () => {
+    const setupSocket = async () => {
+      await socket.on("me", async (id) => {
+        console.log(id);
+        setMe(id);
+        await axios.put("/updateSocketId", { socketId: id });
+      });
+
+      await socket.on("callUser", (data) => {
+        console.log("calllllllllll");
+        setReceivingCall(true);
+        setCaller(data.from);
+        setmyName(data.name);
+        setCallerSignal(data.signal);
+      });
+    };
+
+    setupSocket();
+    const login = async () => {
+      await axios.get("/loginAuthentication").then(async (response) => {
+        const { success, type, user } = response.data;
+        if (success && type === "doctor" && user.status === "approved") {
+          window.location.href = "/doctorContract";
+        } else if (success && type === "doctor" && user.status === "rejected") {
+          localStorage.clear();
+          await axios.get("/logout");
+          window.location.href = "/";
+        } else {
+          setShowContent(true);
+        }
+      });
+    };
+    login();
+  }, []);
+
+  const initializeMediaDevices = async (id) => {
     try {
       // const userMediaStream = await
       navigator.mediaDevices
@@ -63,29 +99,24 @@ const DoctorHomePage = () => {
             myVideo.current.srcObject = stream;
           }
         });
+      setIdToCall(id);
       // setStream(userMediaStream);
 
       // if (myVideo.current) {
       //   myVideo.current.srcObject = userMediaStream;
       // }
 
-      socket.on("me", async (id) => {
-        console.log(id);
-        setMe(id);
-        await axios.put("/updateSocketId", { socketId: id });
-      });
-      setmyName("patient name");
-
-      socket.on("callUser", (data) => {
-        setReceivingCall(true);
-        setCaller(data.from);
-        setmyName(data.name);
-        setCallerSignal(data.signal);
-      });
+      // socket.on("me", async (id) => {
+      //   console.log(id);
+      //   setMe(id);
+      //   await axios.put("/updateSocketId", { socketId: id });
+      // });
+      setmyName(user.name);
     } catch (error) {
       console.error("Error accessing media devices:", error);
     }
   };
+ 
 
   const callUser = async (id) => {
     const response = await axios.get("/getSocketId", {
@@ -153,28 +184,19 @@ const DoctorHomePage = () => {
     if (connectionRef.current) {
       connectionRef.current.destroy();
     }
+    setMe("")
+    setStream(null)
+    setReceivingCall(false)
+    setCaller("")
+    setCallerSignal() 
+    setCallAccepted(false)
+    setIdToCall("")
+    setmyName("")
+    setShowCall(false)
 
     // Inform the server that the call has ended
     socket.emit("callEnded", { to: caller });
   };
-
-  useEffect(() => {
-    const login = async () => {
-      await axios.get("/loginAuthentication").then(async (response) => {
-        const { success, type, user } = response.data;
-        if (success && type === "doctor" && user.status === "approved") {
-          window.location.href = "/doctorContract";
-        } else if (success && type === "doctor" && user.status === "rejected") {
-          localStorage.clear();
-          await axios.get("/logout");
-          window.location.href = "/";
-        } else {
-          setShowContent(true);
-        }
-      });
-    };
-    login();
-  }, []);
 
   const Home = () => {
     return (
@@ -216,6 +238,8 @@ const DoctorHomePage = () => {
     );
   };
 
+
+
   return (
     <>
       {showContent && (
@@ -241,10 +265,11 @@ const DoctorHomePage = () => {
                     setChatterID={setChatterID}
                     setChatterName={setChatterName}
                     startVideoChat={initializeMediaDevices}
-                    setStage={(e)=>setPage(e)}
+                    setStage={(e) => setPage(e)}
+                    setShowCall={setShowCall}
                   />
                 </>
-              ) : page === "pharmacists" ? (
+              ) : (
                 <PharmacistsStage
                   setStage={() => setPage("home")}
                   together={true}
@@ -252,22 +277,6 @@ const DoctorHomePage = () => {
                   setChat={setChat}
                   setChatterID={setChatterID}
                   setChatterName={setChatterName}
-                />
-              ) : (
-                <VideoChatRoom
-                  stream={stream}
-                  myVideo={myVideo}
-                  callAccepted={callAccepted}
-                  callEnded={callEnded}
-                  userVideo={userVideo}
-                  me={me}
-                  idToCall={idToCall}
-                  setIdToCall={setIdToCall}
-                  leaveCall={leaveCall}
-                  callUser={callUser}
-                  myName={myName}
-                  receivingCall={receivingCall}
-                  answerCall={answerCall}
                 />
               )}
               {chat && (
@@ -277,23 +286,48 @@ const DoctorHomePage = () => {
                   setChat={setChat}
                 />
               )}
+              {showCall && (
+                <>
+                  {console.log("I should render")}
+                  <VideoChatRoom
+                    stream={stream}
+                    myVideo={myVideo}
+                    callAccepted={callAccepted}
+                    callEnded={callEnded}
+                    userVideo={userVideo}
+                    me={me}
+                    idToCall={idToCall}
+                    setIdToCall={setIdToCall}
+                    leaveCall={leaveCall}
+                    callUser={callUser}
+                    myName={myName}
+                    receivingCall={receivingCall}
+                    answerCall={answerCall}
+                    setShowCall={setShowCall}
+                    // style={{position: 'absolute', top:'50%', left: '50%'}}
+                  />
+                </>
+              )}
               <Box sx={{ position: "absolute", top: "50%", left: "50%" }}>
                 {receivingCall && !callAccepted ? (
-                  <div className="caller">
-                    <Typography
-                      variant="h6"
-                      style={{ textAlign: "center", color: "#fff" }}
-                    >
-                      {myName} is calling...
-                    </Typography>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={answerCall}
-                    >
-                      Answer
-                    </Button>
-                  </div>
+                  <>
+                    {console.log("here")}
+                    <div className="caller">
+                      <Typography
+                        variant="h6"
+                        style={{ textAlign: "center", color: "#fff" }}
+                      >
+                        {myName} is calling...
+                      </Typography>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={()=>{answerCall();setShowCall(true)}}
+                      >
+                        Answer
+                      </Button>
+                    </div>
+                  </>
                 ) : null}
               </Box>
             </Grid>
