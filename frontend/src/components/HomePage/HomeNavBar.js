@@ -5,6 +5,8 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import MailIcon from "@mui/icons-material/Mail";
 import NotificationBoard from "../NotificationBoard";
 import SideBar from "../SideBar";
+import ListAltIcon from "@mui/icons-material/ListAlt";
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 
 const ImageStyle = {
   width: "75px",
@@ -12,7 +14,7 @@ const ImageStyle = {
   cursor: "pointer",
 };
 
-const HomeNavBar = ({ homeButton, setPage, user}) => {
+const HomeNavBar = ({ homeButton, setPage, user, setIcon1, setIcon2 }) => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
@@ -47,9 +49,16 @@ const HomeNavBar = ({ homeButton, setPage, user}) => {
             <Box
               sx={{ display: "flex", alignItems: "center", marginLeft: "auto" }}
             >
-              <IconButton size="large" color="inherit">
-                <MailIcon />
-              </IconButton>
+              {setIcon1 && (
+                <IconButton size="large" color="inherit" onClick={setIcon1}>
+                  <ListAltIcon />
+                </IconButton>
+              )}
+              {setIcon2 && (
+                <IconButton size="large" color="inherit" onClick={setIcon2}>
+                  <ShoppingCartIcon />
+                </IconButton>
+              )}
               <IconButton
                 size="large"
                 color="inherit"

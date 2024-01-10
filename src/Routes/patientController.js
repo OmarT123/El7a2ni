@@ -149,7 +149,7 @@ const viewMyCart = async (req, res) => {
 
     res.json({ success: true, cart: cart, wallet: patient.wallet });
   } catch (error) {
-    res.json({success: false, error: error.message });
+    res.json({ success: false, error: error.message });
   }
 };
 
@@ -260,8 +260,8 @@ const cancelOrder = async (req, res) => {
     await patient.save();
     handleAfterCancel(order.items);
     res.status(200).json({
-      message: "order cancelled successfully",
-      order: order,
+      success: true,
+      title: "Order Cancelled Successfully",
     });
   } catch (error) {
     res.json({ error: error.message });
@@ -304,28 +304,28 @@ const addToCart = async (req, res) => {
           return res.json({
             message:
               "The specified prescription medicine wasn't found in any of your recent prescriptions.",
-              success: false,
-              title: "Disallowed action"
-
+            success: false,
+            title: "Disallowed action",
           });
       } catch (error) {
         console.error("Error fetching prescriptions:", error.message);
       }
     }
     if (!medicine) {
-      return res.json({ message: "Medicine not found",
-      success: false,
-      title: "Medicine Error"});
+      return res.json({
+        message: "Medicine not found",
+        success: false,
+        title: "Medicine Error",
+      });
     }
 
     if (quantity > medicine.stockQuantity) {
       return res.json({
         message: "Requested quantity exceeds available stock",
-              success: false,
-              title: "Quantity Problem"
+        success: false,
+        title: "Quantity Problem",
       });
     }
-
 
     if (quantity > 0) {
       const existingCartItemIndex = patient.cart.items.findIndex(
@@ -339,7 +339,7 @@ const addToCart = async (req, res) => {
           return res.json({
             message: "Requested quantity exceeds available stock",
             success: false,
-            title: "Quantity Problem"
+            title: "Quantity Problem",
           });
         else patient.cart.items[existingCartItemIndex].quantity += quantity;
       } else {
@@ -366,13 +366,15 @@ const addToCart = async (req, res) => {
       res.json({
         message: "Medicine added to cart successfully",
         success: true,
-        title: "Successful add"
+        title: "Successful add",
       });
     }
   } catch (error) {
-    res.json({ message: error.message,
+    res.json({
+      message: error.message,
       success: false,
-      title: "An error occurred" });
+      title: "An error occurred",
+    });
   }
 };
 
@@ -953,71 +955,96 @@ const viewPatientAppointments = async (req, res) => {
 
 const payWithCardCart = async (req, res) => {
   const id = req.user._id;
-  const patient = await patientModel.findById(id).populate({ path: 'cart.items.medicine' })
-  let ratio = 1
+  const patient = await patientModel
+    .findById(id)
+    .populate({ path: "cart.items.medicine" });
+  let ratio = 1;
   if (patient.healthPackage) {
-    const package = await healthPackageModel.findById(patient.healthPackage.healthPackageID)
-    ratio = 1 - (package.medicineDiscount / 100)
+    const package = await healthPackageModel.findById(
+      patient.healthPackage.healthPackageID
+    );
+    ratio = 1 - package.medicineDiscount / 100;
   }
-  const items = patient.cart.items
-  const address = req.query.address
-  const firstName = req.query.firstName
-  const lastName = req.query.lastName
+  const items = patient.cart.items;
+  const address = req.query.address;
+  const firstName = req.query.firstName;
+  const lastName = req.query.lastName;
   const session = await stripe.checkout.sessions.create({
-    payment_method_types: ['card'],
-    mode: 'payment',
-    line_items: items.map(item => {
+    payment_method_types: ["card"],
+    mode: "payment",
+    line_items: items.map((item) => {
       const storeItem = {};
       return {
         price_data: {
           currency: "eur",
           product_data: {
-            name: item.medicine.name
+            name: item.medicine.name,
           },
-          unit_amount: (item.medicine.price * 100 * ratio)
+          unit_amount: item.medicine.price * 100 * ratio,
         },
-        quantity: item.quantity
-      }
+        quantity: item.quantity,
+      };
     }),
     success_url: `http://localhost:3000/SuccessfulCheckout`,
     cancel_url: `http://localhost:3000/cancelCheckout`,
-  })
+  });
   if (address && !patient.deliveryAddress.includes(address)) {
-    patient.deliveryAddress.push(address)
+    patient.deliveryAddress.push(address);
     await patient.save();
   }
-  createOrder(firstName, lastName, id, address, items, patient.cart.amountToBePaid, "Credit Card")
-  handleAfterBuy(patient.cart, id)
-  res.json({ url: session.url })
-}
+  createOrder(
+    firstName,
+    lastName,
+    id,
+    address,
+    items,
+    patient.cart.amountToBePaid,
+    "Credit Card"
+  );
+  handleAfterBuy(patient.cart, id);
+  res.json({ url: session.url });
+};
 
 const payWithWalletCart = async (req, res) => {
   const patientId = req.user._id;
-  const address = req.query.address
-  const firstName = req.query.firstName
-  const lastName = req.query.lastName
-  const patient = await patientModel.findById(patientId)
-  const items = patient.cart.items
-  const price = patient.cart.amountToBePaid
+  const address = req.query.address;
+  const firstName = req.query.firstName;
+  const lastName = req.query.lastName;
+  const patient = await patientModel.findById(patientId);
+  const items = patient.cart.items;
+  const price = patient.cart.amountToBePaid;
   try {
     if (patient.wallet < price) {
-      return res.json({ success: false, url: '/checkout', message: "Insufficient funds!" })
+      return res.json({
+        success: false,
+        url: "/checkout",
+        message: "Insufficient funds!",
+      });
     }
-    const newWallet = patient.wallet - price
-    const updatedPatient = await patientModel.findByIdAndUpdate(patient._id, { wallet: newWallet })
+    const newWallet = patient.wallet - price;
+    const updatedPatient = await patientModel.findByIdAndUpdate(patient._id, {
+      wallet: newWallet,
+    });
     await patient.save();
     if (address && !patient.deliveryAddress.includes(address)) {
-      patient.deliveryAddress.push(address)
+      patient.deliveryAddress.push(address);
       await patient.save();
     }
-    createOrder(firstName, lastName, patientId, address, items, patient.cart.amountToBePaid, "wallet")
-    handleAfterBuy(patient.cart, patientId)
-    res.json({ success: true, url: '/SuccessfulCheckout', message: "done" })
+    createOrder(
+      firstName,
+      lastName,
+      patientId,
+      address,
+      items,
+      patient.cart.amountToBePaid,
+      "wallet"
+    );
+    handleAfterBuy(patient.cart, patientId);
+    res.json({ success: true, message: "done" });
+  } catch (err) {
+    res.json(err.message);
   }
-  catch (err) {
-    res.json(err.message)
-  }
-}
+};
 
 const payWithCard = async (req, res) => {
   const patientId = req.user._id;
@@ -1067,15 +1094,22 @@ const payWithWallet = async (req, res) => {
   }
 };
 
-const createOrder = async (firstName, lastName, patientId, address, items, total, method) => {
-  let package_Id = null
-  let discount = 0
+const createOrder = async (
+  firstName,
+  lastName,
+  patientId,
+  address,
+  items,
+  total,
+  method
+) => {
+  let package_Id = null;
+  let discount = 0;
   const patient = await patientModel.findById(patientId);
   if (patient.healthPackage) {
     package_Id = patient.healthPackage.healthPackageID;
-    let package = await healthPackageModel.findById(package_Id)
+    let package = await healthPackageModel.findById(package_Id);
     discount = package.medicineDiscount;
-
   }
   const order = await orderModel.create({
     patient: patientId,
@@ -1086,10 +1120,10 @@ const createOrder = async (firstName, lastName, patientId, address, items, total
     status: "Preparing",
     First_Name: firstName,
     Last_Name: lastName,
-    discount: discount
-  })
-  await order.save()
-}
+    discount: discount,
+  });
+  await order.save();
+};
 
 const pastOrders = async (req, res) => {
   try {
@@ -1129,7 +1163,7 @@ const cashOnDelivery = async (req, res) => {
     "cash On Delivery"
   );
   handleAfterBuy(patient.cart, id);
-  res.json({ success: true, url: "/SuccessfulCheckout" });
+  res.json({ success: true });
 };
 
 const buyHealthPackage = async (req, res) => {
@@ -1484,7 +1518,7 @@ const uploadHealthRecord = async (req, res) => {
         HealthRecords: [healthRecord],
       });
     await patient.save();
-    res.json({success:true, title:"Health Record Uploaded Successfully"});
+    res.json({ success: true, title: "Health Record Uploaded Successfully" });
   } catch (error) {
     res.json("Internal server error");
   }
@@ -1596,12 +1630,11 @@ const cancelAppointment = async (req, res) => {
       .findById(appointmentID)
       .populate("doctor patient")
       .exec();
-    const oldStatus = appointment.status
+    const oldStatus = appointment.status;
     appointment.status = "cancelled";
     await appointment.save();
-    if (oldStatus === 'free')
-    {
-      return res.json({success:true, title:'Slot Removed'})
+    if (oldStatus === "free") {
+      return res.json({ success: true, title: "Slot Removed" });
     }
 
     const appointmentDate = new Date(appointment.date);
@@ -1609,7 +1642,7 @@ const cancelAppointment = async (req, res) => {
     const timeDifference = appointmentDate - currentDate;
     const isWithin24Hours = timeDifference < 24 * 60 * 60 * 1000;
     const doctor = await doctorModel.findById(req.user._id);
-    if (oldStatus !== 'free' && (!isWithin24Hours || doctor)) {
+    if (oldStatus !== "free" && (!isWithin24Hours || doctor)) {
       const patientID = appointment.patient;
       const patient = await patientModel.findById(patientID);
       patient.wallet += appointment.price;
@@ -1664,7 +1697,7 @@ const cancelAppointment = async (req, res) => {
       console.error("Error sending email:", error);
     }
 
-    return res.json({success:true, title:"Appointment Cancelled"});
+    return res.json({ success: true, title: "Appointment Cancelled" });
   } catch (error) {
     return res.json();
   }
@@ -1946,5 +1979,5 @@ module.exports = {
   getMessages,
   patientRetrieveNotifications,
   payWithWalletCart,
-  payWithCardCart
+  payWithCardCart,
 };

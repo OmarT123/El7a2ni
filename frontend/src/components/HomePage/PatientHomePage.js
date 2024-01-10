@@ -16,9 +16,9 @@ import DoctorsStage from "../AdminEmployees/DoctorsStage";
 import HealthPackagesView from "../HealthPackagesView";
 import PatientPage from "../PatientPage";
 import PharmacistsStage from "../AdminEmployees/PharmacistsStage";
-import Checkout from "../Checkout";
 import MyCart from "../MyCart";
 import Chat from "../Chat";
+import Orders from '../Orders'
 import Popup from "../Popup";
 
 const PatientHomePage = () => {
@@ -104,7 +104,7 @@ const PatientHomePage = () => {
 
     return (
         <>
-            <HomeNavBar homeButton={() => setPage("home")} setPage={setPage} />
+            <HomeNavBar homeButton={() => setPage("home")} setPage={setPage} setIcon1={()=>setPage('orders')} setIcon2={()=>setPage('MyCart')}/>
             <Container sx={{ mt: 3 }}>
                 <Grid container spacing={5}>
                     {page === "profile" ? (
@@ -138,16 +138,16 @@ const PatientHomePage = () => {
                         "Appointment page from omar"
                     ) : page === "healthPackages " ? (
                         <HealthPackagesView userType={"patient"} />
-                    ) : page === "medicalFile" ? (
-                        <PatientPage
+                    ) : page === "medicalFile" ?(
+                       <PatientPage
                             userType={"patient"}
                             selectedPatient={user}
                             setAlert={setAlert}
                         />
-                    ) : page === "MyCart" ? (
-                        <MyCart setPage={(path) => setPage(path)} />
-                    ) : (
-                        <Checkout />
+                    ) : page === "MyCart" ?(
+                        <MyCart setPage={(path) => setPage(path)}/>
+                    ): (
+                        <Orders />
                     )}
                     {chat && <Chat partner={chatterID} name={chatterName} setChat={setChat} />}
                     {alert && (

@@ -255,6 +255,10 @@ const DoctorSignUp = () => {
     setHourlyRate(data.get("hourlyRate"));
     setAffiliation(data.get("affiliation"));
     setSpeciality(data.get("speciality"));
+    setEducation1(data.get("edu1"));
+    setEducation2(data.get("edu2"));
+    setEducation3(data.get("edu3"));
+
     // console.log(data.get('birthDate') ,data.get('hourlyRate') ,data.get('affiliation') ,data.get('speciality'))
     if (
       !data.get("birthDate") ||
@@ -363,6 +367,7 @@ const DoctorSignUp = () => {
     if (education1 !== "") educationalBackground.push(education1);
     if (education2 !== "") educationalBackground.push(education2);
     if (education3 !== "") educationalBackground.push(education3);
+    console.log(educationalBackground);
     if (
       !firstName ||
       !lastName ||
@@ -399,16 +404,10 @@ const DoctorSignUp = () => {
         degreePDF,
         licensePDF,
       };
-      await axios
-        .post("/addDoctor", body)
-        .then((res) =>
-          setAlert({
-            title: res.data.title,
-            message: res.data.message,
-          }),
-          setTimeout(()=>window.location.href='/login', 3000)
-        )
-        .catch((err) => console.log(err));
+      const response = await axios.post("/addDoctor", body);
+      setAlert(response.data);
+      if (response.data.success)
+        setTimeout(() => (window.location.href = "/login"), 3000);
     }
   };
 

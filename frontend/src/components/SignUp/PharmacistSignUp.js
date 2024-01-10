@@ -243,11 +243,14 @@ const PharmacistSignUp = () => {
     setBirthDate(data.get("birthDate"));
     setHourlyRate(data.get("hourlyRate"));
     setAffiliation(data.get("affiliation"));
+    setEducation1(data.get("edu1"));
+    setEducation2(data.get("edu2"));
+    setEducation3(data.get("edu3"));
     // console.log(data.get('birthDate') ,data.get('hourlyRate') ,data.get('affiliation') ,data.get('speciality'))
     if (
       !data.get("birthDate") ||
       !data.get("hourlyRate") ||
-      !data.get("affiliation") 
+      !data.get("affiliation")
     )
       setAlert({ title: "Incomplete Data", message: "Please fill all fields" });
     else setStage("third");
@@ -385,13 +388,14 @@ const PharmacistSignUp = () => {
         degreePDF,
         licensePDF,
       };
-      console.log('here')
-      const response = await axios.post('/addPharmacist', body)
+      console.log("here");
+      const response = await axios.post("/addPharmacist", body);
       setAlert({
         title: response.data.title,
         message: response.data.message,
-      })
-      setTimeout(()=>window.location.href='/login', 3000)
+      });
+      if (response.data.success)
+        setTimeout(() => (window.location.href = "/login"), 3000);
     }
   };
 
