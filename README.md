@@ -23,6 +23,8 @@
 ## Motivation
 This project is driven by the vision of improving the overall healthcare experience by fostering communication and accessibility among all stakeholders. The goal of the "El7a2ni" project is to create a clinic website that serves as a seamless platform connecting doctors, pharmacists, and patients. The aim is to establish a comprehensive digital space where healthcare professionals can collaborate, patients can easily access medical services, and pharmacists can efficiently provide medications.
 
+## Build Status
+patients cannot add family members 
 
 ## Code Style
 The project is formatted using Prettier. It follows the MVC design pattern, commonly used for developing user interfaces. MVC divides the program logic into three interconnected elements: Models (M), representing the core of the database; Controllers (C), containing functions for routes; and Views (V), represented by the React frontend server in the MERN stack. Routes in the project are abstracted from controller functions (see API References).
