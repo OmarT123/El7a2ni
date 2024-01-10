@@ -20,6 +20,7 @@ import MyCart from "../MyCart";
 import Chat from "../Chat";
 import Orders from '../Orders'
 import Popup from "../Popup";
+import AppointmentsView from "../AppointmentsView";
 
 const PatientHomePage = () => {
     const [page, setPage] = useState("home");
@@ -135,7 +136,7 @@ const PatientHomePage = () => {
                             setChatterName={setChatterName}
                         />
                     ) : page === "appointments" ? (
-                        "Appointment page from omar"
+                        <AppointmentsView userType='patient' backButton={()=>setPage('home')}/>
                     ) : page === "healthPackages " ? (
                         <HealthPackagesView userType={"patient"} />
                     ) : page === "medicalFile" ?(

@@ -52,7 +52,8 @@ const iconStyle = {
   fontSize: "2rem",
 };
 
-const AppointmentsView = ({ backButton }) => {
+const AppointmentsView = ({ backButton, userType }) => {
+  const [paymentMethod, setPaymentMethod] = useState("");
   const [cancelledAppointments, setCancelledAppointments] = useState([]);
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
   const [requestedAppointments, setRequestedAppointments] = useState([]);
@@ -69,6 +70,67 @@ const AppointmentsView = ({ backButton }) => {
   const [showResetButton, setShowResetButton] = useState(false);
   const [followupExpanded, setFollowupExpanded] = useState(false);
   const [rescheduleExpanded, setRescheduleExpanded] = useState(false);
+  const [selectedFamilyMember, setSelectedFamilyMember] = useState("");
+
+  const scheduleFollowUpPatient = (e, appointment) => {
+    e.preventDefault();
+
+    const bookAppointment = async () => {
+      const body = {};
+      body["appointmentId"] = appointment._id;
+      const name = appointment.attendantName;
+      body["name"] = name;
+      body["f"] = true;
+      body["date"] = `${selectedDate}T${selectedTime}:00.000Z`;
+      // console.log(body)
+      const response = await axios.put("/reserveAppointment", body);
+      setAlert(response.data);
+      if (response.data.success) {
+        console.log("heres");
+        setExpandedItem(null);
+        fetchAppointments();
+      }
+      // console.log(response.data);
+    };
+
+    const payWithCard = async () => {
+      const body = {};
+      // body["url"] = "SuccessfulCheckoutAppointment";
+      // console.log(appointment)
+      body["item"] = { name: "Appointment", price: appointment.price };
+      // body["type"] = "appointment";
+
+      localStorage.setItem("attendantName", selectedFamilyMember);
+      if (selectedFamilyMember === "") alert("Please Select a family member");
+      else
+        await axios
+          .get("/payWithCard", { params: body })
+          .then((res) => (window.location.href = res.data.url))
+          .catch((err) => console.log(err));
+    };
+
+    const payWithWallet = async () => {
+      const body = {};
+      // body["url"] = "SuccessfulCheckoutAppointment";
+      body["price"] = appointment.price;
+      // body["type"] = "appointment";
+      const response = await axios.get("/payWithWallet", { params: body });
+      if (response.data.success) {
+        console.log("done");
+        bookAppointment();
+      } else {
+        setAlert({ title: "Payment Failed", message: "Try again later" });
+      }
+    };
+
+    if (!paymentMethod)
+      return setAlert({
+        title: "Insufficient Data",
+        message: "Please provide a payment method",
+      });
+    if (paymentMethod === "wallet") payWithWallet();
+    else payWithCard();
+  };
 
   const handleRescheduleExpand = (item) => {
     setRescheduleExpanded(
@@ -80,12 +142,15 @@ const AppointmentsView = ({ backButton }) => {
 
   const fetchAppointments = async () => {
     try {
-      const response = await axios.get("/viewDoctorAppointments");
+      let link = "/viewDoctorAppointments";
+      if (userType === "patient") link = "/viewPatientAppointments";
+      const response = await axios.get(link);
       setUpcomingAppointments(response.data.upcomingAppointments);
       setCancelledAppointments(response.data.pastAppointments);
       setRequestedAppointments(response.data.requestedAppointments);
       setCompletedAppointments(response.data.completedAppointments);
-      setFreeAppointments(response.data.freeAppointments);
+      if (userType === "doctor")
+        setFreeAppointments(response.data.freeAppointments);
     } catch (error) {
       console.error("Error fetching doctor appointments:", error);
     }
@@ -153,7 +218,7 @@ const AppointmentsView = ({ backButton }) => {
   const updateAvailableTimes = async (e) => {
     e.preventDefault();
     setSelectedDate(e.target.value);
-    console.log(e.target.value);
+    // console.log(e.target.value);
     const inputDate = e.target.value;
     const currentDate = new Date();
 
@@ -200,7 +265,7 @@ const AppointmentsView = ({ backButton }) => {
       )
       .map((appointment) => appointment.date.substr(11, 5));
 
-    console.log("done");
+    // console.log("done");
     // console.log(upcoming, free);
     // Generate available times
 
@@ -221,10 +286,12 @@ const AppointmentsView = ({ backButton }) => {
     if (filterDate !== "") filterData["date"] = filterDate;
 
     try {
-      const response = await axios.get("/filterAppointmentsForDoctor", {
+      let link = "/filterAppointmentsForDoctor";
+      if (userType === "patient") link = "/filterAppointmentsForPatient";
+      const response = await axios.get(link, {
         params: filterData,
       });
-      if (response.data.success) {
+      if (response.data.success && userType === "doctor") {
         setRequestedAppointments(
           response.data.appointmentData.requestedAppointments
         );
@@ -238,6 +305,20 @@ const AppointmentsView = ({ backButton }) => {
           response.data.appointmentData.completedAppointments
         );
         setFreeAppointments(response.data.appointmentData.freeAppointments);
+      } else if (response.data.success) {
+        setRequestedAppointments(
+          response.data.appointmentData.requestedAppointments
+        );
+        setCancelledAppointments(
+          response.data.appointmentData.cancelledAppointments
+        );
+        setUpcomingAppointments(
+          response.data.appointmentData.upcomingAppointments
+        );
+        setCompletedAppointments(
+          response.data.appointmentData.completedAppointments
+        );
+        setFreeAppointments([]);
       } else {
         setAlert(response.data);
         setRequestedAppointments([]);
@@ -279,19 +360,20 @@ const AppointmentsView = ({ backButton }) => {
 
   const rescheduleAppointment = async (e, id) => {
     e.preventDefault();
-    // console.log(selectedDate, selectedTime)
-    // if (selectedDate)return
-    const baseTime = new Date(`2000-01-01T${selectedTime}:00.000Z`);
-    const newTime = new Date(baseTime.getTime() + 60 * 60 * 1000);
-    const formattedNewTime = newTime.toISOString().substr(11, 5);
     try {
-      const response = await axios.put("/rescheduleAppointmentForPatient", {
+      let link = "/rescheduleAppointmentForPatient";
+      if (userType === "patient") link = "/rescheduleAppointmentAsPatient";
+
+      const response = await axios.put(link, {
         appointmentId: id,
         newDate: `${selectedDate}T${selectedTime}:00.000Z`,
       });
-      //   console.log(response.data)
-      setAlert({ title: "Appointment Rescheduled" });
-      fetchAppointments();
+      if (userType === "patient") setAlert(response.data);
+      else setAlert({ title: "Appointment Rescheduled" });
+      if (response.data.success) {
+        setExpandedItem(null);
+        fetchAppointments();
+      }
     } catch (error) {
       setAlert(error.response?.data?.message || error.message);
     }
@@ -410,17 +492,19 @@ const AppointmentsView = ({ backButton }) => {
           <Typography variant="h4" sx={{ m: "30px" }}>
             Appointments
           </Typography>
-          <Fab
-            style={buttonStyle}
-            onClick={() => setAddAppointmentExpanded((prev) => !prev)}
-            sx={{ display: alert ? "none" : "" }}
-          >
-            {addAppointmentExpanded ? (
-              <ClearIcon style={iconStyle} />
-            ) : (
-              <AddIcon style={iconStyle} />
-            )}
-          </Fab>
+          {userType === "pharmacist" && (
+            <Fab
+              style={buttonStyle}
+              onClick={() => setAddAppointmentExpanded((prev) => !prev)}
+              sx={{ display: alert ? "none" : "" }}
+            >
+              {addAppointmentExpanded ? (
+                <ClearIcon style={iconStyle} />
+              ) : (
+                <AddIcon style={iconStyle} />
+              )}
+            </Fab>
+          )}
         </Box>
         <Collapse in={addAppointmentExpanded} timeout="auto" unmountOnExit>
           <Box
@@ -494,6 +578,15 @@ const AppointmentsView = ({ backButton }) => {
                           sx={{ marginBottom: 2 }}
                         >{`Appointment ${index + 1}:`}</Typography>
                         <List>
+                          {userType === "patient" && (
+                            <ListItem>
+                              <ListItemText
+                                primary={`Doctor Name: ${
+                                  item.doctor && item.doctor.name
+                                }`}
+                              />
+                            </ListItem>
+                          )}
                           <ListItem>
                             <ListItemText
                               primary={`Attendant Name: ${
@@ -626,6 +719,15 @@ const AppointmentsView = ({ backButton }) => {
                         index + 1 + upcomingAppointments.length
                       }:`}</Typography>
                       <List>
+                          {userType === "patient" && (
+                            <ListItem>
+                              <ListItemText
+                                primary={`Doctor Name: ${
+                                  item.doctor && item.doctor.name
+                                }`}
+                              />
+                            </ListItem>
+                          )}
                         <ListItem>
                           <ListItemText
                             primary={`Attendant Name: ${
@@ -697,6 +799,15 @@ const AppointmentsView = ({ backButton }) => {
                         freeAppointments.length
                       }:`}</Typography>
                       <List>
+                          {userType === "patient" && (
+                            <ListItem>
+                              <ListItemText
+                                primary={`Doctor Name: ${
+                                  item.doctor && item.doctor.name
+                                }`}
+                              />
+                            </ListItem>
+                          )}
                         <ListItem>
                           <ListItemText
                             primary={`Attendant Name: ${
@@ -776,6 +887,15 @@ const AppointmentsView = ({ backButton }) => {
                         requestedAppointments.length
                       }:`}</Typography>
                       <List>
+                          {userType === "patient" && (
+                            <ListItem>
+                              <ListItemText
+                                primary={`Doctor Name: ${
+                                  item.doctor && item.doctor.name
+                                }`}
+                              />
+                            </ListItem>
+                          )}
                         <ListItem>
                           <ListItemText
                             primary={`Attendant Name: ${
@@ -812,7 +932,7 @@ const AppointmentsView = ({ backButton }) => {
                       sx={{ m: "30px" }}
                       onClick={() => handleFollowupExpand(item)}
                     >
-                      Schedule
+                      Schedule Follow Up
                     </Button>
                     <Collapse
                       in={item._id.toString() === followupExpanded}
@@ -826,7 +946,9 @@ const AppointmentsView = ({ backButton }) => {
                           alignItems: "stretch",
                         }}
                       >
-                        <Box sx={{ display: "flex", flexDirection: "row" }}>
+                        <Box
+                          sx={{ display: "flex", flexDirection: "row", ml: 3 }}
+                        >
                           <TextField
                             id="date"
                             label="Date"
@@ -837,14 +959,19 @@ const AppointmentsView = ({ backButton }) => {
                             InputLabelProps={{
                               shrink: true,
                             }}
-                            sx={{ width: "40%", my: 3, mr: "5%" }}
+                            sx={{ width: "30%", my: 3, mr: 2 }}
                           />
                           <Box sx={{ width: "1%" }} />
                           {selectedDate && (
-                            <>
-                              <InputLabel id="select-label">
-                                Select Option
-                              </InputLabel>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                flexDirection: "column",
+                                width: "30%",
+                                mr: 3,
+                              }}
+                            >
+                              <InputLabel id="select-label">Time</InputLabel>
                               <Select
                                 labelId="select-label"
                                 id="select"
@@ -853,23 +980,53 @@ const AppointmentsView = ({ backButton }) => {
                                 onChange={(e) =>
                                   setSelectedTime(e.target.value)
                                 }
-                                sx={{ width: "40%", height: "80%" }}
+                                fullWidth
+                                sx={{ height: "55%" }}
                               >
                                 {availableTimes.map((time) => (
                                   <MenuItem value={time}>{time}</MenuItem>
                                 ))}
                               </Select>
-                            </>
+                            </Box>
+                          )}
+                          {selectedTime && (
+                            <Box
+                              sx={{
+                                display: "flex",
+                                flexDirection: "column",
+                                width: "30%",
+                              }}
+                            >
+                              <InputLabel id="select-label2">
+                                Payment Method
+                              </InputLabel>
+                              <Select
+                                labelId="select-label2"
+                                id="select2"
+                                value={paymentMethod}
+                                label="Payment Method"
+                                onChange={(e) =>
+                                  setPaymentMethod(e.target.value)
+                                }
+                                fullWidth
+                                sx={{ height: "55%" }}
+                              >
+                                <MenuItem value={"card"}>Card</MenuItem>
+                                <MenuItem value={"wallet"}>Wallet</MenuItem>
+                              </Select>
+                            </Box>
                           )}
                         </Box>
                         <Button
                           variant="contained"
                           onClick={(e) =>
-                            createFreeAppointment(e, item.patient._id)
+                            userType === "patient"
+                              ? scheduleFollowUpPatient(e, item)
+                              : createFreeAppointment(e, item.patient._id)
                           }
                           sx={{ width: "100%" }}
                         >
-                          Schedule Follow Up
+                          Schedule
                         </Button>
                       </Box>
                     </Collapse>
@@ -908,6 +1065,15 @@ const AppointmentsView = ({ backButton }) => {
                         completedAppointments.length
                       }:`}</Typography>
                       <List>
+                          {userType === "patient" && (
+                            <ListItem>
+                              <ListItemText
+                                primary={`Doctor Name: ${
+                                  item.doctor && item.doctor.name
+                                }`}
+                              />
+                            </ListItem>
+                          )}
                         <ListItem>
                           <ListItemText
                             primary={`Attendant Name: ${
