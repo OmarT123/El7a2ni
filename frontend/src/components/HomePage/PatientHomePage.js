@@ -19,6 +19,7 @@ import PharmacistsStage from "../AdminEmployees/PharmacistsStage";
 import Checkout from "../Checkout";
 import MyCart from "../MyCart";
 import Chat from "../Chat";
+import Popup from "../Popup";
 
 const PatientHomePage = () => {
     const [page, setPage] = useState("home");
@@ -26,6 +27,11 @@ const PatientHomePage = () => {
     const [chat, setChat] = useState(false);
     const [chatterID, setChatterID] = useState('');
     const [chatterName, setChatterName] = useState('');
+    const [alert, setAlert] = useState(null);
+
+    const closePopup = () => {
+        setAlert(null);
+    };
 
     const Home = () => {
         return (
@@ -109,7 +115,7 @@ const PatientHomePage = () => {
                         <MedicineView
                             userType={"patient"}
                             setPage={(path) => setPage(path)}
-                         />
+                        />
                     ) : page === "doctors" ? (
                         <DoctorsStage
                             setStage={() => setPage("home")}
@@ -132,14 +138,26 @@ const PatientHomePage = () => {
                         "Appointment page from omar"
                     ) : page === "healthPackages " ? (
                         <HealthPackagesView userType={"patient"} />
-                    ) : page === "medicalFile" ?(
-                        <PatientPage />
-                    ) : page === "MyCart" ?(
-                        <MyCart setPage={(path) => setPage(path)}/>
-                    ): (
-                        <Checkout/>
+                    ) : page === "medicalFile" ? (
+                        <PatientPage
+                            userType={"patient"}
+                            selectedPatient={user}
+                            setAlert={setAlert}
+                        />
+                    ) : page === "MyCart" ? (
+                        <MyCart setPage={(path) => setPage(path)} />
+                    ) : (
+                        <Checkout />
                     )}
                     {chat && <Chat partner={chatterID} name={chatterName} setChat={setChat} />}
+                    {alert && (
+                        <Popup
+                            onClose={closePopup}
+                            title={alert.title}
+                            message={alert.message}
+                            showButtons={false}
+                        />
+                    )}
                 </Grid>
             </Container>
         </>

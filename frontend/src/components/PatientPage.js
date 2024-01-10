@@ -43,12 +43,26 @@ const pdfStyle = {
   display: 'none',
 };
 
-const PatientPage = ({ selectedPatient, setSelectedPatient, setAlert }) => {
+const PatientPage = ({ selectedPatient, setSelectedPatient, setAlert, userType }) => {
   const [healthRecords, setHealthRecords] = useState(null);
   const [expandUpload, setExpandUpload] = useState(false);
   const [uploadedHealthRecord, setUploadedHealthRecord] = useState("");
   const [prescriptions, setPrescriptions] = useState(null);
   const [medicine, setMedicine] = useState(null);
+  const [filterExpanded, setFilterExpanded] = useState(false);
+  const [showResetButton, setShowResetButton] = useState(false);
+
+  const handleFilterExpandClick = () => {
+    setFilterExpanded(!filterExpanded);
+  };
+
+  const addPresriptionItemstoCart = async(e, prescription) => {
+    e.preventDefault();
+    const body = {prescription: prescription}
+    const response = await axios.post("/addPrescriptionToCart", body)
+    setAlert({title: "", message: response.data.message});
+    fetchPrescriptions();
+  }
 
   const PrescriptionItem = ({ prescription, number }) => {
     const [addMedicineExpanded, setAddMedicineExpanded] = useState("");
@@ -62,9 +76,9 @@ const PatientPage = ({ selectedPatient, setSelectedPatient, setAlert }) => {
       buttons.forEach((button) => {
         button.style.display = 'none';
       });
-    
+
       const content = prescriptionItemRef.current;
-    
+
       const pdfOptions = {
         margin: 10,
         filename: 'Prescription.pdf',
@@ -72,16 +86,16 @@ const PatientPage = ({ selectedPatient, setSelectedPatient, setAlert }) => {
         html2canvas: { scale: 2 },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
       };
-    
+
       // Generate PDF
       const pdf = await html2pdf().from(content).set(pdfOptions).save();
-    
+
       // Show buttons again after generating PDF
       buttons.forEach((button) => {
         button.style.display = 'block';
       });
     };
-    
+
 
     const handleAddMedicine = async (e) => {
       e.preventDefault();
@@ -153,43 +167,40 @@ const PatientPage = ({ selectedPatient, setSelectedPatient, setAlert }) => {
           );
         }
       };
+
       return (
         <ListItem key={index}>
           <Grid container spacing={2} alignItems={"center"}>
             <Grid item xs={12} sm={3}>
               {med.dosage}x {med.medId.name}
             </Grid>
-            <Grid item xs={12} sm={3}>
+            {userType === "doctor" && <> <Grid item xs={12} sm={3}>
               <TextField
                 fullWidth
                 value={newDosage}
                 type="number"
                 onChange={(e) => setNewDosage(e.target.value)}
                 label="New Dosage"
-                className="exclude-from-pdf"
-              />
-            </Grid>
-            <Grid item sm={2} />
-            <Grid item xs={12} sm={2}>
-              <Button
-                variant="contained"
-                onClick={(e) => handleDosageUpdate(e, med.medId._id)}
-                className="exclude-from-pdf"
-              >
-                Update
-              </Button>
-            </Grid>
-            <Grid item xs={12} sm={2}>
-              <Button
-                variant="contained"
-                onClick={(e) => {
-                  handleDeleteMedicine(e, prescription._id, med.medId._id);
-                }}
-                className="exclude-from-pdf"
-              >
-                Delete
-              </Button>
-            </Grid>
+                className="exclude-from-pdf" />
+            </Grid><Grid item sm={2} /><Grid item xs={12} sm={2}>
+                <Button
+                  variant="contained"
+                  onClick={(e) => handleDosageUpdate(e, med.medId._id)}
+                  className="exclude-from-pdf"
+                >
+                  Update
+                </Button>
+              </Grid><Grid item xs={12} sm={2}>
+                <Button
+                  variant="contained"
+                  onClick={(e) => {
+                    handleDeleteMedicine(e, prescription._id, med.medId._id);
+                  }}
+                  className="exclude-from-pdf"
+                >
+                  Delete
+                </Button>
+              </Grid></>}
           </Grid>
         </ListItem>
       );
@@ -216,65 +227,65 @@ const PatientPage = ({ selectedPatient, setSelectedPatient, setAlert }) => {
                 <MedicineItem med={med} index={index} />
               </>
             ))}
+            {prescription && prescription.doctor && <Typography variant="h5">Doctor name: {prescription.doctor.name}</Typography> }
+            {prescription.sentToPharmacy && prescription.filled && <Typography variant="substitute1">This prescription has been sent to cart before.</Typography>}
+            {!prescription.sentToPharmacy && prescription.filled && <Button variant="contained" sx={{ mt: "10px" }} onClick={(e) => addPresriptionItemstoCart(e, prescription._id)}>Add Prescription Items to Cart</Button>}
         </List>
-        <Button
+        {userType === "doctor" && <><Button
           variant="contained"
           sx={{ mt: "10px" }}
           className="exclude-from-pdf"
           onClick={() => setAddMedicineExpanded((prev) => !prev)}
         >
           {prescription.filled ? "Add Medicine" : "Fill Prescription"}
-        </Button>
-        <Collapse in={addMedicineExpanded}>
-          <Grid
-            container
-            spacing={3}
-            sx={{ mt: 2 }}
-            component="form"
-            noValidate
-            onSubmit={handleAddMedicine}
-          >
-            <Grid item xs={12} sm={6}>
-              <InputLabel id="select-label">Select Option</InputLabel>
-              <Select
-                fullWidth
-                labelId="select-label"
-                id="select"
-                value={selectedMedicineId}
-                onChange={(e) => setSelectedMedicineId(e.target.value)}
-                label="Select Medicine"
-              >
-                {medicine &&
-                  medicine.map((med) => (
-                    <MenuItem value={med._id} sx={{ maxHeight: "50px" }}>
-                      <img
-                        src={med.picture}
-                        height="40px"
-                        width="50px"
-                        style={{ marginRight: "30px" }}
-                      />{" "}
-                      {med.name}
-                    </MenuItem>
-                  ))}
-              </Select>
+        </Button><Collapse in={addMedicineExpanded}>
+            <Grid
+              container
+              spacing={3}
+              sx={{ mt: 2 }}
+              component="form"
+              noValidate
+              onSubmit={handleAddMedicine}
+            >
+              <Grid item xs={12} sm={6}>
+                <InputLabel id="select-label">Select Option</InputLabel>
+                <Select
+                  fullWidth
+                  labelId="select-label"
+                  id="select"
+                  value={selectedMedicineId}
+                  onChange={(e) => setSelectedMedicineId(e.target.value)}
+                  label="Select Medicine"
+                >
+                  {medicine &&
+                    medicine.map((med) => (
+                      <MenuItem value={med._id} sx={{ maxHeight: "50px" }}>
+                        <img
+                          src={med.picture}
+                          height="40px"
+                          width="50px"
+                          style={{ marginRight: "30px" }} />{" "}
+                        {med.name}
+                      </MenuItem>
+                    ))}
+                </Select>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  id="dosage"
+                  type="number"
+                  label="Dosage"
+                  name="dosage"
+                  sx={{ mt: 3 }} />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Button variant="contained" type="submit">
+                  Add
+                </Button>
+              </Grid>
             </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                id="dosage"
-                type="number"
-                label="Dosage"
-                name="dosage"
-                sx={{ mt: 3 }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Button variant="contained" type="submit">
-                Add
-              </Button>
-            </Grid>
-          </Grid>
-        </Collapse>
+          </Collapse></>}
       </Paper>
     );
   };
@@ -355,16 +366,66 @@ const PatientPage = ({ selectedPatient, setSelectedPatient, setAlert }) => {
     }
   };
 
+  const fetchPatientPrescriptions = async () => {
+    try {
+      const response = await axios.get("/viewMyPrescriptions");
+      if (response.data.success) {
+        setPrescriptions(response.data.prescriptions);
+      }
+    } catch (error) {
+      console.error("Error fetching prescriptions: ", error);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const data = new FormData(e.currentTarget);
+    const body = {}
+    const date = data.get("FilterDate");
+    const filled = data.get("filled");
+    const doctor = data.get("doctor");
+    if (!date && !filled && !doctor)
+      return setAlert({ title: "Missing fields", message: "You have to select at least one element to filter." })
+    if (date)
+      body["date"] = date;
+    if (filled === "true" || filled === "false")
+      body["filled"] = filled === "true" ? true : false
+    if (doctor)
+      body["doctor"] = doctor
+    const response = await axios.get("/filterPrescriptionByDateDoctorStatus", { params: body });
+    if(response.data.success){
+      setShowResetButton(true);
+      setPrescriptions(response.data.prescriptions);
+    }
+    else {
+      setAlert({title:"", message: response.data.message})
+    }
+    
+  }
+
+  const handleResetSearchClick = async () => {
+    setPrescriptions("");
+    setShowResetButton(false);
+    setFilterExpanded(false);
+    fetchPatientPrescriptions();
+  };
+
   useEffect(() => {
     fetchHealthRecords();
-    fetchPrescriptions();
-    fetchMedicine();
-  }, []);
+    if (userType === "doctor") {
+      fetchPrescriptions();
+      fetchMedicine();
+    }
+    else {
+      fetchPatientPrescriptions();
+    }
+  }, [prescriptions]);
 
   return (
     <>
+      <Typography variant="h3" sx={{ textAlign: 'center' }}>My Medical Folder</Typography>
       <Container maxWidth="md" sx={{ height: "100%", marginTop: 15 }}>
-        <Box
+        {userType === "doctor" && <Box
           sx={{ display: "flex", flexDirection: "row", alignItems: "center" }}
         >
           <Avatar
@@ -446,7 +507,8 @@ const PatientPage = ({ selectedPatient, setSelectedPatient, setAlert }) => {
             </Grid>
             <Grid item xs={0} sm={6} />
           </Grid>
-        </Box>
+        </Box>}
+        <hr />
         <Typography variant="h5" sx={{ my: "30px" }}>
           Health Records
         </Typography>
@@ -489,10 +551,71 @@ const PatientPage = ({ selectedPatient, setSelectedPatient, setAlert }) => {
             </Box>
           </>
         )}
-
+        <hr />
         <Typography variant="h5" sx={{ my: "30px", mr: "30px" }}>
           Prescriptions
         </Typography>
+        {userType === "patient" && !filterExpanded && !showResetButton && <Button variant="contained" sx={{ marginLeft: '600px' , marginTop:'-125px'}} onClick={handleFilterExpandClick}>
+          Filter Prescriptions
+        </Button>}
+        <Box component={"form"} onSubmit={(e) => handleSubmit(e)} sx={{ display: 'flex', alignItems: 'center' }}>
+          {filterExpanded && !showResetButton &&
+            <><TextField
+              id="FilterDate"
+              label="Flter by Date"
+              type="date"
+              placeholder="Filter by Date"
+              name="FilterDate"
+              InputLabelProps={{
+                shrink: true,
+              }}
+              sx={{ width: "100%", marginLeft: '100px'}} />
+              <TextField
+                id="filled"
+                label="Choose filled/unfilled"
+                select
+                name="filled"
+                InputLabelProps={{
+                  shrink: true,
+                }}
+                sx={{ width: "100%", marginLeft: '50px' }}
+              >
+                <MenuItem value={true}>Filled</MenuItem>
+                <MenuItem value={false}>Not Filled</MenuItem>
+              </TextField>
+              <TextField
+                id="doctor"
+                label="Enter doctor name"
+                type="text"
+                placeholder="Enter doctor name"
+                name="doctor"
+                InputLabelProps={{
+                  shrink: true,
+                }}
+                sx={{ width: "100%", marginLeft: '50px' }}
+              />
+            </>
+          }
+          {showResetButton && (
+            <Button
+              variant="outlined"
+              onClick={handleResetSearchClick}
+              style={{
+                color: "black",
+                marginLeft: "8px",
+                cursor: "pointer",
+              }}
+              sx={{
+                "&:hover": { backgroundColor: "#2196F3", color: "white" },
+              }}
+            >
+              Reset Search
+            </Button>
+          )}
+          {filterExpanded && !showResetButton && <Button variant="contained" sx={{ m: "30px" }} type="submit">
+            Submit
+          </Button>}
+        </Box>
         {prescriptions && (
           <Grid container spacing={3}>
             {prescriptions &&
@@ -506,7 +629,7 @@ const PatientPage = ({ selectedPatient, setSelectedPatient, setAlert }) => {
               ))}
           </Grid>
         )}
-      </Container>
+      </Container >
     </>
   );
 };
