@@ -10,6 +10,9 @@ import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import ResetPassword from "./pages/ResetPassword";
 import ContractView from "./pages/ContractView";
+import SuccessfulCheckout from "./pages/SuccessfulCheckout";
+import CancelCheckout from "./pages/CancelCheckout";
+import SuccessfulCheckoutPackage from "./pages/SuccessfulCheckoutPackage";
 
 const ScrollTop = (props) => {
   const { children, window } = props;
@@ -50,6 +53,9 @@ const App = () => {
           <Route path="/signup" element={<SignUp />} />
           <Route path="/resetPassword" element={<ResetPassword />} />
           <Route path="/doctorContract" element={<ContractView />} />
+          <Route path="/SuccessfulCheckout" element={<SuccessfulCheckout />} />
+          <Route path="/CancelCheckout" element={<CancelCheckout />} />
+          <Route path="/SuccessfulCheckoutPackage" element={<SuccessfulCheckoutPackage />} />
         </Routes>
         {window.location.pathname !== "/doctorContract" && (
           <ScrollTop>

@@ -18,6 +18,9 @@ const bcrypt = require("bcrypt");
 require("dotenv").config();
 const ChattingRoomModel = require("../Models/ChattingRoom.js");
 
+
+
+
 const addPatient = async (req, res) => {
   const {
     username,
@@ -481,7 +484,6 @@ const getSubMedicines = async (req, res) => {
     } else {
       res.json({ medicines: results, message: "Done" });
     }
-    console.log(results);
   } catch (error) {
     res.status(500).json(error.message);
   }
@@ -1016,112 +1018,118 @@ const viewPatientAppointments = async (req, res) => {
   }
 };
 
-/*
-const viewDoctorAppointments = async (req, res) => {
-  try {
-    const doctorID = req.user._id;
-
-    const upcomingAppointments = await appointmentModel
-      .find({
-        doctor: doctorID,
-        status: "upcoming",
-      })
-      .populate({ path: "patient" });
-
-    const pastAppointments = await appointmentModel
-      .find({
-        doctor: doctorID,
-        status: "cancelled",
-      })
-      .populate({ path: "patient" });
-
-    const freeAppointments = await appointmentModel
-      .find({
-        doctor: doctorID,
-        status: "free",
-      })
-      .populate({ path: "patient" });
-
-    const completedAppointments = await appointmentModel
-      .find({
-        doctor: doctorID,
-        status: "completed",
-      })
-      .populate({ path: "patient" });
-
-    const requestedAppointments = await appointmentModel
-      .find({
-        doctor: doctorID,
-        status: "requested",
-      })
-      .populate({ path: "patient" });
-
-    const appointmentData = {
-      upcomingAppointments,
-      pastAppointments,
-      freeAppointments,
-      completedAppointments,
-      requestedAppointments,
-    };
-
-    res.status(200).json(appointmentData);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-*/
-
-const payWithCardCart = async (req, res) => {
-  const id = req.user._id;
-  const patient = await patientModel
-    .findById(id)
-    .populate({ path: "cart.items.medicine" });
-  let ratio = 1;
+const createOrder = async (
+  firstName,
+  lastName,
+  patientId,
+  address,
+  items,
+  total,
+  method,
+  status
+) => {
+  let package_Id = null;
+  let discount = 0;
+  const patient = await patientModel.findById(patientId);
   if (patient.healthPackage) {
-    const package = await healthPackageModel.findById(
-      patient.healthPackage.healthPackageID
-    );
-    ratio = 1 - package.medicineDiscount / 100;
+    package_Id = patient.healthPackage.healthPackageID;
+    let package = await healthPackageModel.findById(package_Id);
+    discount = package.medicineDiscount;
   }
-  const items = patient.cart.items;
-  const address = req.query.address;
-  const firstName = req.query.firstName;
-  const lastName = req.query.lastName;
-  const session = await stripe.checkout.sessions.create({
-    payment_method_types: ["card"],
-    mode: "payment",
-    line_items: items.map((item) => {
-      const storeItem = {};
-      return {
-        price_data: {
-          currency: "eur",
-          product_data: {
-            name: item.medicine.name,
-          },
-          unit_amount: item.medicine.price * 100 * ratio,
-        },
-        quantity: item.quantity,
-      };
-    }),
-    success_url: `http://localhost:3000/SuccessfulCheckout`,
-    cancel_url: `http://localhost:3000/cancelCheckout`,
+  const order = await orderModel.create({
+    patient: patientId,
+    address: address,
+    items: items,
+    total: total,
+    paymentMethod: method,
+    status: status,
+    First_Name: firstName,
+    Last_Name: lastName,
+    discount: discount,
   });
-  if (address && !patient.deliveryAddress.includes(address)) {
-    patient.deliveryAddress.push(address);
-    await patient.save();
-  }
-  createOrder(
-    firstName,
-    lastName,
-    id,
-    address,
-    items,
-    patient.cart.amountToBePaid,
-    "Credit Card"
-  );
-  handleAfterBuy(patient.cart, id);
-  res.json({ url: session.url });
+  const savedOrder = await order.save();
+  return (savedOrder._id).toString();
 };
+
+const createOrderPending = async (req,res) => {
+   const id=req.user._id;
+   const patient=await patientModel.findById(id).populate({ path: "cart.items.medicine" });
+   const pendingOrder= await orderModel.findOneAndUpdate({status:'Pending'},{status:"Preparing"})
+   const PendingorderWithMedicineDetails = await orderModel.findById(pendingOrder._id).populate({
+    path: 'items.medicine',
+    model: 'Medicine',
+    select: 'name  price', 
+  });
+
+  const transporter = nodemailer.createTransport({
+      service: process.env.NODEMAILER_SERVICE,
+      auth: {
+        user: process.env.NODEMAILER_EMAIL,
+        pass: process.env.NODEMAILER_PASSWORD,
+      },
+      tls: {
+        rejectUnauthorized: false,
+      },
+  });
+  const mailOptions = {
+      from: process.env.NODEMAILER_EMAIL,
+      to: patient.email,
+      subject: "Payment Confirmation",
+      text:`Hello ${pendingOrder.First_Name} ${pendingOrder.Last_Name},
+      
+      Your payment of ${pendingOrder.total} $ using your credit card has been successfully processed.
+      
+      Here are the details of your order:
+      
+      Order Details:
+      -------------------------
+      ${PendingorderWithMedicineDetails.items.map(item => `
+        ${item.medicine.name} - Quantity: ${item.quantity}, Price: ${item.medicine.price} $
+      `).join('')}
+      ${PendingorderWithMedicineDetails.discount !== 0 ? `Discount: ${PendingorderWithMedicineDetails.discount} %` : ''} 
+      Delivery Address: ${pendingOrder.address}
+
+      Order Number: ${pendingOrder._id}
+      
+      Thank you for your purchase!
+
+      You will receive another email shortly containing the expected time of delivery. 
+
+      If you have any further questions, feel free to contact us.
+  
+      Have a great day!`   
+  };
+  const info = await transporter.sendMail(mailOptions);
+  handleAfterBuy(patient.cart, id);
+  res.json("done");
+
+ 
+};
+const removeOrderPending = async (req,res) => {
+  const id=req.user._id;
+  const pendingOrder= await orderModel.findOneAndDelete({status:'Pending'});
+  res.json("sorry");
+
+
+};
+
+
+const getUniqueCode = async (req, res) => {
+  try {
+    const patient = await patientModel.findById(req.user._id);
+    res.json(patient.uniqueCode);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+
+
+
+
+
+
+
 
 const payWithWalletCart = async (req, res) => {
   const patientId = req.user._id;
@@ -1140,37 +1148,219 @@ const payWithWalletCart = async (req, res) => {
       });
     }
     const newWallet = patient.wallet - price;
-    const updatedPatient = await patientModel.findByIdAndUpdate(patient._id, {
-      wallet: newWallet,
-    });
+    const updatedPatient = await patientModel.findByIdAndUpdate(patient._id, {wallet: newWallet,});
     await patient.save();
     if (address && !patient.deliveryAddress.includes(address)) {
       patient.deliveryAddress.push(address);
       await patient.save();
     }
-    createOrder(
-      firstName,
-      lastName,
-      patientId,
-      address,
-      items,
-      patient.cart.amountToBePaid,
-      "wallet"
-    );
+     const orderId = await createOrder(firstName,lastName,patientId,address,items,patient.cart.amountToBePaid,"wallet","Preparing")
     handleAfterBuy(patient.cart, patientId);
+
+    const orderWithMedicineDetails = await orderModel.findById(orderId).populate({
+      path: 'items.medicine',
+      model: 'Medicine',
+      select: 'name  price', 
+    });
+
+    const transporter = nodemailer.createTransport({
+        service: process.env.NODEMAILER_SERVICE,
+        auth: {
+          user: process.env.NODEMAILER_EMAIL,
+          pass: process.env.NODEMAILER_PASSWORD,
+        },
+        tls: {
+          rejectUnauthorized: false,
+        },
+    });
+    const mailOptions = {
+        from: process.env.NODEMAILER_EMAIL,
+        to: patient.email,
+        subject: "Payment Confirmation",
+        text:`Hello ${firstName} ${lastName},
+        
+        Your payment of ${price} $ using your wallet has been successfully processed.
+        
+        Here are the details of your order:
+        
+        Order Details:
+        -------------------------
+        ${orderWithMedicineDetails.items.map(item => `
+          ${item.medicine.name} - Quantity: ${item.quantity}, Price: ${item.medicine.price} $
+        `).join('')}
+        ${orderWithMedicineDetails.discount !== 0 ? `Discount: ${orderWithMedicineDetails.discount} %` : ''} 
+        Delivery Address: ${address}
+
+        Order Number: ${orderId}
+        
+        Thank you for your purchase!
+
+        You will receive another email shortly containing the expected time of delivery. 
+
+        If you have any further questions, feel free to contact us.
+    
+        Have a great day!`   
+    };
+    const info = await transporter.sendMail(mailOptions);
     res.json({ success: true, message: "done" });
   } catch (err) {
     res.json(err.message);
   }
 };
 
-const payWithCard = async (req, res) => {
+const cashOnDelivery = async (req, res) => {
+  const id = req.user._id;
+  const patient = await patientModel.findById(id);
+  const items = patient.cart.items;
+  const address = req.query.address;
+  const firstName = req.query.firstName;
+  const lastName = req.query.lastName;
+  const price = patient.cart.amountToBePaid;
+  if (address && !patient.deliveryAddress.includes(address)) {
+    patient.deliveryAddress.push(address);
+    await patient.save();
+  }
+  const orderId= await createOrder(firstName,lastName,id,address,items,patient.cart.amountToBePaid,"cash On Delivery","Preparing");
+  handleAfterBuy(patient.cart, id);
+  const orderWithMedicineDetails = await orderModel.findById(orderId).populate({
+    path: 'items.medicine',
+    model: 'Medicine',
+    select: 'name  price', 
+  });
+
+
+  const transporter = nodemailer.createTransport({
+    service: process.env.NODEMAILER_SERVICE,
+    auth: {
+      user: process.env.NODEMAILER_EMAIL,
+      pass: process.env.NODEMAILER_PASSWORD,
+    },
+    tls: {
+      rejectUnauthorized: false,
+    },
+});
+const mailOptions = {
+    from: process.env.NODEMAILER_EMAIL,
+    to: patient.email,
+    subject: "Payment Confirmation",
+    text: `
+    Hello ${firstName} ${lastName},
+    
+    Your order has been successfully placed. Payment will be made through Cash on Delivery.
+    
+    Here are the details of your order:
+    
+    Order Details:
+    -------------------------
+    ${orderWithMedicineDetails.items.map(item => `
+      ${item.medicine.name} - Quantity: ${item.quantity}, Price: ${item.medicine.price} $
+    `).join('')}
+    
+    ${orderWithMedicineDetails.discount !== 0 ? `Discount: ${orderWithMedicineDetails.discount} %` : ''} 
+    
+    Delivery Address: ${address}
+
+    Order Number: ${orderId}
+    
+    Please have the exact amount ready for payment upon delivery.
+    
+    Thank you for your purchase! 
+
+    You will receive another email shortly containing the expected time of delivery. 
+    
+    If you have any further questions, feel free to contact us.
+
+    Have a great day!
+  ` 
+};
+const info = await transporter.sendMail(mailOptions);
+
+
+
+
+  res.json({ success: true });
+};
+
+const payWithCardCart = async (req, res) => {
+  const id = req.user._id;
+  const patient = await patientModel
+    .findById(id)
+    .populate({ path: "cart.items.medicine" });
+  let ratio = 1;
+  if (patient.healthPackage) {
+    const package = await healthPackageModel.findById(
+      patient.healthPackage.healthPackageID
+    );
+    ratio = 1 - package.medicineDiscount / 100;
+  }
+  const items = patient.cart.items;
+  const address = req.query.address;
+  const firstName = req.query.firstName;
+  const lastName = req.query.lastName;
+  const uniqueCode=Math.random().toString(36).substring(2, 10) +
+  Math.random().toString(36).substring(2, 10);
+  patient.uniqueCode=uniqueCode;
+  await patient.save();
+
+  
+  const session = await stripe.checkout.sessions.create({
+    payment_method_types: ["card"],
+    mode: "payment",
+    line_items: items.map((item) => {
+      const storeItem = {};
+      return {
+        price_data: {
+          currency: "eur",
+          product_data: {
+            name: item.medicine.name,
+          },
+          unit_amount: item.medicine.price * 100 * ratio,
+        },
+        quantity: item.quantity,
+      };
+    }),
+    success_url: `http://localhost:3000/SuccessfulCheckout?code=${uniqueCode}`,
+    cancel_url: `http://localhost:3000/CancelCheckout?code${uniqueCode}`,
+  });
+  if (address && !patient.deliveryAddress.includes(address)) {
+    patient.deliveryAddress.push(address);
+    await patient.save();
+  }
+ 
+
+  createOrder(
+    firstName,
+    lastName,
+    id,
+    address,
+    items,
+    patient.cart.amountToBePaid,
+    "Credit Card",
+    "Pending"
+
+  );
+ 
+
+
+  res.json({ url: session.url });
+};
+
+
+const payWithCardPackage = async (req, res) => {
   const patientId = req.user._id;
   const patient = await patientModel.findById(patientId);
-  const url = req.query.url;
-  const item = req.query.item;
-  const type = req.query.type;
+ 
+  const item=req.query.item;  //1
+  const packageId=item.ID;
   const price = item.price;
+  const name= req.query.name; //2
+
+
+  const uniqueCode=Math.random().toString(36).substring(2, 10) +
+  Math.random().toString(36).substring(2, 10);
+  patient.uniqueCode=uniqueCode;
+  await patient.save();
+
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
     mode: "payment",
@@ -1179,18 +1369,22 @@ const payWithCard = async (req, res) => {
         price_data: {
           currency: "eur",
           product_data: {
-            name: item.name,
+            name: "Health Package",
           },
           unit_amount: item.price * 100,
         },
         quantity: 1,
       },
     ],
-    success_url: `http://localhost:3000/${url}`,
-    cancel_url: `http://localhost:3000/cancelCheckout`,
+    success_url: `http://localhost:3000/SuccessfulCheckoutPackage?code=${uniqueCode}id=${packageId}name=${name}`,
+    cancel_url: `http://localhost:3000/CancelCheckout?code=${" "}`
   });
-  res.json({ url: session.url });
+  res.json({ url: session.url });
 };
+
+
+
+
 
 const payWithWallet = async (req, res) => {
   const patientId = req.user._id;
@@ -1210,36 +1404,7 @@ const payWithWallet = async (req, res) => {
   }
 };
 
-const createOrder = async (
-  firstName,
-  lastName,
-  patientId,
-  address,
-  items,
-  total,
-  method
-) => {
-  let package_Id = null;
-  let discount = 0;
-  const patient = await patientModel.findById(patientId);
-  if (patient.healthPackage) {
-    package_Id = patient.healthPackage.healthPackageID;
-    let package = await healthPackageModel.findById(package_Id);
-    discount = package.medicineDiscount;
-  }
-  const order = await orderModel.create({
-    patient: patientId,
-    address: address,
-    items: items,
-    total: total,
-    paymentMethod: method,
-    status: "Preparing",
-    First_Name: firstName,
-    Last_Name: lastName,
-    discount: discount,
-  });
-  await order.save();
-};
+
 
 const pastOrders = async (req, res) => {
   try {
@@ -1258,29 +1423,7 @@ const pastOrders = async (req, res) => {
   }
 };
 
-const cashOnDelivery = async (req, res) => {
-  const id = req.user._id;
-  const patient = await patientModel.findById(id);
-  const items = patient.cart.items;
-  const address = req.query.address;
-  const firstName = req.query.firstName;
-  const lastName = req.query.lastName;
-  if (address && !patient.deliveryAddress.includes(address)) {
-    patient.deliveryAddress.push(address);
-    await patient.save();
-  }
-  createOrder(
-    firstName,
-    lastName,
-    id,
-    address,
-    items,
-    patient.cart.amountToBePaid,
-    "cash On Delivery"
-  );
-  handleAfterBuy(patient.cart, id);
-  res.json({ success: true });
-};
+
 
 const buyHealthPackage = async (req, res) => {
   const patientId = req.user._id;
@@ -2165,7 +2308,7 @@ module.exports = {
   removeFromCart,
   increaseByOne,
   decreaseByOne,
-  payWithCard,
+  payWithCardPackage,
   payWithWallet,
   sendCheckoutMail,
   getAllAddresses,
@@ -2181,5 +2324,8 @@ module.exports = {
   patientRetrieveNotifications,
   payWithWalletCart,
   payWithCardCart,
+  getUniqueCode,
+  createOrderPending,
+  removeOrderPending,
   rescheduleAppointmentAsPatient,
 };

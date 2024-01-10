@@ -338,7 +338,6 @@ const getADoctor = async (req, res) => {
   try {
     const doctor = await doctorModel.findById(doctorId);
     const documents = await DoctorDocuments.findOne({ doctor: doctor._id });
-    // console.log(doctor)
     extendedDoctor = {
       ...doctor.toObject(),
       idPDF: documents.idPDF,
@@ -619,7 +618,6 @@ const sendMail = async (doctor, message) => {
   };
   try {
     const info = await transporter.sendMail(mailOptions);
-    // console.log('done')
   } catch (error) {
     console.log(error.message);
   }

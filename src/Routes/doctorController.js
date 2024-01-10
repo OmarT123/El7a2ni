@@ -261,7 +261,6 @@ const viewPatient = async (req, res) => {
       .populate({ path: "healthPackage" });
     const packageID = patient.healthPackage.healthPackageID;
     const healthPackage = await healthPackageModel.findById(packageID);
-    console.log(healthPackage);
     const extendedPatient = {
       ...patient.toObject(),
       healthPackage,
@@ -445,7 +444,7 @@ const addAppointmentSlots = async (req, res) => {
             .catch((err) => console.log(err.message));
           discount = 1 - healthPackage.doctorDiscount / 100;
         }
-        // console.log(doctor.hourlyRate);
+        
         const appointment = await appointmentModel.create({
           doctor: doctor._id,
           date,
