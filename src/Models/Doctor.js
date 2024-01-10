@@ -8,6 +8,11 @@ const doctorSchema = new Schema(
       required: true,
       unique : true
     },
+    socketId : {
+      type : String,
+      unique : true,
+      default : ""
+    },
     name: {
       type: String,
       required: true,

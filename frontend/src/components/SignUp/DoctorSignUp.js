@@ -46,6 +46,7 @@ const DoctorSignUp = () => {
               autoComplete="firstName"
               name="firstName"
               required
+              type="text"
               fullWidth
               id="firstName"
               label="First Name"
@@ -55,6 +56,7 @@ const DoctorSignUp = () => {
             <TextField
               required
               fullWidth
+              type="text"
               id="lastName"
               label="Last Name"
               name="lastName"
@@ -65,6 +67,7 @@ const DoctorSignUp = () => {
             <TextField
               required
               fullWidth
+              type="text"
               id="username"
               label="Username"
               name="username"
@@ -75,6 +78,7 @@ const DoctorSignUp = () => {
             <TextField
               required
               fullWidth
+              type="email"
               id="email"
               label="Email Address"
               name="email"
@@ -173,6 +177,7 @@ const DoctorSignUp = () => {
               label="Hourly Rate"
               placeholder="Hourly Rate"
               required
+              type="number"
               name="hourlyRate"
               InputLabelProps={{
                 shrink: true,
@@ -185,6 +190,7 @@ const DoctorSignUp = () => {
               required
               fullWidth
               id="affiliation"
+              type="text"
               label="Affiliation"
               name="affiliation"
               autoComplete="affiliation"
@@ -195,6 +201,7 @@ const DoctorSignUp = () => {
               required
               fullWidth
               name="speciality"
+              type="text"
               label="Speciality"
               id="speciality"
               autoComplete="speciality"
@@ -205,6 +212,7 @@ const DoctorSignUp = () => {
               fullWidth
               name="edu1"
               label="Educational Background"
+              type="text"
               id="edu1"
               autoComplete="Educational Background"
             />
@@ -214,6 +222,7 @@ const DoctorSignUp = () => {
               fullWidth
               name="edu2"
               label="Educational Background"
+              type="text"
               id="edu2"
               autoComplete="Educational Background"
             />
@@ -223,6 +232,7 @@ const DoctorSignUp = () => {
               fullWidth
               name="edu3"
               label="Educational Background"
+              type="text"
               id="edu3"
               autoComplete="Educational Background"
             />

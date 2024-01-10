@@ -9,6 +9,7 @@ const healthPackageModel = require("../Models/HealthPackage.js");
 const doctorDocuments = require("../Models/DoctorDocuments.js");
 const familyMemberModel = require("../Models/FamilyMember.js");
 const FamilyMemberModel = require("../Models/FamilyMember.js");
+const notificationSystemModel = require("../Models/NotificationSystem.js")
 const { default: mongoose } = require("mongoose");
 const bcrypt = require("bcrypt");
 
@@ -611,10 +612,12 @@ const approveRequest = async (req, res) => {
   }
 };
 const doctorRetrieveNotifications = async (req, res) => {
+  console.log("im here");
   const notifications = await notificationSystemModel.find({
     type: "Doctor",
     Id: req.user._id.toString(),
   });
+  console.log(notifications);
   return res.json(notifications);
 };
 
