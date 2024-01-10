@@ -74,6 +74,8 @@ const NotificationBoard = ({ onClose }) => {
           padding: "20px",
           width: "80%",
           maxWidth: "800px",
+          maxHeight: "50%",
+    overflowY: "auto", // Add this line to enable scrolling
         }}
       >
         <Box
