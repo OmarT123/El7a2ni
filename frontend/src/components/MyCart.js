@@ -91,7 +91,7 @@ const MyCart = ({ user, setPage }) => {
           .get("/payWithWalletCart", { params: body })
           .then((res) => {
             if (res.data.success) {
-              setPage("home");
+              setPage("orders");
             }else {
                 setAlert({title:'Insufficient funds', message:'We were not able to process your order due to low funds'})
             }
@@ -99,7 +99,7 @@ const MyCart = ({ user, setPage }) => {
       } else if (paymentMethod === "cash") {
         const response = await axios.get("/cashOnDelivery", { params: body });
         if (response.data.success) {
-          setPage("home");
+          setPage("orders");
         }
       } else {
         setAlert({

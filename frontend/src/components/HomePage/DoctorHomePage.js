@@ -96,7 +96,7 @@ const DoctorHomePage = () => {
               ) : page === "home" ? (
                 <Home />
               ) : page === "appointments" ? (
-                <AppointmentsView backButton={() => setPage("home")} />
+                <AppointmentsView backButton={(page) => setPage(page)} userType='doctor' />
               ) : page === "patients" ? (
                 <>
                   <PatientsView
