@@ -57,7 +57,7 @@ const PatientAuthorization = (WrappedComponent) => {
       return <p>Error: {error}</p>;
     }
 
-    return <div>{showContent ? <WrappedComponent {...props} user={user} /> : <NotAuthorized />}</div>;
+    return <div>{showContent ? <WrappedComponent {...props} user={user}/> : <NotAuthorized />}</div>;
   };
 
   return PatientAuthorization;
