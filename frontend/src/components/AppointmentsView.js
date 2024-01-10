@@ -88,7 +88,7 @@ const AppointmentsView = ({ backButton, userType, doctor }) => {
     }));
 
     const patientFamilyMembers = await axios.get("/getFamilyMembers");
-    console.log(patientFamilyMembers.data)
+    console.log(patientFamilyMembers.data);
     setFamilyMembers(patientFamilyMembers.data);
 
     setFreeAppointments(newFormat);
@@ -124,13 +124,14 @@ const AppointmentsView = ({ backButton, userType, doctor }) => {
       body["item"] = { name: "Appointment", price: appointment.price };
       // body["type"] = "appointment";
 
-      localStorage.setItem("attendantName", selectedFamilyMember);
-      if (selectedFamilyMember === "") alert("Please Select a family member");
-      else
-        await axios
-          .get("/payWithCard", { params: body })
-          .then((res) => (window.location.href = res.data.url))
-          .catch((err) => console.log(err));
+      const response = await axios.get("/payWithCard", { params: body });
+      if (response.data.success)
+      {
+        window.location.href=response.data.url
+      }
+      console.log(response.data);
+      // .then((res) => (window.location.href = res.data.url))
+      // .catch((err) => console.log(err));
     };
 
     const payWithWallet = async () => {
@@ -147,10 +148,16 @@ const AppointmentsView = ({ backButton, userType, doctor }) => {
       }
     };
 
+    console.log("hi");
     if (!paymentMethod)
       return setAlert({
         title: "Insufficient Data",
         message: "Please provide a payment method",
+      });
+    else if (!f && !selectedFamilyMember)
+      return setAlert({
+        title: "Insufficient Data",
+        message: "Please provide an attendant name",
       });
     if (paymentMethod === "wallet") payWithWallet();
     else payWithCard();
@@ -584,7 +591,13 @@ const AppointmentsView = ({ backButton, userType, doctor }) => {
             </Button>
           </Box>
         </Collapse>
-        {upcomingAppointments.length === 0 && cancelledAppointments.length === 0 && freeAppointments.length === 0 && completedAppointments.length === 0 && requestedAppointments.length === 0 && <Typography variant='h5'>No Appointments Available</Typography>}
+        {upcomingAppointments.length === 0 &&
+          cancelledAppointments.length === 0 &&
+          freeAppointments.length === 0 &&
+          completedAppointments.length === 0 &&
+          requestedAppointments.length === 0 && (
+            <Typography variant="h5">No Appointments Available</Typography>
+          )}
         {upcomingAppointments.length > 0 && (
           <>
             <Typography variant="h5" sx={{ m: "30px" }}>
@@ -847,9 +860,10 @@ const AppointmentsView = ({ backButton, userType, doctor }) => {
                             fullWidth
                             sx={{ height: "55%" }}
                           >
-                            {familyMembers.length > 0 && familyMembers.map((fm) => {return(
-                              <MenuItem value={fm}>{fm}</MenuItem>
-                            )})}
+                            {familyMembers.length > 0 &&
+                              familyMembers.map((fm) => {
+                                return <MenuItem value={fm}>{fm}</MenuItem>;
+                              })}
                           </Select>
                         </Box>
                         <Button

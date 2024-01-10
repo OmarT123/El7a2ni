@@ -34,6 +34,8 @@ const DoctorsStage = ({
   setChatterID,
   setChatterName,
   setDoctor,
+  startVideoChat,
+  setShowCall
 }) => {
   const [unapprovedDoctors, setUnapprovedDoctors] = useState([]);
   const [approvedDoctors, setApprovedDoctors] = useState([]);
@@ -287,6 +289,15 @@ const DoctorsStage = ({
               onClick={(e) => openChat(e, item._id, item.name)}
             >
               Chat With Doctor
+            </Button>
+          )}
+          {(userType === "pharmacist" || userType === "patient") && (
+            <Button
+              variant="contained"
+              sx={{ m: "30px" }}
+              onClick={()=>{startVideoChat(item._id); setShowCall(true)}}
+            >
+              Video Call Doctor
             </Button>
           )}
           {userType === "patient" && (
