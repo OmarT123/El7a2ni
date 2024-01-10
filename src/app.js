@@ -542,7 +542,7 @@ app.post(
 );
 app.put("/approveRequest", getUserFromTokenMiddleware, approveRequest);
 app.get(
-  "doctorRetrieveNotifications",
+  "/doctorRetrieveNotifications",
   getUserFromTokenMiddleware,
   doctorRetrieveNotifications
 );
