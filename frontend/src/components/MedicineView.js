@@ -22,6 +22,8 @@ import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
 import Fab from "@mui/material/Fab";
 import AddIcon from "@mui/icons-material/Add";
 import ClearIcon from "@mui/icons-material/Clear";
+import AddToCartForm from "./AddToCartForm";
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 
 const paperStyle = {
   width: "1200px",
@@ -50,12 +52,13 @@ const iconStyle = {
   fontSize: "2rem",
 };
 
-const MedicineView = ({ userType }) => {
+const MedicineView = ({ userType, setPage }) => {
   const [medicine, setMedicine] = useState([]);
   const [stage, setStage] = useState("first");
   const [alert, setAlert] = useState(null);
   const [selectedMedicine, setSelectedMedicine] = useState(null);
   const [showResetButton, setShowResetButton] = useState(false);
+  const [back, setBack] = useState(false);
 
   const SearchBar = () => {
     const [searchName, setSearchName] = useState("");
@@ -206,8 +209,26 @@ const MedicineView = ({ userType }) => {
       const medicinesData = res.data;
       // console.log(medicinesData)
       setMedicine(medicinesData);
+      setBack(false);
     } catch (error) {
       console.error("Error fetching medicines:", error);
+    }
+  };
+
+  const handleGetSubstitute = async (medicine) => {
+    try {
+      setMedicine([]);
+      setBack(true);
+      const { activeIngredient } = medicine;
+      const response = await axios.get('/getSubMedicines', { params: { activeIngredient } });
+      const substitutedMedicines = response.data.medicines;
+
+      if (substitutedMedicines.length === 0) {
+      } else {
+        setMedicine(substitutedMedicines);
+      }
+    } catch (error) {
+      console.error('Error fetching substitute medicines:', error);
     }
   };
 
@@ -254,6 +275,7 @@ const MedicineView = ({ userType }) => {
       setExpandedItem(item.name === expandedItem ? null : item.name);
       setSelectedMedicine(item);
     };
+
     const addMedicine = async (e) => {
       e.preventDefault();
 
@@ -293,7 +315,7 @@ const MedicineView = ({ userType }) => {
             <Typography variant="h4" sx={{ m: "30px" }}>
               Medicine
             </Typography>
-            <Fab
+           { userType !== "patient" && <Fab
               style={buttonStyle}
               onClick={() => setAddMedicineExpanded((prev) => !prev)}
             >
@@ -302,10 +324,11 @@ const MedicineView = ({ userType }) => {
               ) : (
                 <AddIcon style={iconStyle} />
               )}
-            </Fab>
+            </Fab>}
             {userType !== "patient" && !salesReportDateExpanded && !addMedicineExpanded && <Button variant="contained" sx={{ m: "30px", marginLeft: '200px' }} onClick={handleSalesReportClick}>
               Sales Report
             </Button>}
+            {userType === "patient" && <ShoppingCartIcon onClick={()=>setPage('MyCart')} sx={{ marginLeft: '860px', marginTop:"35px", cursor:"pointer" }}/>}
             <Box component={"form"} onSubmit={(e) => handleSubmit(e)} sx={{ display: 'flex', alignItems: 'center' }}>
               {salesReportDateExpanded && !addMedicineExpanded && <TextField
                 id="salesReportDate"
@@ -408,6 +431,7 @@ const MedicineView = ({ userType }) => {
             {medicine &&
               medicine.map((item, index) => (
                 <React.Fragment key={index}>
+                  {(!item.archived || userType==="admin" || userType==="pharmacist") &&
                   <ListItem button onClick={() => handleItemExpand(item)}>
                     <ListItemText
                       primary={`${item.name.toUpperCase()}`}
@@ -440,6 +464,7 @@ const MedicineView = ({ userType }) => {
                       height="230px"
                     />
                   </ListItem>
+                  }
                   <Collapse in={item.name === expandedItem} timeout="auto" unmountOnExit>
                     {userType === "pharmacist" &&
                       <>
@@ -468,27 +493,48 @@ const MedicineView = ({ userType }) => {
                             </Button>
                           </Box>
                         )}
+                        <Button
+                          variant="contained"
+                          sx={{ m: "30px" }}
+                          onClick={() => setStage("details")}
+                        >
+                          View Details and Edit
+                        </Button>
                       </>
                     }
 
-                    {userType === "pharmacist" && (
-                      <Button
-                        variant="contained"
-                        sx={{ m: "30px" }}
-                        onClick={() => setStage("details")}
-                      >
-                        View Details and Edit
-                      </Button>
-                    )}
+                    {userType === "patient" &&
+                      <> {item.stockQuantity > 0 && (
+                        <AddToCartForm key={item._id} medicine={item} setAlert={setAlert} />
+                      )}
+                        {item.stockQuantity <= 0 && (
+                          <Button
+                            variant="contained"
+                            sx={{ m: "30px" }}
+                            onClick={() => handleGetSubstitute(item)}
+                          >
+                            View Alternatives
+                          </Button>
+                        )}
+                      </>
+                    }
                   </Collapse>
                 </React.Fragment>
-              ))}
+              ))
+            }
           </List>
         </Paper>
-        {console.log(filteredReports)}
         {salesReport && <Popup title={"Sales report on: " + salesReport.month.substr(0, 7)} content={salesReport} onClose={() => setSalesReport(null)} showButtons={false} />}
         {filteredReports && filteredReports.month && <Popup title={"Sales report on: " + filteredReports.month.substr(0, 7)} content={filteredReports} onClose={() => setFilteredReports(null)} showButtons={false} />}
-
+        {back && (
+          <Button
+            variant="contained"
+            sx={{ m: "30px" }}
+            onClick={() => fetchMedicines()}
+          >
+            Back
+          </Button>
+        )}
       </>
     );
   };
@@ -587,7 +633,7 @@ const MedicineView = ({ userType }) => {
         >
           <KeyboardArrowLeftIcon />
         </Fab>
-        <Container maxWidth="md" sx={{ marginTop: 15, minHeight: "400px" }}>
+          <Container maxWidth="md" sx={{ marginTop: 15, minHeight: "400px" }}>
           <Box
             sx={{
               display: "flex",

@@ -16,6 +16,8 @@ import DoctorsStage from "../AdminEmployees/DoctorsStage";
 import HealthPackagesView from "../HealthPackagesView";
 import PatientPage from "../PatientPage";
 import PharmacistsStage from "../AdminEmployees/PharmacistsStage";
+import Checkout from "../Checkout";
+import MyCart from "../MyCart";
 import Chat from "../Chat";
 
 const PatientHomePage = () => {
@@ -28,68 +30,68 @@ const PatientHomePage = () => {
     const Home = () => {
         return (
             <>
-               
-                    <Grid item xs={12} sm={12} />
-                    <Grid item xs={12} sm={4}>
-                        <SquareCard
-                            title="MEDICAL FILE"
-                            body="Lorem ipsum sit amet consectetur adipiscing elit. Vivamus et erat in lacus convallis sodales."
-                            icon={AssignmentIcon}
-                            isLearnMore={false}
-                            changeFunction={() => setPage("medicalFile")}
-                            closeFunction={() => setPage("home")}
-                        />
-                    </Grid>
-                    <Grid item xs={12} sm={4}>
-                        <SquareCard
-                            title="APPOINTMENTS"
-                            body="Lorem ipsum sit amet consectetur adipiscing elit. Vivamus et erat in lacus convallis sodales."
-                            icon={AccessAlarmIcon}
-                            isLearnMore={false}
-                            changeFunction={() => setPage("appointments")}
-                            closeFunction={() => setPage("home")}
-                        />
-                    </Grid>
-                    <Grid item xs={12} sm={4} >
-                        <SquareCard
-                            title="MEDICINE"
-                            body="Lorem ipsum sit amet consectetur adipiscing elit. Vivamus et erat in lacus convallis sodales."
-                            icon={VaccinesIcon}
-                            isLearnMore={false}
-                            changeFunction={() => setPage("medicine")}
-                            closeFunction={() => setPage("home")}
-                        />
-                    </Grid>
-                    <Grid item xs={12} sm={4}>
-                        <SquareCard
-                            title="HEALTH PACKAGE"
-                            body="Lorem ipsum sit amet consectetur adipiscing elit. Vivamus et erat in lacus convallis sodales."
-                            icon={MedicationIcon}
-                            isLearnMore={false}
-                            changeFunction={() => setPage("healthPackage")}
-                            closeFunction={() => setPage("home")}
-                        />
-                    </Grid>
-                    <Grid item xs={12} sm={4}>
-                        <SquareCard
-                            title="DOCTORS"
-                            body="Lorem ipsum sit amet consectetur adipiscing elit. Vivamus et erat in lacus convallis sodales."
-                            icon={LocalHospitalIcon}
-                            isLearnMore={false}
-                            changeFunction={() => setPage("doctors")}
-                            closeFunction={() => setPage("home")}
-                        />
-                    </Grid>
-                    <Grid item xs={12} sm={4}>
-                        <SquareCard
-                            title="PHARMACISTS"
-                            body="Lorem ipsum sit amet consectetur adipiscing elit. Vivamus et erat in lacus convallis sodales."
-                            icon={HealingIcon}
-                            isLearnMore={false}
-                            changeFunction={() => setPage("pharmacists")}
-                            closeFunction={() => setPage("home")}
-                        />
-                    </Grid>
+
+                <Grid item xs={12} sm={12} />
+                <Grid item xs={12} sm={4}>
+                    <SquareCard
+                        title="MEDICAL FILE"
+                        body="Lorem ipsum sit amet consectetur adipiscing elit. Vivamus et erat in lacus convallis sodales."
+                        icon={AssignmentIcon}
+                        isLearnMore={false}
+                        changeFunction={() => setPage("medicalFile")}
+                        closeFunction={() => setPage("home")}
+                    />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                    <SquareCard
+                        title="APPOINTMENTS"
+                        body="Lorem ipsum sit amet consectetur adipiscing elit. Vivamus et erat in lacus convallis sodales."
+                        icon={AccessAlarmIcon}
+                        isLearnMore={false}
+                        changeFunction={() => setPage("appointments")}
+                        closeFunction={() => setPage("home")}
+                    />
+                </Grid>
+                <Grid item xs={12} sm={4} >
+                    <SquareCard
+                        title="MEDICINE"
+                        body="Lorem ipsum sit amet consectetur adipiscing elit. Vivamus et erat in lacus convallis sodales."
+                        icon={VaccinesIcon}
+                        isLearnMore={false}
+                        changeFunction={() => setPage("medicine")}
+                        closeFunction={() => setPage("home")}
+                    />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                    <SquareCard
+                        title="HEALTH PACKAGE"
+                        body="Lorem ipsum sit amet consectetur adipiscing elit. Vivamus et erat in lacus convallis sodales."
+                        icon={MedicationIcon}
+                        isLearnMore={false}
+                        changeFunction={() => setPage("healthPackage")}
+                        closeFunction={() => setPage("home")}
+                    />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                    <SquareCard
+                        title="DOCTORS"
+                        body="Lorem ipsum sit amet consectetur adipiscing elit. Vivamus et erat in lacus convallis sodales."
+                        icon={LocalHospitalIcon}
+                        isLearnMore={false}
+                        changeFunction={() => setPage("doctors")}
+                        closeFunction={() => setPage("home")}
+                    />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                    <SquareCard
+                        title="PHARMACISTS"
+                        body="Lorem ipsum sit amet consectetur adipiscing elit. Vivamus et erat in lacus convallis sodales."
+                        icon={HealingIcon}
+                        isLearnMore={false}
+                        changeFunction={() => setPage("pharmacists")}
+                        closeFunction={() => setPage("home")}
+                    />
+                </Grid>
             </>
         );
     };
@@ -104,7 +106,10 @@ const PatientHomePage = () => {
                     ) : page === "home" ? (
                         <Home />
                     ) : page === "medicine" ? (
-                        <MedicineView userType={"patient"} />
+                        <MedicineView
+                            userType={"patient"}
+                            setPage={(path) => setPage(path)}
+                         />
                     ) : page === "doctors" ? (
                         <DoctorsStage
                             setStage={() => setPage("home")}
@@ -127,8 +132,12 @@ const PatientHomePage = () => {
                         "Appointment page from omar"
                     ) : page === "healthPackages " ? (
                         <HealthPackagesView userType={"patient"} />
-                    ) : (
-                        <PatientPage/>
+                    ) : page === "medicalFile" ?(
+                        <PatientPage />
+                    ) : page === "MyCart" ?(
+                        <MyCart setPage={(path) => setPage(path)}/>
+                    ): (
+                        <Checkout/>
                     )}
                     {chat && <Chat partner={chatterID} name={chatterName} setChat={setChat} />}
                 </Grid>
