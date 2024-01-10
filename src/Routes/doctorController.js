@@ -9,6 +9,7 @@ const healthPackageModel = require("../Models/HealthPackage.js");
 const doctorDocuments = require("../Models/DoctorDocuments.js");
 const familyMemberModel = require("../Models/FamilyMember.js");
 const FamilyMemberModel = require("../Models/FamilyMember.js");
+const notificationSystemModel = require("../Models/NotificationSystem.js")
 const { default: mongoose } = require("mongoose");
 const bcrypt = require("bcrypt");
 
@@ -261,7 +262,6 @@ const viewPatient = async (req, res) => {
       .populate({ path: "healthPackage" });
     const packageID = patient.healthPackage.healthPackageID;
     const healthPackage = await healthPackageModel.findById(packageID);
-    console.log(healthPackage);
     const extendedPatient = {
       ...patient.toObject(),
       healthPackage,
@@ -445,7 +445,7 @@ const addAppointmentSlots = async (req, res) => {
             .catch((err) => console.log(err.message));
           discount = 1 - healthPackage.doctorDiscount / 100;
         }
-        // console.log(doctor.hourlyRate);
+        
         const appointment = await appointmentModel.create({
           doctor: doctor._id,
           date,
@@ -612,10 +612,12 @@ const approveRequest = async (req, res) => {
   }
 };
 const doctorRetrieveNotifications = async (req, res) => {
+  console.log("im here");
   const notifications = await notificationSystemModel.find({
     type: "Doctor",
     Id: req.user._id.toString(),
   });
+  console.log(notifications);
   return res.json(notifications);
 };
 

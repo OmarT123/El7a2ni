@@ -240,7 +240,7 @@ const {
   removeFromCart,
   decreaseByOne,
   increaseByOne,
-  payWithCard,
+  payWithCardPackage,
   payWithWallet,
   sendCheckoutMail,
   getAllAddresses,
@@ -258,6 +258,9 @@ const {
   patientRetrieveNotifications,
   payWithWalletCart,
   payWithCardCart,
+  getUniqueCode,
+  createOrderPending,
+  removeOrderPending,
   rescheduleAppointmentAsPatient,
   getSocketId,
   updateSocketId,
@@ -357,6 +360,10 @@ app.get("/viewPharmacist", getUserFromTokenMiddleware, getPharmacist);
 //Patient
 app.put("/updateSocketId",getUserFromTokenMiddleware ,updateSocketId);
 app.get("/getSocketId",getSocketId);
+app.get("/getUniqueCode",getUserFromTokenMiddleware,getUniqueCode);
+app.post("/createOrderPending",getUserFromTokenMiddleware,createOrderPending);
+app.delete("/removeOrderPending",getUserFromTokenMiddleware,removeOrderPending)
+
 app.post("/addFamilyMember", getUserFromTokenMiddleware, createFamilyMember);
 app.put(
   "/rescheduleAppointmentAsPatient",
@@ -449,7 +456,7 @@ app.get("/viewMyCart", getUserFromTokenMiddleware, viewMyCart);
 app.put("/removeFromCart", getUserFromTokenMiddleware, removeFromCart);
 app.put("/decreaseByOne", getUserFromTokenMiddleware, decreaseByOne);
 app.put("/increaseByOne", getUserFromTokenMiddleware, increaseByOne);
-app.get("/payWithCard", getUserFromTokenMiddleware, payWithCard);
+app.get("/payWithCardPackage", getUserFromTokenMiddleware, payWithCardPackage);
 app.get("/payWithWallet", getUserFromTokenMiddleware, payWithWallet);
 app.get("/sendCheckoutMail", getUserFromTokenMiddleware, sendCheckoutMail);
 app.get("/getAllAddresses", getUserFromTokenMiddleware, getAllAddresses);
@@ -533,7 +540,7 @@ app.post(
 );
 app.put("/approveRequest", getUserFromTokenMiddleware, approveRequest);
 app.get(
-  "doctorRetrieveNotifications",
+  "/doctorRetrieveNotifications",
   getUserFromTokenMiddleware,
   doctorRetrieveNotifications
 );

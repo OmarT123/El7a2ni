@@ -28,6 +28,9 @@ const patientSchema = new Schema(
       type: String,
       required: true,
     },
+    uniqueCode: {
+      type: String,
+    },
     mobileNumber: {
       type: String,
       required: true,

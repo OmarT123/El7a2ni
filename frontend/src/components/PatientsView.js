@@ -400,8 +400,12 @@ const PatientsView = ({
                         >
                           View Details
                         </Button>
-                        <Button variant="contained" sx={{ m: "30px" }}>
-                          Chat with Patient
+                        <Button
+                          variant="contained"
+                          sx={{ m: "30px" }}
+                          onClick={(e) => openChat(e, item._id, item.name)}
+                        >
+                          Chat With Patient
                         </Button>
                         <Button
                           variant="contained"
