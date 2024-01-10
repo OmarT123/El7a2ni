@@ -1376,7 +1376,7 @@ const payWithCardPackage = async (req, res) => {
         quantity: 1,
       },
     ],
-    success_url: `http://localhost:3000/SuccessfulCheckoutPackage?code=${uniqueCode}id=${packageId}name=${name}`,
+    success_url: `http://localhost:3000/SuccessfulCheckoutPackage?code=${uniqueCode}&id=${packageId}&name=${name}`,
     cancel_url: `http://localhost:3000/CancelCheckout?code=${" "}`
   });
   res.json({ url: session.url });

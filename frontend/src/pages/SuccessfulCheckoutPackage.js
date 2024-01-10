@@ -13,6 +13,8 @@ const SuccessfulCheckoutPackage = () => {
         const uniqueCode = queryParams.get('code');
         const id=queryParams.get('id');
         const name=queryParams.get('name');
+        console.log(uniqueCodeDB)
+        console.log(uniqueCode)
         if(uniqueCode !== uniqueCode)
             window.location.href='/'
         else{
