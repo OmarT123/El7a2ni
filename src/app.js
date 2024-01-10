@@ -245,7 +245,7 @@ const {
   removeFromCart,
   decreaseByOne,
   increaseByOne,
-  payWithCard,
+  payWithCardPackage,
   payWithWallet,
   sendCheckoutMail,
   getAllAddresses,
@@ -262,7 +262,10 @@ const {
   getMessages,
   patientRetrieveNotifications,
   payWithWalletCart,
-  payWithCardCart
+  payWithCardCart,
+  getUniqueCode,
+  createOrderPending,
+  removeOrderPending
 } = require("./Routes/patientController");
 
 const {
@@ -357,6 +360,11 @@ app.get("/viewAllPharmacists", getUserFromTokenMiddleware, viewAllPharmacists);
 app.get("/viewPharmacist", getUserFromTokenMiddleware, getPharmacist);
 
 //Patient
+app.get("/getUniqueCode",getUserFromTokenMiddleware,getUniqueCode);
+app.post("/createOrderPending",getUserFromTokenMiddleware,createOrderPending);
+app.delete("/removeOrderPending",getUserFromTokenMiddleware,removeOrderPending)
+
+
 app.post("/addFamilyMember", getUserFromTokenMiddleware, createFamilyMember);
 app.get(
   "/searchDoctor",
@@ -440,7 +448,7 @@ app.get("/viewMyCart", getUserFromTokenMiddleware, viewMyCart);
 app.put("/removeFromCart", getUserFromTokenMiddleware, removeFromCart);
 app.put("/decreaseByOne", getUserFromTokenMiddleware, decreaseByOne);
 app.put("/increaseByOne", getUserFromTokenMiddleware, increaseByOne);
-app.get("/payWithCard", getUserFromTokenMiddleware, payWithCard);
+app.get("/payWithCardPackage", getUserFromTokenMiddleware, payWithCardPackage);
 app.get("/payWithWallet", getUserFromTokenMiddleware, payWithWallet);
 app.get("/sendCheckoutMail", getUserFromTokenMiddleware, sendCheckoutMail);
 app.get("/getAllAddresses", getUserFromTokenMiddleware, getAllAddresses);
