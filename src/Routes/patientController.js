@@ -761,9 +761,15 @@ const getFamilyMembers = async (req, res) => {
     const patient = await patientModel
       .findById(patientId)
       .populate({ path: "familyMembers" });
-    const familyMember = patient.familyMembers;
-    res.json(familyMember);
+      // console.log(patient)
+      // console.log(result)
+      const result = [patient.name]
+      const familyMember = patient.familyMembers.map(fm => fm.name);
+      const final = result.concat(familyMember)
+    // console.log(final)
+    res.json(final);
   } catch (err) {
+    console.log(err.message)
     res.json(err.message);
   }
 };
