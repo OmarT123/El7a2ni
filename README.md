@@ -242,19 +242,19 @@ Here are all of the main API routes used in the project:
 ### 6. Successful Checkout
 
 - **Route:** `/SuccessfulCheckout`
-- **Description:** Page for successful appointment checkout.
+- **Description:** Page for successful credit card checkout after buying medecines.
 
 
 ### 7. Cancel Checkout
 
 - **Route:** `/CancelCheckout`
-- **Description:**  Page for canceled appointment checkout.
+- **Description:**  Page for cancelled credit card transaction.
 
 
 ### 8. Successful Checkout Package
 
 - **Route:** `/SuccessfulCheckoutPackage`
-- **Description:** Page for successful health package checkout.
+- **Description:** Page for successful credit card checkout after buying health packages.
 
 
 
