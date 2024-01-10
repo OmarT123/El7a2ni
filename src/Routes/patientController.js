@@ -643,13 +643,13 @@ const filterPrescriptionByDateDoctorStatus = async (req, res) => {
       const doctors = await doctorModel.find({ name: searchQuery });
 
       if (!doctors || doctors.length === 0) {
-        return res.json({success: false, message : "Doctor is not Found!!"});
+        return res.json({ success: false, message: "Doctor is not Found!!" });
       }
 
       const doctorIds = doctors.map((doctor) => doctor._id);
       baseQuery["doctor"] = { $in: doctorIds };
     } catch (error) {
-      return res.json({success: false, message : error.message});
+      return res.json({ success: false, message: error.message });
     }
   }
 
@@ -672,7 +672,7 @@ const filterPrescriptionByDateDoctorStatus = async (req, res) => {
       .exec();
 
     if (prescriptions.length === 0) {
-      return res.json({success: false, message: "No prescriptions found!"});
+      return res.json({ success: false, message: "No prescriptions found!" });
     }
     let extendedPrescriptions = [];
     for (prescription of prescriptions) {
@@ -683,9 +683,9 @@ const filterPrescriptionByDateDoctorStatus = async (req, res) => {
       };
       extendedPrescriptions.push(extendedPrescription);
     }
-    return res.json({success: true, prescriptions: extendedPrescriptions});
+    return res.json({ success: true, prescriptions: extendedPrescriptions });
   } catch (err) {
-    return res.json({success: false, message: "Internal Server Error"});
+    return res.json({ success: false, message: "Internal Server Error" });
   }
 };
 
@@ -764,9 +764,9 @@ const viewMyPrescriptions = async (req, res) => {
       .populate({ path: "medicines.medId" })
       .populate({ path: "doctor" })
       .exec();
-    res.json({success: true, prescriptions :prescriptions});
+    res.json({ success: true, prescriptions: prescriptions });
   } catch (err) {
-    res.json({success: false, message: err.message});
+    res.json({ success: false, message: err.message });
   }
 };
 
@@ -786,21 +786,37 @@ const selectPrescription = async (req, res) => {
 
 const filterDoctorsSpecialityDate = async (req, res) => {
   try {
+    let discount = 1;
+    const clinicMarkUp = process.env.CLINIC_MARKUP;
+    const patient = await patientModel.findById(req.user._id);
+    if (patient.healthPackage) {
+      const healthPackageID = patient.healthPackage.healthPackageID.toString();
+      const healthPackage = await healthPackageModel.findById(healthPackageID);
+      discount = 1 - healthPackage.doctorDiscount / 100;
+    }
+
     if (req.query.date) {
       const dateParam = req.query.date;
       const startDate = new Date(dateParam);
-      const endDate = new Date(dateParam);
-      endDate.setDate(endDate.getDate() + 1);
+      startDate.setHours(startDate.getHours() + 1)
+      const endDate = new Date(startDate);
+      endDate.setHours(startDate.getHours() + 1);
+
 
       let busyDoctors = await appointmentModel
-        .find({ createdAt: { $gte: startDate, $lt: endDate } })
+        .find({ date: { $gte: startDate, $lt: endDate }, status: "upcoming" })
         .populate({ path: "doctor" });
       const busyDoctorsMapped = busyDoctors.map(
         (appointment) => appointment.doctor
       );
       let query = {};
-      if (req.query.speciality) query["speciality"] = req.query.speciality;
+      query["status"] = "accepted";
+      if (req.query.name) {
+        query["name"] = new RegExp(req.query.name, "i");
+      }
+      if (req.query.speciality) query["speciality"] = new RegExp(req.query.speciality, "i");
       let doctors = await doctorModel.find(query);
+
       let availableDoctors = [];
       for (let i = 0; i < doctors.length; i++) {
         let found = false;
@@ -811,15 +827,31 @@ const filterDoctorsSpecialityDate = async (req, res) => {
         }
         if (!found) availableDoctors.push(doctors[i]);
       }
-      res.send(availableDoctors);
+
+      const data = availableDoctors.map((element) => {
+        const sessionPrice = (element.hourlyRate + (10 / 100) * clinicMarkUp) * discount;
+        return { ...element.toObject(), sessionPrice };
+      });
+
+      res.json({ success: true, doctors: data });
     } else {
       let query = {};
-      if (req.query.speciality) query["speciality"] = req.query.speciality;
+      query["status"] = "accepted";
+      if (req.query.speciality) query["speciality"] = new RegExp(req.query.speciality, "i");
+      if (req.query.name) {
+        query["name"] = new RegExp(req.query.name, "i");
+      }
       let doctors = await doctorModel.find(query);
-      res.send(doctors);
+
+      const data = doctors.map((element) => {
+        const sessionPrice = (element.hourlyRate + (10 / 100) * clinicMarkUp) * discount;
+        return { ...element.toObject(), sessionPrice };
+      });
+
+      res.json({ success: true, doctors: data });
     }
   } catch (err) {
-    res.send(err.message);
+    res.json({ success: false, message: err.message });
   }
 };
 
@@ -1386,7 +1418,7 @@ const getHealthPackageForFamily = async (req, res) => {
 
 const getDoctors = async (req, res) => {
   try {
-    const doctors = await doctorModel.find({});
+    const doctors = await doctorModel.find({ status: "accepted" });
     const clinicMarkUp = process.env.CLINIC_MARKUP;
     const patientId = req.user._id;
     const patient = await patientModel.findById(patientId);
@@ -1406,9 +1438,9 @@ const getDoctors = async (req, res) => {
       // console.log(sessionPrice)
       data.push({ ...element, sessionPrice: sessionPrice });
     }
-    res.status(200).json(data);
+    res.json({ success: true, approved: data });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.json({ success: false, message: error.message });
   }
 };
 
@@ -1713,12 +1745,14 @@ const addPrescriptionToCart = async (req, res) => {
   for (requestedMedicine of medicines) {
     const medicine = await medicineModel.findById(requestedMedicine.medId);
     if (medicine.archived === true)
-      return res.json({success: false,
+      return res.json({
+        success: false,
         message:
           "One of the medicine is currently not being sold by our pharmacy, please buy these medicines seperately.",
       });
     if (requestedMedicine.dosage > medicine.stockQuantity) {
-      return res.json({success: false,
+      return res.json({
+        success: false,
         message:
           "Requested quantity of a certain medicine exceeds available stock, please buy these medicines seperately.",
       });
@@ -1730,10 +1764,11 @@ const addPrescriptionToCart = async (req, res) => {
     if (existingCartItemIndex !== -1) {
       if (
         patient.cart.items[existingCartItemIndex].quantity +
-          requestedMedicine.dosage >
+        requestedMedicine.dosage >
         medicine.stockQuantity
       )
-        return res.json({success: false,
+        return res.json({
+          success: false,
           message:
             "Requested quantity of a certain medicine exceeds available stock, please buy these medicines seperately.",
         });
