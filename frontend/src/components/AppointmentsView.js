@@ -121,14 +121,21 @@ const AppointmentsView = ({ backButton, userType, doctor }) => {
       const body = {};
       // body["url"] = "SuccessfulCheckoutAppointment";
       // console.log(appointment)
-      body["item"] = { name: "Appointment", price: appointment.price };
+      body["price"] = appointment.price
+      body["appointmentId"] = appointment._id;
+      let name = appointment.attendantName;
+      if (selectedFamilyMember) name = selectedFamilyMember;
+      body["name"] = name;
+      body["f"] = f;
+      body["date"] = `${selectedDate}T${selectedTime}:00.000Z`;
+      console.log(body)
       // body["type"] = "appointment";
 
-      localStorage.setItem("attendantName", selectedFamilyMember);
+      // localStorage.setItem("attendantName", selectedFamilyMember);
       if (selectedFamilyMember === "") alert("Please Select a family member");
       else
         await axios
-          .get("/payWithCard", { params: body })
+          .get("/payWithCardApp", { params: body })
           .then((res) => (window.location.href = res.data.url))
           .catch((err) => console.log(err));
     };
@@ -521,7 +528,7 @@ const AppointmentsView = ({ backButton, userType, doctor }) => {
           <Typography variant="h4" sx={{ m: "30px" }}>
             Appointments
           </Typography>
-          {userType === "pharmacist" && (
+          {userType === "doctor" && (
             <Fab
               style={buttonStyle}
               onClick={() => setAddAppointmentExpanded((prev) => !prev)}

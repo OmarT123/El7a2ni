@@ -267,6 +267,7 @@ const {
   createOrderPending,
   removeOrderPending,
   rescheduleAppointmentAsPatient,
+  payWithCardApp
 } = require("./Routes/patientController");
 
 const {
@@ -484,6 +485,7 @@ app.get(
 );
 app.get("/payWithWalletCart", getUserFromTokenMiddleware, payWithWalletCart);
 app.get("/payWithCardCart", getUserFromTokenMiddleware, payWithCardCart);
+app.get("/payWithCardApp", getUserFromTokenMiddleware, payWithCardApp);
 
 //Doctor
 app.put(
