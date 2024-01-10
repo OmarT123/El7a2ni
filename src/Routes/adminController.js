@@ -442,6 +442,7 @@ const deleteAdmin = async (req, res) => {
   const adminId = req.query.id;
   try {
     await adminModel.findByIdAndDelete(adminId);
+    await userModel.findOneAndDelete({userId: adminId})
     res
       .status(200)
       .json({ success: true, title: "Admin Removed Successfully" });
@@ -494,6 +495,7 @@ const getAllDoctors = async (req, res) => {
 };
 
 const getAllAdmins = async (req, res) => {
+  const id = req.user._id
   try {
     const allAdmins = await adminModel.find({});
     const filteredAdmins = allAdmins.filter(

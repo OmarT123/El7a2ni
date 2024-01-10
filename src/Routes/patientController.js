@@ -1593,6 +1593,10 @@ const cancelAppointment = async (req, res) => {
     const oldStatus = appointment.status
     appointment.status = "cancelled";
     await appointment.save();
+    if (oldStatus === 'free')
+    {
+      return res.json({success:true, title:'Slot Removed'})
+    }
 
     const appointmentDate = new Date(appointment.date);
     const currentDate = new Date();

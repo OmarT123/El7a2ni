@@ -67,6 +67,16 @@ const AppointmentsView = ({ backButton }) => {
   const [filterDate, setFilterDate] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [showResetButton, setShowResetButton] = useState(false);
+  const [followupExpanded, setFollowupExpanded] = useState(false);
+  const [rescheduleExpanded, setRescheduleExpanded] = useState(false);
+
+  const handleRescheduleExpand = (item) => {
+    setRescheduleExpanded(
+      item._id.toString() === rescheduleExpanded ? null : item._id
+    );
+    setFollowupExpanded(false);
+    setAddAppointmentExpanded(false);
+  };
 
   const fetchAppointments = async () => {
     try {
@@ -83,27 +93,79 @@ const AppointmentsView = ({ backButton }) => {
 
   const handleItemExpand = (item) => {
     setExpandedItem(item._id.toString() === expandedItem ? null : item._id);
+    setFollowupExpanded(false);
+    setRescheduleExpanded(false);
   };
 
-  const createFreeAppointment = () => {};
+  const handleFollowupExpand = (item) => {
+    setFollowupExpanded(
+      item._id.toString() === followupExpanded ? null : item._id
+    );
+    setAddAppointmentExpanded(false);
+    setRescheduleExpanded(false);
+  };
+
+  const createFreeAppointment = async (e, id) => {
+    e.preventDefault();
+
+    if (!selectedDate || !selectedTime) {
+      setAlert({
+        title: "Insufficient Data",
+        message: "Please provide both Date and Time",
+      });
+      return;
+    }
+    let newAppointment = {};
+
+    const baseTime = new Date(`2000-01-01T${selectedTime}:00.000Z`);
+    const newTime = new Date(baseTime.getTime() + 60 * 60 * 1000);
+    const formattedNewTime = newTime.toISOString().substr(11, 5);
+    // console.log(formattedNewTime);
+    // if (formattedNewTime)return
+
+    if (id) {
+      newAppointment = {
+        date: selectedDate,
+        time: formattedNewTime,
+        patientID: id,
+      };
+    } else {
+      newAppointment = {
+        date: selectedDate,
+        time: formattedNewTime,
+      };
+    }
+    try {
+      const response = await axios.post("/addAppointmentSlots", newAppointment);
+      const result = response.data;
+
+      setAlert(result);
+      fetchAppointments();
+      // Clear selected date and time
+      setAddAppointmentExpanded(false);
+      setSelectedDate("");
+      setSelectedTime("");
+    } catch (error) {
+      console.error("Error adding appointment:", error);
+    }
+  };
 
   const updateAvailableTimes = async (e) => {
     e.preventDefault();
     setSelectedDate(e.target.value);
-    const response = await axios.get("/filterAppointmentsForDoctor", {
-      status: "",
-      date: "",
-    });
-    const apps = response.data;
-    console.log(apps);
-    // Extract existing times for the selected date
-    // const existingTimes = apps
-    //   .filter(
-    //     (appointment) => appointment.date.substr(0, 10) === e.target.value
-    //   )
-    //   .map((appointment) => appointment.date.substr(11, 5));
+    console.log(e.target.value);
+    const inputDate = e.target.value;
+    const currentDate = new Date();
 
-    // Generate available times
+    const inputDateTime = new Date(`${inputDate}T00:00:00.000Z`);
+    if (inputDateTime <= currentDate) {
+      setSelectedDate(null);
+      setAlert({
+        title: "Cant Reserve",
+        message: "You can only reserve dates in the future",
+      });
+      return;
+    }
     const allTimes = [
       "09:00",
       "10:00",
@@ -114,11 +176,42 @@ const AppointmentsView = ({ backButton }) => {
       "15:00",
       "16:00",
     ];
-    // const availableTimes = allTimes.filter(
-    //   (time) => !existingTimes.includes(time)
-    // );
 
-    setAvailableTimes(availableTimes);
+    const response = await axios.get("/filterAppointmentsForDoctor", {
+      status: "",
+      date: "",
+    });
+    if (!response.data.success) {
+      setAvailableTimes(allTimes);
+      return;
+    }
+    const apps = response.data.appointmentData;
+    // console.log(apps)
+    // console.log(apps);
+    // Extract existing times for the selected date
+    const upcoming = apps.upcomingAppointments
+      .filter(
+        (appointment) => appointment.date.substr(0, 10) === e.target.value
+      )
+      .map((appointment) => appointment.date.substr(11, 5));
+    const free = apps.freeAppointments
+      .filter(
+        (appointment) => appointment.date.substr(0, 10) === e.target.value
+      )
+      .map((appointment) => appointment.date.substr(11, 5));
+
+    console.log("done");
+    // console.log(upcoming, free);
+    // Generate available times
+
+    const availableTimes1 = allTimes.filter((time) => !upcoming.includes(time));
+    // console.log(availableTimes1);
+    const availableTimes2 = availableTimes1.filter(
+      (time) => !free.includes(time)
+    );
+    // console.log(availableTimes2);
+
+    setAvailableTimes(availableTimes2);
   };
 
   const filterAppointments = async (e) => {
@@ -164,6 +257,7 @@ const AppointmentsView = ({ backButton }) => {
     const response = await axios.put("/approveRequest", {
       appointmentID: appointmentID,
     });
+    console.log(response.data);
     if (response.data.success) {
       setAlert(response.data);
       fetchAppointments();
@@ -183,13 +277,32 @@ const AppointmentsView = ({ backButton }) => {
     setShowResetButton(false);
   };
 
-  const rescheduleAppointment = () => {};
+  const rescheduleAppointment = async (e, id) => {
+    e.preventDefault();
+    // console.log(selectedDate, selectedTime)
+    // if (selectedDate)return
+    const baseTime = new Date(`2000-01-01T${selectedTime}:00.000Z`);
+    const newTime = new Date(baseTime.getTime() + 60 * 60 * 1000);
+    const formattedNewTime = newTime.toISOString().substr(11, 5);
+    try {
+      const response = await axios.put("/rescheduleAppointmentForPatient", {
+        appointmentId: id,
+        newDate: `${selectedDate}T${selectedTime}:00.000Z`,
+      });
+      //   console.log(response.data)
+      setAlert({ title: "Appointment Rescheduled" });
+      fetchAppointments();
+    } catch (error) {
+      setAlert(error.response?.data?.message || error.message);
+    }
+  };
 
   const cancelAppointment = async (e, appointmentID) => {
     e.preventDefault();
     const response = await axios.put("/cancelAppointment", {
       appointmentID: appointmentID,
     });
+    console.log(response.data);
     if (response.data.success) {
       setAlert(response.data);
       fetchAppointments();
@@ -200,8 +313,6 @@ const AppointmentsView = ({ backButton }) => {
       });
     }
   };
-
-  const scheduleFollowup = () => {};
 
   useEffect(() => {
     fetchAppointments();
@@ -247,7 +358,7 @@ const AppointmentsView = ({ backButton }) => {
               <MenuItem value={"completed"}>Completed</MenuItem>
               <MenuItem value={"cancelled"}>Cancelled</MenuItem>
             </Select>
-            <Box marginLeft="8px" display="flex" sx={{width:'20%'}}>
+            <Box marginLeft="8px" display="flex" sx={{ width: "20%" }}>
               <Button
                 variant="outlined"
                 onClick={filterAppointments}
@@ -302,6 +413,7 @@ const AppointmentsView = ({ backButton }) => {
           <Fab
             style={buttonStyle}
             onClick={() => setAddAppointmentExpanded((prev) => !prev)}
+            sx={{ display: alert ? "none" : "" }}
           >
             {addAppointmentExpanded ? (
               <ClearIcon style={iconStyle} />
@@ -329,7 +441,7 @@ const AppointmentsView = ({ backButton }) => {
                 InputLabelProps={{
                   shrink: true,
                 }}
-                sx={{ width: "50%", my: 3, mr: "5%" }}
+                sx={{ width: "40%", my: 3, mr: "5%" }}
               />
               <Box sx={{ width: "1%" }} />
               {selectedDate && (
@@ -341,7 +453,7 @@ const AppointmentsView = ({ backButton }) => {
                     value={selectedTime}
                     label="Select Option"
                     onChange={(e) => setSelectedTime(e.target.value)}
-                    sx={{ width: "45%" }}
+                    sx={{ width: "40%", height: "80%" }}
                   >
                     {availableTimes.map((time) => (
                       <MenuItem value={time}>{time}</MenuItem>
@@ -384,7 +496,9 @@ const AppointmentsView = ({ backButton }) => {
                         <List>
                           <ListItem>
                             <ListItemText
-                              primary={`Attendant Name: ${item.attendantName}`}
+                              primary={`Attendant Name: ${
+                                item.attendantName || "NOT RESERVED"
+                              }`}
                             />
                           </ListItem>
                           <ListItem>
@@ -398,6 +512,11 @@ const AppointmentsView = ({ backButton }) => {
                               })}`}
                             />
                           </ListItem>
+                          <ListItem>
+                            <ListItemText
+                              primary={`Time: ${item.date.substr(11, 5)}`}
+                            />
+                          </ListItem>
                         </List>
                       </Container>
                     </ListItem>
@@ -409,9 +528,9 @@ const AppointmentsView = ({ backButton }) => {
                       <Button
                         variant="contained"
                         sx={{ m: "30px" }}
-                        onClick={rescheduleAppointment}
+                        onClick={() => handleRescheduleExpand(item)}
                       >
-                        Reschedule Appointmetn
+                        Reschedule Appointment
                       </Button>
                       <Button
                         variant="contained"
@@ -420,6 +539,63 @@ const AppointmentsView = ({ backButton }) => {
                       >
                         Cancel Appointment
                       </Button>
+                      <Collapse
+                        in={item._id.toString() === rescheduleExpanded}
+                        timeout="auto"
+                        unmountOnExit
+                      >
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "stretch",
+                          }}
+                        >
+                          <Box sx={{ display: "flex", flexDirection: "row" }}>
+                            <TextField
+                              id="date"
+                              label="Date"
+                              type="date"
+                              placeholder="Date"
+                              value={selectedDate}
+                              onChange={updateAvailableTimes}
+                              InputLabelProps={{
+                                shrink: true,
+                              }}
+                              sx={{ width: "40%", my: 3, mr: "5%" }}
+                            />
+                            <Box sx={{ width: "1%" }} />
+                            {selectedDate && (
+                              <>
+                                <InputLabel id="select-label">
+                                  Select Option
+                                </InputLabel>
+                                <Select
+                                  labelId="select-label"
+                                  id="select"
+                                  value={selectedTime}
+                                  label="Select Option"
+                                  onChange={(e) =>
+                                    setSelectedTime(e.target.value)
+                                  }
+                                  sx={{ width: "40%", height: "80%" }}
+                                >
+                                  {availableTimes.map((time) => (
+                                    <MenuItem value={time}>{time}</MenuItem>
+                                  ))}
+                                </Select>
+                              </>
+                            )}
+                          </Box>
+                          <Button
+                            variant="contained"
+                            onClick={(e) => rescheduleAppointment(e, item._id)}
+                            sx={{ width: "100%" }}
+                          >
+                            Reschedule
+                          </Button>
+                        </Box>
+                      </Collapse>
                     </Collapse>
                   </React.Fragment>
                 ))}
@@ -452,7 +628,9 @@ const AppointmentsView = ({ backButton }) => {
                       <List>
                         <ListItem>
                           <ListItemText
-                            primary={`Attendant Name: ${item.attendantName}`}
+                            primary={`Attendant Name: ${
+                              item.attendantName || "NOT RESERVED"
+                            }`}
                           />
                         </ListItem>
                         <ListItem>
@@ -464,6 +642,11 @@ const AppointmentsView = ({ backButton }) => {
                               month: "long",
                               day: "numeric",
                             })}`}
+                          />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText
+                            primary={`Time: ${item.date.substr(11, 5)}`}
                           />
                         </ListItem>
                       </List>
@@ -516,7 +699,9 @@ const AppointmentsView = ({ backButton }) => {
                       <List>
                         <ListItem>
                           <ListItemText
-                            primary={`Attendant Name: ${item.attendantName}`}
+                            primary={`Attendant Name: ${
+                              item.attendantName || "NOT RESERVED"
+                            }`}
                           />
                         </ListItem>
                         <ListItem>
@@ -528,6 +713,11 @@ const AppointmentsView = ({ backButton }) => {
                               month: "long",
                               day: "numeric",
                             })}`}
+                          />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText
+                            primary={`Time: ${item.date.substr(11, 5)}`}
                           />
                         </ListItem>
                       </List>
@@ -588,7 +778,9 @@ const AppointmentsView = ({ backButton }) => {
                       <List>
                         <ListItem>
                           <ListItemText
-                            primary={`Attendant Name: ${item.attendantName}`}
+                            primary={`Attendant Name: ${
+                              item.attendantName || "NOT RESERVED"
+                            }`}
                           />
                         </ListItem>
                         <ListItem>
@@ -602,6 +794,11 @@ const AppointmentsView = ({ backButton }) => {
                             })}`}
                           />
                         </ListItem>
+                        <ListItem>
+                          <ListItemText
+                            primary={`Time: ${item.date.substr(11, 5)}`}
+                          />
+                        </ListItem>
                       </List>
                     </Container>
                   </ListItem>
@@ -613,10 +810,69 @@ const AppointmentsView = ({ backButton }) => {
                     <Button
                       variant="contained"
                       sx={{ m: "30px" }}
-                      onClick={scheduleFollowup}
+                      onClick={() => handleFollowupExpand(item)}
                     >
-                      Schedule Follow Up
+                      Schedule
                     </Button>
+                    <Collapse
+                      in={item._id.toString() === followupExpanded}
+                      timeout="auto"
+                      unmountOnExit
+                    >
+                      <Box
+                        sx={{
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "stretch",
+                        }}
+                      >
+                        <Box sx={{ display: "flex", flexDirection: "row" }}>
+                          <TextField
+                            id="date"
+                            label="Date"
+                            type="date"
+                            placeholder="Date"
+                            value={selectedDate}
+                            onChange={updateAvailableTimes}
+                            InputLabelProps={{
+                              shrink: true,
+                            }}
+                            sx={{ width: "40%", my: 3, mr: "5%" }}
+                          />
+                          <Box sx={{ width: "1%" }} />
+                          {selectedDate && (
+                            <>
+                              <InputLabel id="select-label">
+                                Select Option
+                              </InputLabel>
+                              <Select
+                                labelId="select-label"
+                                id="select"
+                                value={selectedTime}
+                                label="Select Option"
+                                onChange={(e) =>
+                                  setSelectedTime(e.target.value)
+                                }
+                                sx={{ width: "40%", height: "80%" }}
+                              >
+                                {availableTimes.map((time) => (
+                                  <MenuItem value={time}>{time}</MenuItem>
+                                ))}
+                              </Select>
+                            </>
+                          )}
+                        </Box>
+                        <Button
+                          variant="contained"
+                          onClick={(e) =>
+                            createFreeAppointment(e, item.patient._id)
+                          }
+                          sx={{ width: "100%" }}
+                        >
+                          Schedule Follow Up
+                        </Button>
+                      </Box>
+                    </Collapse>
                   </Collapse>
                 </React.Fragment>
               ))}
@@ -654,7 +910,9 @@ const AppointmentsView = ({ backButton }) => {
                       <List>
                         <ListItem>
                           <ListItemText
-                            primary={`Attendant Name: ${item.attendantName}`}
+                            primary={`Attendant Name: ${
+                              item.attendantName || "NOT RESERVED"
+                            }`}
                           />
                         </ListItem>
                         <ListItem>
@@ -666,6 +924,11 @@ const AppointmentsView = ({ backButton }) => {
                               month: "long",
                               day: "numeric",
                             })}`}
+                          />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText
+                            primary={`Time: ${item.date.substr(11, 5)}`}
                           />
                         </ListItem>
                       </List>
