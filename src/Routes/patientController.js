@@ -80,7 +80,6 @@ const filterByMedicinalUsePatient = async (req, res) => {
 
 }
 
-
 const searchMedicinePatient = async (req, res) => {
   const searchName = req.query.name;
   if (searchName.length < 3) {
@@ -101,8 +100,6 @@ const searchMedicinePatient = async (req, res) => {
     res.json(error.message);
   }
 };
-
-
 
 const viewMyCart = async (req, res) => {
   try {
@@ -214,7 +211,6 @@ const handleAfterCancel = async (items) => {
   }
 };
 
-
 const cancelOrder = async (req, res) => {
   try {
     const orderId = req.body.orderId;
@@ -237,8 +233,6 @@ const cancelOrder = async (req, res) => {
     res.json({ error: error.message });
   }
 };
-
-
 
 const addToCart = async (req, res) => {
   const stringMedicineId = req.body.medicineId
@@ -333,7 +327,6 @@ const addToCart = async (req, res) => {
     res.json({ error: error.message });
   }
 };
-
 
 const removeFromCart = async (req, res) => {
   const stringMedicineId = req.body.medicineId;
@@ -430,8 +423,6 @@ const getSubMedicines = async (req, res) => {
   }
 };
 
-
-
 const increaseByOne = async (req, res) => {
   const stringMedicineId = req.body.medicineId;
   const medicineId = new mongoose.Types.ObjectId(stringMedicineId);
@@ -471,7 +462,6 @@ const increaseByOne = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 
 const decreaseByOne = async (req, res) => {
   const stringMedicineId = req.body.medicineId;
@@ -514,12 +504,6 @@ const decreaseByOne = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
-
-
-
-
-
 
 const createFamilyMember = async (req, res) => {
   try {
@@ -624,14 +608,12 @@ const filterPrescriptionByDateDoctorStatus = async (req, res) => {
         doctor: doctorr.name,
       }
       extendedPrescriptions.push(extendedPrescription);
-      console.log(extendedPrescription);
     }
     return res.json(extendedPrescriptions);
   } catch (err) {
     return res.json("Internal Server Error");
   }
 };
-
 
 const filterAppointmentsForPatient = async (req, res) => {
   const dateToBeFiltered = req.query.date;
@@ -761,9 +743,6 @@ const filterDoctorsSpecialityDate = async (req, res) => {
   }
 }
 
-
-
-
 const viewMySubscribedHealthPackage = async (req, res) => {
   try {
     const patientId = req.user._id;
@@ -821,7 +800,6 @@ const viewMySubscribedHealthPackage = async (req, res) => {
   }
 };
 
-
 const CancelSubscription = async (req, res) => {
 
   try {
@@ -857,7 +835,6 @@ const ViewMyWallet = async (req, res) => {
 
   }
 };
-
 
 const viewPatientAppointments = async (req, res) => {
   try {
@@ -935,7 +912,90 @@ const payWithWallet = async (req, res) => {
   }
 }
 
+const payWithCardCart = async (req, res) => {
+  const id = req.user._id;
+  const patient = await patientModel.findById(id).populate({path:'cart.items.medicine'})
+  let ratio = 1
+  if(patient.healthPackage)
+  {
+    const package=await healthPackageModel.findById(patient.healthPackage.healthPackageID)
+    ratio = 1-(package.medicineDiscount/100)
+  }
+  const items = patient.cart.items
+  const address = req.query.address
+  const firstName = req.query.firstName
+  const lastName = req.query.lastName
+  const session = await stripe.checkout.sessions.create({
+    payment_method_types: ['card'],
+    mode: 'payment',
+    line_items: items.map(item => {
+      const storeItem={};
+      return {
+        price_data: {
+          currency: "eur",
+          product_data: {
+            name: item.medicine.name
+          },
+          unit_amount: (item.medicine.price*100*ratio)
+        },
+        quantity: item.quantity
+      }
+    }),
+    success_url: `http://localhost:3000/SuccessfulCheckout`,
+    cancel_url:`http://localhost:3000/cancelCheckout`,
+  })
+  if (address && !patient.deliveryAddress.includes(address))
+  {
+    patient.deliveryAddress.push(address)
+    await patient.save();
+  }
+  createOrder(firstName,lastName,id,address,items,patient.cart.amountToBePaid,"Credit Card")
+  handleAfterBuy(patient.cart,id)
+  res.json({url: session.url})
+}
+
+const payWithWalletCart = async(req, res) => {
+  const patientId = req.user._id;
+  const address =   req.query.address
+  const firstName = req.query.firstName
+  const lastName = req.query.lastName
+  const patient = await patientModel.findById(patientId)
+  const items = patient.cart.items
+   const price= patient.cart.amountToBePaid
+  try {
+    if (patient.wallet < price)
+    {
+      return res.json({success: false, url:'/checkout',message:"Insufficient funds!"})
+    }
+    const newWallet = patient.wallet - price
+    const updatedPatient = await patientModel.findByIdAndUpdate(patient._id,{ wallet :newWallet})
+    await patient.save();
+    if (address && !patient.deliveryAddress.includes(address))
+    {
+      patient.deliveryAddress.push(address)
+      await patient.save();
+    }
+    createOrder(firstName,lastName,patientId,address,items,patient.cart.amountToBePaid,"wallet" )
+    handleAfterBuy(patient.cart,patientId)
+    res.json({success:true, url: '/SuccessfulCheckout',message:"done"})
+  }
+  catch(err) {
+    res.json(err.message)
+  }
+}
+
 const createOrder = async (firstName, lastName, patientId, address, items, total, method) => {
+  let package_Id = null
+  let discount=0
+  const patient = await patientModel.findById(patientId);
+  if (patient.healthPackage) {
+    package_Id = patient.healthPackage.healthPackageID;
+    let package = await healthPackageModel.findById(package_Id)
+    discount = package.medicineDiscount;
+
+}
+  
+  
   const order = await orderModel.create({
     patient: patientId,
     address: address,
@@ -944,11 +1004,11 @@ const createOrder = async (firstName, lastName, patientId, address, items, total
     paymentMethod: method,
     status: "Preparing",
     First_Name: firstName,
-    Last_Name: lastName
+    Last_Name: lastName,
+    discount:discount
   })
   await order.save()
 }
-
 
 const pastOrders = async (req, res) => {
   try {
@@ -966,7 +1026,6 @@ const pastOrders = async (req, res) => {
   }
 };
 
-
 const cashOnDelivery = async (req, res) => {
   const id = req.user._id;
   const patient = await patientModel.findById(id)
@@ -982,7 +1041,6 @@ const cashOnDelivery = async (req, res) => {
   handleAfterBuy(patient.cart, id)
   res.json({ success: true, url: '/SuccessfulCheckout' })
 }
-
 
 const buyHealthPackage = async (req, res) => {
   const patientId = req.user._id;
@@ -1125,7 +1183,6 @@ const sendCheckoutMail = async (req, res) => {
   }
 }
 
-
 const getAllAddresses = async (req, res) => {
   const id = req.user._id;
   const patient = await patientModel.findById(id)
@@ -1177,7 +1234,6 @@ const getDoctors = async (req, res) => {
     for (let index = 0; index < doctors.length; index++) {
       const element = doctors[index]._doc;
       const sessionPrice = ((element.hourlyRate + 10 / 100 * clinicMarkUp) * discount)
-      // console.log(sessionPrice)
       data.push({ ...element, sessionPrice: sessionPrice });
     }
     res.status(200).json(data)
@@ -1251,7 +1307,6 @@ const getAnAppointment = async (req, res) => {
     console.log(err.message)
   }
 }
-
 
 const uploadHealthRecord = async (req, res) => {
   try {
@@ -1352,7 +1407,6 @@ const linkFamilyMemberAccount = async (req, res) => {
       return res.json({ error: "Family member is already linked to the patient." });
     }
 
-    // console.log(primaryPatient)
     // Create a family member entry
     const familyMember = await familyModel.create({
       patient: primaryPatient._id,
@@ -1485,7 +1539,6 @@ const addPrescriptionToCart = async (req, res) => {
   //end here
 }
 
-
 function calculateAge(birthDate) {
   const today = new Date();
   const birthDateObj = new Date(birthDate);
@@ -1499,7 +1552,6 @@ function calculateAge(birthDate) {
 
   return age;
 }
-
 
 const getChattingRoom = async (req, res) => {
   const partner1Id = (req.user._id).toString();
@@ -1671,5 +1723,7 @@ module.exports = {
   getChattingRoom,
   sendMessage,
   getMessages,
+  payWithWalletCart,
+  payWithCardCart,
   patientRetrieveNotifications
 };

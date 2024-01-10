@@ -40,10 +40,10 @@ const Checkout = ({user}) => {
             body['lastName'] = `${lastName}`
             if (paymentMethod === 'card')
             {
-                axios.get("/payWithCard",{params:body}).then(res => window.location.href = res.data.url)
+            axios.get("/payWithCardCart",{params:body}).then(res => window.location.href = res.data.url)
             }
             else if (paymentMethod === 'wallet') {
-             axios.get("/payWithWallet",{ params: body }).then(
+             axios.get("/payWithWalletCart",{ params: body }).then(
            (res) => {
             if (res.data.message === "done") {
                 window.location.href = res.data.url;

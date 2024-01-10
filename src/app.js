@@ -200,8 +200,10 @@ const {
   medicinequantityandsales,
   viewMedicine,
   uploadMedicineImage,
+  pharmacistRetrieveNotifications,
+  getSaleReport,
+  getMonthlyMedicineReport,
   archiveMedicine,
-  pharmacistRetrieveNotifications
 } = require("./Routes/pharmacistController");
 
 const {
@@ -252,6 +254,8 @@ const {
   getChattingRoom,
   sendMessage,
   getMessages,
+  payWithWalletCart,
+  payWithCardCart,
   patientRetrieveNotifications
 } = require("./Routes/patientController");
 
@@ -354,18 +358,20 @@ app.delete("/removePatient", getUserFromTokenMiddleware, deletePatient);
 app.get("/filterByMedicinalUsePatient", getUserFromTokenMiddleware, filterByMedicinalUsePatient);
 app.get("/viewMedicine", getUserFromTokenMiddleware, viewMedicine);
 app.post("/addPatient", addPatient);
-app.post("/addToCart", getUserFromTokenMiddleware, addToCart);
-app.get("/viewMyCart", getUserFromTokenMiddleware, viewMyCart);
-app.put("/removeFromCart", getUserFromTokenMiddleware, removeFromCart);
-app.put("/decreaseByOne", getUserFromTokenMiddleware, decreaseByOne);
-app.put("/increaseByOne", getUserFromTokenMiddleware, increaseByOne);
-app.get("/payWithCard", getUserFromTokenMiddleware, payWithCard);
-app.get("/payWithWallet", getUserFromTokenMiddleware, payWithWallet);
-app.get("/sendCheckoutMail", getUserFromTokenMiddleware, sendCheckoutMail);
-app.get("/getAllAddresses", getUserFromTokenMiddleware, getAllAddresses);
-app.get("/cashOnDelivery", getUserFromTokenMiddleware, cashOnDelivery);
-app.get("/pastOrders", getUserFromTokenMiddleware, pastOrders);
-app.put("/cancelOrder", getUserFromTokenMiddleware, cancelOrder);
+app.post("/addToCart",getUserFromTokenMiddleware,addToCart);
+app.get("/viewMyCart",getUserFromTokenMiddleware,viewMyCart);
+app.put("/removeFromCart",getUserFromTokenMiddleware,removeFromCart);
+app.put("/decreaseByOne",getUserFromTokenMiddleware,decreaseByOne);
+app.put("/increaseByOne",getUserFromTokenMiddleware,increaseByOne);
+app.get("/payWithCard",getUserFromTokenMiddleware, payWithCard);
+app.get("/payWithWallet",getUserFromTokenMiddleware, payWithWallet);
+app.get("/payWithWalletCart",getUserFromTokenMiddleware, payWithWalletCart);
+app.get("/payWithCardCart",getUserFromTokenMiddleware, payWithCardCart);
+app.get("/sendCheckoutMail", getUserFromTokenMiddleware,sendCheckoutMail);
+app.get("/getAllAddresses",getUserFromTokenMiddleware ,getAllAddresses);
+app.get("/cashOnDelivery",getUserFromTokenMiddleware, cashOnDelivery);
+app.get("/pastOrders",getUserFromTokenMiddleware,pastOrders);
+app.put("/cancelOrder",getUserFromTokenMiddleware,cancelOrder);
 app.put("/deleteHealthRecord", getUserFromTokenMiddleware, deleteHealthRecord);
 app.put("/cancelAppointment", getUserFromTokenMiddleware, cancelAppointment);
 app.post("/addPrescriptionToCart", getUserFromTokenMiddleware, addPrescriptionToCart);
@@ -413,7 +419,8 @@ app.get("/medicinequantityandsales", getUserFromTokenMiddleware, medicinequantit
 app.put("/uploadMedicineImage", uploadMedicineImage);
 app.put("/archiveMedicine", archiveMedicine);
 app.get("/pharmacistRetrieveNotifications", pharmacistRetrieveNotifications);
-
+app.get("/getSaleReport", getSaleReport);
+app.get("/getMonthlyMedicineReport", getMonthlyMedicineReport);
 
 //user 
 
