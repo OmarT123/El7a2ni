@@ -16,9 +16,9 @@ import DoctorsStage from "../AdminEmployees/DoctorsStage";
 import HealthPackagesView from "../HealthPackagesView";
 import PatientPage from "../PatientPage";
 import PharmacistsStage from "../AdminEmployees/PharmacistsStage";
-import Checkout from "../Checkout";
 import MyCart from "../MyCart";
 import Chat from "../Chat";
+import Orders from '../Orders'
 
 const PatientHomePage = () => {
     const [page, setPage] = useState("home");
@@ -98,7 +98,7 @@ const PatientHomePage = () => {
 
     return (
         <>
-            <HomeNavBar homeButton={() => setPage("home")} setPage={setPage} />
+            <HomeNavBar homeButton={() => setPage("home")} setPage={setPage} setIcon1={()=>setPage('orders')} setIcon2={()=>setPage('MyCart')}/>
             <Container sx={{ mt: 3 }}>
                 <Grid container spacing={5}>
                     {page === "profile" ? (
@@ -137,7 +137,7 @@ const PatientHomePage = () => {
                     ) : page === "MyCart" ?(
                         <MyCart setPage={(path) => setPage(path)}/>
                     ): (
-                        <Checkout/>
+                        <Orders />
                     )}
                     {chat && <Chat partner={chatterID} name={chatterName} setChat={setChat} />}
                 </Grid>

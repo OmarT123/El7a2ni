@@ -36,10 +36,6 @@ const doctorSchema = new Schema(
       type: [String],
       required: true,
     },
-    pendingApproval: {
-      type: Boolean,
-      default: true,
-    },
     speciality: {
       type: String,
       required: true,

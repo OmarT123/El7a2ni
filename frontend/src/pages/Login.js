@@ -15,7 +15,7 @@ import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import Copyright from "../components/Copyright";
-import Popup from '../components/Popup'
+import Popup from "../components/Popup";
 
 const defaultTheme = createTheme();
 
@@ -51,11 +51,23 @@ const Login = () => {
 
       if (response.data.success) {
         localStorage.setItem("userToken", response.data.token);
-        axios.get("/loginAuthentication").then((response) => {
+        axios.get("/loginAuthentication").then(async (response) => {
           const { success, type, user } = response.data;
           if (type === "doctor" && user.status === "approved")
             window.location.href = "/doctorContract";
-          else window.location.href = "/";
+          else if (
+            (type === "doctor" || type === "pharmacist") &&
+            (user.status === "pending" || user.status === "rejected")
+          ) {
+            setAlert({
+              title: "Not Authorized",
+              message: "Sorry you dont have access to the system",
+            });
+            setTimeout(async () => {
+              localStorage.clear();
+              await axios.get("/logout");
+            }, 3000);
+          } else window.location.href = "/";
         });
       } else {
         setAlert({
@@ -99,7 +111,11 @@ const Login = () => {
                   window.location.href = "/";
                 }}
               >
-                <img src="itrylogo-removebg-preview.png" width="45px" height="50px" />
+                <img
+                  src="itrylogo-removebg-preview.png"
+                  width="45px"
+                  height="50px"
+                />
               </Avatar>
               <Typography component="h1" variant="h5">
                 Sign in

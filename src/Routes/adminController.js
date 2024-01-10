@@ -403,6 +403,7 @@ const deletePatient = async (req, res) => {
   let patientId = req.query.id;
   try {
     await patientModel.findByIdAndDelete(patientId);
+    await userModel.findOneAndDelete({userId:patientId})
     res.json({ success: true, title: "Patient Deleted" });
   } catch (err) {
     res.send(err);
@@ -413,6 +414,7 @@ const deletePharmacist = async (req, res) => {
   let pharmacistId = req.query.id;
   try {
     await pharmacistModel.findByIdAndDelete(pharmacistId);
+    await userModel.findOneAndDelete({userId:pharmacistId})
     res.json({ success: true, title: "Pharmacist Deleted" });
   } catch (err) {
     res.json(err);
@@ -433,6 +435,7 @@ const deleteDoctor = async (req, res) => {
   const doctorId = req.query.id;
   try {
     await doctorModel.findByIdAndDelete(doctorId);
+    await userModel.findOneAndDelete({userId:doctorId})
     res.status(200).json({ success: true, title: "Doctor Removed" });
   } catch (err) {
     res.status(404).json({ message: err.message });

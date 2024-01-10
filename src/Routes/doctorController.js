@@ -149,13 +149,14 @@ const addDoctor = async (req, res) => {
 
     const user = await userModel.findOne({ username });
     if (user) {
-      res.json({ message: "Username already exists" });
+      res.json({ success: false, title: "Username already exists" });
     } else {
       const passwordRegex =
         /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%^&*()?[\]{}|<>])[A-Za-z\d@$!%^&*()?[\]{}|<>]{10,}$/;
       if (!passwordRegex.test(password)) {
         return res.json({
           success: false,
+          title: "Invalid Password",
           message:
             "Password must contain at least 1 lowercase letter, 1 uppercase letter, 1 number, 1 special character, and be at least 10 characters long.",
         });
@@ -187,7 +188,7 @@ const addDoctor = async (req, res) => {
         licensePDF,
       });
       await newDocuments.save();
-      res.json({ message: "Applied Successfully" });
+      res.json({ success: true, title: "Applied Successfully" });
     }
   } catch (error) {
     res.json({ message: error.message });
@@ -390,7 +391,6 @@ const viewDoctorAppointments = async (req, res) => {
         status: "free",
       })
       .populate({ path: "patient" });
-
 
     const completedAppointments = await appointmentModel
       .find({
@@ -638,11 +638,9 @@ const rescheduleAppointmentForPatient = async (req, res) => {
 
     const newDateTime = new Date(newDate);
     if (newDateTime < currentDate) {
-      return res
-        .status(400)
-        .json({
-          error: "Invalid reschedule date. Please choose a future date.",
-        });
+      return res.status(400).json({
+        error: "Invalid reschedule date. Please choose a future date.",
+      });
     }
 
     // Check if new date is available
