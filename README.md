@@ -194,14 +194,14 @@ git clone https://github.com/OmarT123/Virtual-Clinic_Team03.git
 
 
 2. npm i
-3. npm start
+3. npm run el7a2ni-start
 
 #### front-End Terminal
 1. To install packages (You need to change the directory to backend first: `cd .\frontend\`)
 
 
 2. npm i
-3. npm run dev
+3. npm start
 
 
 
