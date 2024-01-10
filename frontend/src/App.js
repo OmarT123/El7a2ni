@@ -13,6 +13,7 @@ import ContractView from "./pages/ContractView";
 import SuccessfulCheckout from "./pages/SuccessfulCheckout";
 import CancelCheckout from "./pages/CancelCheckout";
 import SuccessfulCheckoutPackage from "./pages/SuccessfulCheckoutPackage";
+import SuccessfulCheckoutApp from "./pages/SuccessfulCheckoutApp";
 
 const ScrollTop = (props) => {
   const { children, window } = props;
@@ -56,6 +57,7 @@ const App = () => {
           <Route path="/SuccessfulCheckout" element={<SuccessfulCheckout />} />
           <Route path="/CancelCheckout" element={<CancelCheckout />} />
           <Route path="/SuccessfulCheckoutPackage" element={<SuccessfulCheckoutPackage />} />
+          <Route path="/SuccessfulCheckoutApp" element={<SuccessfulCheckoutApp />} />
         </Routes>
         {window.location.pathname !== "/doctorContract" && (
           <ScrollTop>

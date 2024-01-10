@@ -262,6 +262,7 @@ const {
   createOrderPending,
   removeOrderPending,
   rescheduleAppointmentAsPatient,
+  payWithCardApp,
   getSocketId,
   updateSocketId,
 } = require("./Routes/patientController");
@@ -482,6 +483,7 @@ app.get(
 );
 app.get("/payWithWalletCart", getUserFromTokenMiddleware, payWithWalletCart);
 app.get("/payWithCardCart", getUserFromTokenMiddleware, payWithCardCart);
+app.get("/payWithCardApp", getUserFromTokenMiddleware, payWithCardApp);
 
 //Doctor
 app.put(

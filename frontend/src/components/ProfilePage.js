@@ -133,7 +133,7 @@ const ProfilePage = ({ userData }) => {
               )}
             </Grid>
             <Grid item xs={12} sm={6} align="left">
-              {userData.wallet && (
+              {userData.wallet>=0 && (
                 <Typography variant="subtitle1">
                   <strong>Wallet:</strong> ${userData.wallet}
                 </Typography>

@@ -1383,6 +1383,42 @@ const payWithCardPackage = async (req, res) => {
 };
 
 
+const payWithCardApp = async (req, res) => {
+  const patientId = req.user._id;
+  const patient = await patientModel.findById(patientId);
+ 
+  const price=req.query.price;
+  const appointmentId=req.query.appointmentId;
+  const name=req.query.name
+  const f =req.query.f;
+  const date=req.query.date;
+
+  const uniqueCode=Math.random().toString(36).substring(2, 10) +
+  Math.random().toString(36).substring(2, 10);
+  patient.uniqueCode=uniqueCode;
+  await patient.save();
+  console.log(date)
+
+  const session = await stripe.checkout.sessions.create({
+    payment_method_types: ["card"],
+    mode: "payment",
+    line_items: [
+      {
+        price_data: {
+          currency: "eur",
+          product_data: {
+            name: "Appointment reservation",
+          },
+          unit_amount:price * 100,
+        },
+        quantity: 1,
+      },
+    ],
+    success_url: `http://localhost:3000/SuccessfulCheckoutApp?code=${uniqueCode}&name=${name}&f=${f}&date=${date}&appointmentId=${appointmentId}`,
+    cancel_url: `http://localhost:3000/CancelCheckout?code=${" "}`
+  });
+  res.json({ url: session.url });
+};
 
 
 
@@ -1482,7 +1518,9 @@ const reserveAppointment = async (req, res) => {
   const clinicMarkup = process.env.CLINIC_MARKUP;
   let discount = 1;
   const patient = await patientModel.findById(patientId);
-  const followup = req.body.f;
+  let followup = req.body.f;
+  if (followup === 'false')
+    followup=false
   if (patient.healthPackage) {
     const healthPackageID = patient.healthPackage.healthPackageID.toString();
     const healthPackage = await healthPackageModel
@@ -1493,6 +1531,7 @@ const reserveAppointment = async (req, res) => {
   let appointment;
   try {
     if (followup) {
+      console.log('here')
       // appointment = await appointmentModel.findByIdAndUpdate(
       //   appointmentId,
       //   {
@@ -2390,6 +2429,7 @@ module.exports = {
   createOrderPending,
   removeOrderPending,
   rescheduleAppointmentAsPatient,
+  payWithCardApp,
   updateSocketId,
   getSocketId
 };

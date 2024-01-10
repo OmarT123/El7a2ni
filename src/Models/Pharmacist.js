@@ -39,7 +39,12 @@ const pharmacistSchema = new Schema(
     status: {
       type: String,// pending, rejected, accepted
       default: "pending",
-  },
+  },wallet:{
+    type: Number,
+    default: 0,
+  }
+
+  ,
 chats:[ {
 
   partner: {
