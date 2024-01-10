@@ -11,6 +11,7 @@ import Fab from "@mui/material/Fab";
 import { Container, Grid } from "@mui/material";
 import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
 import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
+import MenuItem from '@mui/material/MenuItem';
 
 const paperStyle = {
   width: "1200px",
@@ -23,15 +24,64 @@ const listStyle = {
   marginTop: 16,
 };
 
-const DoctorsStage = ({ setAlert, setStage, together = false, userType, setChat, setChatterID, setChatterName }) => {
+const DoctorsStage = ({ setAlert, setStage, together = false, userType, setChat, setChatterID, setChatterName, setDoctor }) => {
   const [unapprovedDoctors, setUnapprovedDoctors] = useState([]);
   const [approvedDoctors, setApprovedDoctors] = useState([]);
+  const [filterExpanded, setFilterExpanded] = useState(false);
+
+  const handleFilterExpandClick = () => {
+    setFilterExpanded(!filterExpanded);
+  };
+
+  const handleResetSearchClick = async () => {
+    setApprovedDoctors("");
+    fetchDoctors();
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const data = new FormData(e.currentTarget);
+    const body = {}
+    const date = data.get("FilterDate");
+    const time = data.get("time")
+    const speciality = data.get("speciality");
+    const doctor = data.get("doctor");
+    if ((date && !time) || (!date && time))
+      return setAlert({ title: "Missing fields", message: "You have to select both date and time to filter using time availability." })
+    if (!date && !speciality && !doctor)
+      return setAlert({ title: "Missing fields", message: "You have to select at least one element to filter." })
+    if (date)
+      body["date"] = `${date}T${time}`;
+    if (speciality)
+      body["speciality"] = speciality;
+    if (doctor)
+      body["doctor"] = doctor;
+    const response = await axios.get("filterDoctorsSpecialityDate", { params: body });
+    if (response.data.success) {
+      setApprovedDoctors(response.data.doctors);
+    }
+    else {
+      setAlert({ title: "", message: response.data.message })
+    }
+
+  };
 
   const fetchDoctors = async () => {
-    const response = await axios.get("/getAllDoctors");
-    if (response.data.success) {
-      setUnapprovedDoctors(response.data.unapproved);
-      setApprovedDoctors(response.data.approved);
+    if (userType !== "patient") {
+      const response = await axios.get("/getAllDoctors");
+      if (response.data.success) {
+        setUnapprovedDoctors(response.data.unapproved);
+        setApprovedDoctors(response.data.approved);
+      }
+    }
+    else {
+      const response = await axios.get("/allDoctors");
+      if (response.data.success) {
+        setApprovedDoctors(response.data.approved);
+      }
+      else {
+        setAlert({ title: "", message: response.data.message })
+      }
     }
   };
 
@@ -129,18 +179,18 @@ const DoctorsStage = ({ setAlert, setStage, together = false, userType, setChat,
           />
           <Container maxWidth="md" sx={{ marginTop: 2, padding: "5px" }}>
             <Typography variant="h5" sx={{ marginBottom: 2 }}>
-              {item.name}
+              Dr. {item.name}
             </Typography>
             <Grid container spacing={3}>
               <Grid item xs={6}>
                 <List>
-                  <ListItem>
+                  {userType !== "patient" && <ListItem>
                     <ListItemText primary={`Username: ${item.username}`} />
-                  </ListItem>
+                  </ListItem>}
                   <ListItem>
                     <ListItemText primary={`Email: ${item.email}`} />
                   </ListItem>
-                  <ListItem>
+                  {userType !== "patient" && userType !== "pharmacist" && <ListItem>
                     <ListItemText
                       primary={`Birth Date: ${new Date(
                         item.birthDate
@@ -150,10 +200,12 @@ const DoctorsStage = ({ setAlert, setStage, together = false, userType, setChat,
                         day: "numeric",
                       })}`}
                     />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText primary={`Hourly Rate: ${item.hourlyRate}`} />
-                  </ListItem>
+                  </ListItem>}
+                  {userType !== "pharmacist" && (userType !== "patient" ? <ListItem>
+                    <ListItemText primary={`Hourly Rate: ${item.hourlyRate}$`} />
+                  </ListItem> : <ListItem>
+                    <ListItemText primary={`Session price: ${item.sessionPrice}$`} />
+                  </ListItem>)}
                 </List>
               </Grid>
               <Grid item xs={6}>
@@ -163,21 +215,21 @@ const DoctorsStage = ({ setAlert, setStage, together = false, userType, setChat,
                       primary={`Affiliation: ${item.affiliation}`}
                     />
                   </ListItem>
-                  {item.educationalBackground && (
-                    <ListItem>
-                      <ListItemText
-                        primary={`Educational Background: ${item.educationalBackground.join(
-                          ", "
-                        )}`}
-                      />
-                    </ListItem>
-                  )}
-                  <ListItem>
+                  {(item.educationalBackground &&
+                    userType !== "pharmacist" &&
+                    (userType !== "patient" || (userType === "patient" && item.username === expandedItem))) && (
+                      <ListItem>
+                        <ListItemText
+                          primary={`Educational Background: ${item.educationalBackground.join(", ")}`}
+                        />
+                      </ListItem>
+                    )}
+                  {userType !== "patient" && userType !== "pharmacist" && (<ListItem>
                     <ListItemText primary={`Status: ${item.status}`} />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText primary={`Speciality: ${item.specilaity}`} />
-                  </ListItem>
+                  </ListItem>)}
+                  {(userType !== "patient" || (userType === "patient" && item.username === expandedItem)) && <ListItem>
+                    <ListItemText primary={`Speciality: ${item.speciality}`} />
+                  </ListItem>}
                 </List>
               </Grid>
             </Grid>
@@ -189,12 +241,21 @@ const DoctorsStage = ({ setAlert, setStage, together = false, userType, setChat,
           unmountOnExit
         >
           {(userType === "pharmacist" || userType === "patient") && (
-            <Button 
-            variant="contained" 
-            sx={{ m: "30px" }}
-            onClick={(e) => openChat(e, item._id, item.name)}
+            <Button
+              variant="contained"
+              sx={{ m: "30px" }}
+              onClick={(e) => openChat(e, item._id, item.name)}
             >
               Chat With Doctor
+            </Button>
+          )}
+          {userType === "patient" && (
+            <Button
+              variant="contained"
+              sx={{ m: "30px" }}
+              onClick={() => {setStage("appointments"), setDoctor(item._id)}}
+            >
+              View Available Appointment Slots
             </Button>
           )}
           {userType === "admin" && (
@@ -208,13 +269,13 @@ const DoctorsStage = ({ setAlert, setStage, together = false, userType, setChat,
           )}
           {item.status === "pending" && userType === "admin" && (
             <>
-              <Button variant="contained" sx={{ m: "30px" }} onClick={()=>{setIdPDF(true);setDegreePDF(false);setLicensePDF(false)}}>
+              <Button variant="contained" sx={{ m: "30px" }} onClick={() => { setIdPDF(true); setDegreePDF(false); setLicensePDF(false) }}>
                 View ID
               </Button>
-              <Button variant="contained" sx={{ m: "30px" }} onClick={()=>{setIdPDF(false);setDegreePDF(true);setLicensePDF(false)}}>
+              <Button variant="contained" sx={{ m: "30px" }} onClick={() => { setIdPDF(false); setDegreePDF(true); setLicensePDF(false) }}>
                 View Degree
               </Button>
-              <Button variant="contained" sx={{ m: "30px" }} onClick={()=>{setIdPDF(false);setDegreePDF(false);setLicensePDF(true)}}>
+              <Button variant="contained" sx={{ m: "30px" }} onClick={() => { setIdPDF(false); setDegreePDF(false); setLicensePDF(true) }}>
                 View License
               </Button>
 
@@ -234,12 +295,12 @@ const DoctorsStage = ({ setAlert, setStage, together = false, userType, setChat,
               </Button>
             </>
           )}
-          <Collapse in={idPDF || licensePDF || degreePDF  }
-          timeout="auto"
-          unmountOnExit>
-            {idPDF  && <iframe title="PDF Viewer" src={selectedDoctor.idPDF} width="90%" height="600px" />}
-            {licensePDF  && <iframe title="PDF Viewer" src={selectedDoctor.degreePDF} width="90%" height="600px" />}
-            {degreePDF  && <iframe title="PDF Viewer" src={selectedDoctor.licensePDF} width="90%" height="600px" />}
+          <Collapse in={idPDF || licensePDF || degreePDF}
+            timeout="auto"
+            unmountOnExit>
+            {idPDF && <iframe title="PDF Viewer" src={selectedDoctor.idPDF} width="90%" height="600px" />}
+            {licensePDF && <iframe title="PDF Viewer" src={selectedDoctor.degreePDF} width="90%" height="600px" />}
+            {degreePDF && <iframe title="PDF Viewer" src={selectedDoctor.licensePDF} width="90%" height="600px" />}
           </Collapse>
         </Collapse>
       </React.Fragment>
@@ -253,7 +314,7 @@ const DoctorsStage = ({ setAlert, setStage, together = false, userType, setChat,
   return (
     <>
       <Fab
-        onClick={() => setStage("first")}
+        onClick={() => setStage("home")}
         color="primary"
         size="small"
         sx={{
@@ -277,24 +338,109 @@ const DoctorsStage = ({ setAlert, setStage, together = false, userType, setChat,
           Doctors
         </Typography>
 
+
+
+
+        {userType === "patient" && !filterExpanded && <Button variant="contained" sx={{ marginLeft: '850px', marginTop: '-140px' }} onClick={handleFilterExpandClick}>
+          Filter Doctors
+        </Button>}
+        <Box component={"form"} onSubmit={(e) => handleSubmit(e)} sx={{ display: 'flex', alignItems: 'center' }}>
+          {filterExpanded &&
+            <><TextField
+              id="FilterDate"
+              label="Availability Date"
+              type="date"
+              placeholder="Availability Date"
+              name="FilterDate"
+              InputLabelProps={{
+                shrink: true,
+              }}
+              sx={{ width: "100%", marginLeft: '100px' }} />
+              <TextField
+                id="time"
+                label="Availability Time"
+                select
+                name="time"
+                InputLabelProps={{
+                  shrink: true,
+                }}
+                sx={{ width: "100%", marginLeft: '50px' }}
+              >
+                <MenuItem value={"9:00"}>9:00</MenuItem>
+                <MenuItem value={"10:00"}>10:00</MenuItem>
+                <MenuItem value={"11:00"}>11:00</MenuItem>
+                <MenuItem value={"12:00"}>12:00</MenuItem>
+                <MenuItem value={"13:00"}>13:00</MenuItem>
+                <MenuItem value={"14:00"}>14:00</MenuItem>
+                <MenuItem value={"15:00"}>15:00</MenuItem>
+                <MenuItem value={"16:00"}>16:00</MenuItem>
+              </TextField>
+              <TextField
+                id="speciality"
+                label="Enter doctor speciality"
+                type="text"
+                placeholder="Enter doctor speciality"
+                name="speciality"
+                InputLabelProps={{
+                  shrink: true,
+                }}
+                sx={{ width: "100%", marginLeft: '50px' }}
+              />
+              <TextField
+                id="doctor"
+                label="Enter doctor name"
+                type="text"
+                placeholder="Enter doctor name"
+                name="doctor"
+                InputLabelProps={{
+                  shrink: true,
+                }}
+                sx={{ width: "100%", marginLeft: '50px' }}
+              />
+            </>
+          }
+          {filterExpanded && (
+            <Button
+              variant="outlined"
+              onClick={handleResetSearchClick}
+              style={{
+                color: "black",
+                marginLeft: "15px",
+                cursor: "pointer",
+              }}
+              sx={{
+                "&:hover": { backgroundColor: "#2196F3", color: "white" },
+              }}
+            >
+              Reset Results
+            </Button>
+          )}
+          {filterExpanded && <Button variant="contained" sx={{ m: "15px" }} type="submit">
+            Submit
+          </Button>}
+        </Box>
+
+
+
+
+
         {!together && (
           <Typography variant="h5" sx={{ ml: "30px" }}>
             Unapproved
           </Typography>
         )}
         <List style={listStyle}>
-          {unapprovedDoctors.map((item, index) => (
+          {unapprovedDoctors && unapprovedDoctors.map((item, index) => (
             <DoctorListItem item={item} key={index} />
           ))}
         </List>
-
         {!together && (
           <Typography variant="h5" sx={{ ml: "30px" }}>
             Approved
           </Typography>
         )}
         <List style={listStyle} sx={{ mt: together ? "0" : "30" }}>
-          {approvedDoctors.map((item, index) => (
+          {approvedDoctors && approvedDoctors.map((item, index) => (
             <DoctorListItem item={item} key={index} />
           ))}
         </List>
