@@ -1164,8 +1164,9 @@ const payWithWallet = async (req, res) => {
   // const type = req.query.type;
   try {
     const patient = await patientModel.findById(patientId);
+    console.log(patient.wallet, price)
     if (patient.wallet < price) {
-      return res.json({ success: false, message: "Insufficient funds!" });
+      return res.json({ success: false, title: "Insufficient funds!" });
     }
     const newWallet = patient.wallet - price;
     await patientModel.findByIdAndUpdate(patient._id, {
@@ -1381,13 +1382,13 @@ const reserveAppointment = async (req, res) => {
     });
     const mailOptionsPatient = {
       from: process.env.NODEMAILER_EMAIL,
-      to: appointment.patient.email,
+      to: patient.email,
       subject: "Appointment Booked",
       text: `You have booked an appointment with Dr.${doctor.name} on ${appointment.date}.`,
     };
     const mailOptionsDoctor = {
       from: process.env.NODEMAILER_EMAIL,
-      to: appointment.doctor.email,
+      to: doctor.email,
       subject: "Appointment Scheduled",
       text: `A new appointment at date ${appointment.date} with patient ${name} has been scheduled.`,
     };

@@ -119,7 +119,7 @@ const AppointmentsView = ({ backButton, userType }) => {
         console.log("done");
         bookAppointment();
       } else {
-        setAlert({ title: "Payment Failed", message: "Try again later" });
+        setAlert({ title: "Payment Failed", message: "Insufficient funds" });
       }
     };
 
@@ -610,6 +610,9 @@ const AppointmentsView = ({ backButton, userType }) => {
                               primary={`Time: ${item.date.substr(11, 5)}`}
                             />
                           </ListItem>
+                          <ListItem>
+                            <ListItemText primary={`Price: ${item.price} $`} />
+                          </ListItem>
                         </List>
                       </Container>
                     </ListItem>
@@ -719,15 +722,15 @@ const AppointmentsView = ({ backButton, userType }) => {
                         index + 1 + upcomingAppointments.length
                       }:`}</Typography>
                       <List>
-                          {userType === "patient" && (
-                            <ListItem>
-                              <ListItemText
-                                primary={`Doctor Name: ${
-                                  item.doctor && item.doctor.name
-                                }`}
-                              />
-                            </ListItem>
-                          )}
+                        {userType === "patient" && (
+                          <ListItem>
+                            <ListItemText
+                              primary={`Doctor Name: ${
+                                item.doctor && item.doctor.name
+                              }`}
+                            />
+                          </ListItem>
+                        )}
                         <ListItem>
                           <ListItemText
                             primary={`Attendant Name: ${
@@ -750,6 +753,9 @@ const AppointmentsView = ({ backButton, userType }) => {
                           <ListItemText
                             primary={`Time: ${item.date.substr(11, 5)}`}
                           />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText primary={`Price: ${item.price} $`} />
                         </ListItem>
                       </List>
                     </Container>
@@ -799,15 +805,15 @@ const AppointmentsView = ({ backButton, userType }) => {
                         freeAppointments.length
                       }:`}</Typography>
                       <List>
-                          {userType === "patient" && (
-                            <ListItem>
-                              <ListItemText
-                                primary={`Doctor Name: ${
-                                  item.doctor && item.doctor.name
-                                }`}
-                              />
-                            </ListItem>
-                          )}
+                        {userType === "patient" && (
+                          <ListItem>
+                            <ListItemText
+                              primary={`Doctor Name: ${
+                                item.doctor && item.doctor.name
+                              }`}
+                            />
+                          </ListItem>
+                        )}
                         <ListItem>
                           <ListItemText
                             primary={`Attendant Name: ${
@@ -831,6 +837,9 @@ const AppointmentsView = ({ backButton, userType }) => {
                             primary={`Time: ${item.date.substr(11, 5)}`}
                           />
                         </ListItem>
+                        <ListItem>
+                          <ListItemText primary={`Price: ${item.price} $`} />
+                        </ListItem>
                       </List>
                     </Container>
                   </ListItem>
@@ -839,20 +848,24 @@ const AppointmentsView = ({ backButton, userType }) => {
                     timeout="auto"
                     unmountOnExit
                   >
-                    <Button
-                      variant="contained"
-                      sx={{ m: "30px" }}
-                      onClick={(e) => acceptRequest(e, item._id)}
-                    >
-                      Accept Request
-                    </Button>
-                    <Button
-                      variant="contained"
-                      sx={{ m: "30px" }}
-                      onClick={(e) => cancelAppointment(e, item._id)}
-                    >
-                      Reject Request
-                    </Button>
+                    {userType === "doctor" && (
+                      <>
+                        <Button
+                          variant="contained"
+                          sx={{ m: "30px" }}
+                          onClick={(e) => acceptRequest(e, item._id)}
+                        >
+                          Accept Request
+                        </Button>
+                        <Button
+                          variant="contained"
+                          sx={{ m: "30px" }}
+                          onClick={(e) => cancelAppointment(e, item._id)}
+                        >
+                          Reject Request
+                        </Button>
+                      </>
+                    )}
                   </Collapse>
                 </React.Fragment>
               ))}
@@ -887,15 +900,15 @@ const AppointmentsView = ({ backButton, userType }) => {
                         requestedAppointments.length
                       }:`}</Typography>
                       <List>
-                          {userType === "patient" && (
-                            <ListItem>
-                              <ListItemText
-                                primary={`Doctor Name: ${
-                                  item.doctor && item.doctor.name
-                                }`}
-                              />
-                            </ListItem>
-                          )}
+                        {userType === "patient" && (
+                          <ListItem>
+                            <ListItemText
+                              primary={`Doctor Name: ${
+                                item.doctor && item.doctor.name
+                              }`}
+                            />
+                          </ListItem>
+                        )}
                         <ListItem>
                           <ListItemText
                             primary={`Attendant Name: ${
@@ -918,6 +931,9 @@ const AppointmentsView = ({ backButton, userType }) => {
                           <ListItemText
                             primary={`Time: ${item.date.substr(11, 5)}`}
                           />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText primary={`Price: ${item.price} $`} />
                         </ListItem>
                       </List>
                     </Container>
@@ -1065,15 +1081,15 @@ const AppointmentsView = ({ backButton, userType }) => {
                         completedAppointments.length
                       }:`}</Typography>
                       <List>
-                          {userType === "patient" && (
-                            <ListItem>
-                              <ListItemText
-                                primary={`Doctor Name: ${
-                                  item.doctor && item.doctor.name
-                                }`}
-                              />
-                            </ListItem>
-                          )}
+                        {userType === "patient" && (
+                          <ListItem>
+                            <ListItemText
+                              primary={`Doctor Name: ${
+                                item.doctor && item.doctor.name
+                              }`}
+                            />
+                          </ListItem>
+                        )}
                         <ListItem>
                           <ListItemText
                             primary={`Attendant Name: ${
@@ -1096,6 +1112,9 @@ const AppointmentsView = ({ backButton, userType }) => {
                           <ListItemText
                             primary={`Time: ${item.date.substr(11, 5)}`}
                           />
+                        </ListItem>
+                        <ListItem>
+                          <ListItemText primary={`Price: ${item.price} $`} />
                         </ListItem>
                       </List>
                     </Container>
