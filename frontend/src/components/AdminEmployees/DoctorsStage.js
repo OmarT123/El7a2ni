@@ -253,7 +253,7 @@ const DoctorsStage = ({ setAlert, setStage, together = false, userType, setChat,
             <Button
               variant="contained"
               sx={{ m: "30px" }}
-              onClick={() => {setStage("appointments"), setDoctor(item._id)}}
+              onClick={() => {setStage("appointments"); setDoctor(item._id)}}
             >
               View Available Appointment Slots
             </Button>
