@@ -57,7 +57,6 @@ const PatientsView = ({
   const [page, setPage] = useState("first");
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [searchName, setSearchName] = useState("");
-  const [searchMedicinal, setSearchMedicinal] = useState("");
   const [showResetButton, setShowResetButton] = useState(false);
 
   const handleSearch = async (e) => {
@@ -162,6 +161,7 @@ const PatientsView = ({
       } else {
         await axios.get("/getAllPatients").then((res) => {
           setPatients(res.data);
+          console.log(res.data)
         });
       }
     } catch (error) {

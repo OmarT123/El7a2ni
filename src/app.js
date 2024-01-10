@@ -193,6 +193,7 @@ const {
   deleteFromPrescription,
   approveRequest,
   doctorRetrieveNotifications,
+  rescheduleAppointmentForPatient
 } = require("./Routes/doctorController");
 
 const {
@@ -466,6 +467,7 @@ app.get("/payWithWalletCart", getUserFromTokenMiddleware, payWithWalletCart);
 app.get("/payWithCardCart", getUserFromTokenMiddleware, payWithCardCart);
 
 //Doctor
+app.put('/rescheduleAppointmentForPatient',getUserFromTokenMiddleware,rescheduleAppointmentForPatient)
 app.get(
   "/filterAppointmentsForDoctor",
   getUserFromTokenMiddleware,

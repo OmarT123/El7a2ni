@@ -76,7 +76,11 @@ const filterAppointmentsForDoctor = async (req, res) => {
       .find(filterQuery)
       .populate({ path: "patient" });
     if (filteredAppointments.length === 0) {
-      return res.json({ success: false, title: 'No Appointments Found', message: 'Change the search filter to view more results' });
+      return res.json({
+        success: false,
+        title: "No Appointments Found",
+        message: "Change the search filter to view more results",
+      });
     }
     const currentDate = new Date();
     let upcomingAppointments = [];
@@ -102,7 +106,7 @@ const filterAppointmentsForDoctor = async (req, res) => {
       completedAppointments,
       requestedAppointments,
     };
-    res.json({success:true, appointmentData});
+    res.json({ success: true, appointmentData });
   } catch (err) {
     console.error(err);
     res.json({ error: "An error occurred while retrieving appointments." });
@@ -218,7 +222,7 @@ const myPatients = async (req, res) => {
       .exec();
     const uniquePatientsSet = new Set();
     appointments.forEach((appointment) => {
-      if (appointment.patient !== null) {
+      if (appointment.patient) {
         uniquePatientsSet.add(appointment.patient._id.toString());
       }
     });
@@ -416,20 +420,18 @@ const viewDoctorAppointments = async (req, res) => {
 };
 
 const addAppointmentSlots = async (req, res) => {
-  const doctorID = req.user._id;
-  const doctor = await doctorModel.findById(doctorID);
-  if (doctor.status === "accepted") {
-    const combinedDateTimeString = `${req.body.date}T${req.body.time}`;
-    const date = new Date(combinedDateTimeString);
-    const minTime = new Date(date.getTime() - 60 * 60 * 1000);
-    const maxTime = new Date(date.getTime() + 60 * 60 * 1000);
-    const existingAppointment = await appointmentModel.findOne({
-      doctor: doctor._id,
-      date: { $gt: minTime, $lt: maxTime },
-    });
-    if (existingAppointment) {
-      res.json("There is already an appointment at this time");
-    } else {
+  try {
+    const doctorID = req.user._id;
+    const doctor = await doctorModel.findById(doctorID);
+    if (doctor.status === "accepted") {
+      const combinedDateTimeString = `${req.body.date}T${req.body.time}`;
+      const date = new Date(combinedDateTimeString);
+      const minTime = new Date(date.getTime() - 60 * 60 * 1000);
+      const maxTime = new Date(date.getTime() + 60 * 60 * 1000);
+      const existingAppointment = await appointmentModel.findOne({
+        doctor: doctor._id,
+        date: { $gt: minTime, $lt: maxTime },
+      });
       if (req.body.patientID) {
         const clinicMarkup = process.env.CLINIC_MARKUP;
         let discount = 1;
@@ -442,12 +444,14 @@ const addAppointmentSlots = async (req, res) => {
             .catch((err) => console.log(err.message));
           discount = 1 - healthPackage.doctorDiscount / 100;
         }
+        // console.log(doctor.hourlyRate);
         const appointment = await appointmentModel.create({
           doctor: doctor._id,
           date,
           status: "upcoming",
           patient: new mongoose.Types.ObjectId(req.body.patientID),
           price: (doctor.hourlyRate + (10 / 100) * clinicMarkup) * discount,
+          attendantName: patient.name,
         });
         await prescriptionModel.create({
           doctor: doctor._id,
@@ -461,9 +465,11 @@ const addAppointmentSlots = async (req, res) => {
           status: "free",
         });
       }
-      res.send("Appointment created successfully");
-    }
-  } else res.json("Please review your employment contract.");
+      res.json({ succes: true, title: "Appointment Created Successfully" });
+    } else res.json("Please review your employment contract.");
+  } catch (error) {
+    res.json({ message: error.message });
+  }
 };
 
 const createAppointment = async (req, res) => {
@@ -599,7 +605,7 @@ const approveRequest = async (req, res) => {
     appointment.status = "upcoming";
     await appointment.save();
 
-    return res.json("Request approved successfully.");
+    return res.json({ success: true, title: "Request approved successfully." });
   } catch (error) {
     return res.json();
   }
@@ -610,6 +616,60 @@ const doctorRetrieveNotifications = async (req, res) => {
     Id: req.user._id.toString(),
   });
   return res.json(notifications);
+};
+
+const rescheduleAppointmentForPatient = async (req, res) => {
+  const doctorID = req.user._id;
+  //const doctorID = "65496e4a5c31c981636dc271";
+  const { appointmentId, newDate } = req.body;
+  // console.log(req.body)
+  const currentDate = new Date();
+
+  try {
+    // Check if the appointment exists and belongs to the doctor
+    const appointment = await appointmentModel.findOne({
+      _id: appointmentId,
+      doctor: doctorID,
+    });
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    const newDateTime = new Date(newDate);
+    if (newDateTime < currentDate) {
+      return res
+        .status(400)
+        .json({
+          error: "Invalid reschedule date. Please choose a future date.",
+        });
+    }
+
+    // Check if new date is available
+    const conflictingAppointment = await appointmentModel.findOne({
+      doctor: doctorID,
+      date: newDate,
+      _id: { $ne: appointmentId },
+    });
+
+    if (conflictingAppointment) {
+      return res
+        .status(400)
+        .json({ message: "The new date and time are not available" });
+    }
+
+    if (appointment.status == "upcoming") {
+      // Update the appointment date
+      appointment.date = newDate;
+      await appointment.save();
+
+      res.json({ title: "Appointment rescheduled successfully", appointment });
+    } else {
+      res.status(400).json({ message: "Appointment's Status is not Upcoming" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
+  }
 };
 
 module.exports = {
@@ -635,4 +695,5 @@ module.exports = {
   deleteFromPrescription,
   approveRequest,
   doctorRetrieveNotifications,
+  rescheduleAppointmentForPatient,
 };
