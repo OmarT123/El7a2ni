@@ -193,7 +193,7 @@ const {
   deleteFromPrescription,
   approveRequest,
   doctorRetrieveNotifications,
-  rescheduleAppointmentForPatient
+  rescheduleAppointmentForPatient,
 } = require("./Routes/doctorController");
 
 const {
@@ -209,7 +209,7 @@ const {
   pharmacistRetrieveNotifications,
   getSaleReport,
   getMonthlyMedicineReport,
-  setPrescriptionMedicine
+  setPrescriptionMedicine,
 } = require("./Routes/pharmacistController");
 
 const {
@@ -262,7 +262,8 @@ const {
   getMessages,
   patientRetrieveNotifications,
   payWithWalletCart,
-  payWithCardCart
+  payWithCardCart,
+  rescheduleAppointmentAsPatient,
 } = require("./Routes/patientController");
 
 const {
@@ -358,6 +359,11 @@ app.get("/viewPharmacist", getUserFromTokenMiddleware, getPharmacist);
 
 //Patient
 app.post("/addFamilyMember", getUserFromTokenMiddleware, createFamilyMember);
+app.put(
+  "/rescheduleAppointmentAsPatient",
+  getUserFromTokenMiddleware,
+  rescheduleAppointmentAsPatient
+);
 app.get(
   "/searchDoctor",
   getUserFromTokenMiddleware,
@@ -391,7 +397,11 @@ app.get(
 );
 app.get("/selectPrescription", getUserFromTokenMiddleware, selectPrescription);
 app.get("/allDoctors", getUserFromTokenMiddleware, getDoctors);
-app.get("/viewPatientAppointments", viewPatientAppointments);
+app.get(
+  "/viewPatientAppointments",
+  getUserFromTokenMiddleware,
+  viewPatientAppointments
+);
 app.post("/linkFamilyMember", linkFamilyMemberAccount);
 app.get(
   "/viewMySubscribedHealthPackage",
@@ -468,7 +478,11 @@ app.get("/payWithWalletCart", getUserFromTokenMiddleware, payWithWalletCart);
 app.get("/payWithCardCart", getUserFromTokenMiddleware, payWithCardCart);
 
 //Doctor
-app.put('/rescheduleAppointmentForPatient',getUserFromTokenMiddleware,rescheduleAppointmentForPatient)
+app.put(
+  "/rescheduleAppointmentForPatient",
+  getUserFromTokenMiddleware,
+  rescheduleAppointmentForPatient
+);
 app.get(
   "/filterAppointmentsForDoctor",
   getUserFromTokenMiddleware,

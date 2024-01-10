@@ -712,20 +712,32 @@ const filterAppointmentsForPatient = async (req, res) => {
       .find(filterQuery)
       .populate({ path: "doctor" });
     if (filteredAppointments.length === 0) {
-      return res.json("No matching appointments found for the Patient.");
+      return res.json({
+        success: false,
+        title: "No matching appointments found for the Patient.",
+      });
     }
     const currentDate = new Date();
     let upcomingAppointments = [];
-    let pastAppointments = [];
+    let cancelledAppointments = [];
+    let completedAppointments = [];
+    let requestedAppointments = [];
     for (appointment of filteredAppointments) {
-      if (appointment.date < currentDate) pastAppointments.push(appointment);
-      else upcomingAppointments.push(appointment);
+      if (appointment.status === "upcoming")
+        upcomingAppointments.push(appointment);
+      else if (appointment.status === "cancelled")
+        cancelledAppointments.push(appointment);
+      else if (appointment.status === "completed")
+        completedAppointments.push(appointment);
+      else requestedAppointments.push(appointment);
     }
     const appointmentData = {
       upcomingAppointments,
-      pastAppointments,
+      cancelledAppointments,
+      completedAppointments,
+      requestedAppointments,
     };
-    res.json(appointmentData);
+    res.json({ success: true, appointmentData });
   } catch (err) {
     console.error(err);
     res.json({ error: "An error occurred while retrieving appointments." });
@@ -957,26 +969,42 @@ const ViewMyWallet = async (req, res) => {
 
 const viewPatientAppointments = async (req, res) => {
   try {
-    const patientID = req.query.id;
+    const patientID = req.user._id;
     const currentDate = new Date();
 
     const upcomingAppointments = await appointmentModel
       .find({
         patient: patientID,
-        date: { $gte: currentDate },
+        status: "upcoming",
       })
       .populate({ path: "doctor" });
 
     const pastAppointments = await appointmentModel
       .find({
         patient: patientID,
-        date: { $lt: currentDate },
+        status: "cancelled",
+      })
+      .populate({ path: "doctor" });
+
+    const completedAppointments = await appointmentModel
+      .find({
+        patient: patientID,
+        status: "completed",
+      })
+      .populate({ path: "doctor" });
+
+    const requestedAppointments = await appointmentModel
+      .find({
+        patient: patientID,
+        status: "requested",
       })
       .populate({ path: "doctor" });
 
     const appointmentData = {
       upcomingAppointments,
       pastAppointments,
+      completedAppointments,
+      requestedAppointments,
     };
 
     res.status(200).json(appointmentData);
@@ -984,6 +1012,61 @@ const viewPatientAppointments = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+/*
+const viewDoctorAppointments = async (req, res) => {
+  try {
+    const doctorID = req.user._id;
+
+    const upcomingAppointments = await appointmentModel
+      .find({
+        doctor: doctorID,
+        status: "upcoming",
+      })
+      .populate({ path: "patient" });
+
+    const pastAppointments = await appointmentModel
+      .find({
+        doctor: doctorID,
+        status: "cancelled",
+      })
+      .populate({ path: "patient" });
+
+    const freeAppointments = await appointmentModel
+      .find({
+        doctor: doctorID,
+        status: "free",
+      })
+      .populate({ path: "patient" });
+
+    const completedAppointments = await appointmentModel
+      .find({
+        doctor: doctorID,
+        status: "completed",
+      })
+      .populate({ path: "patient" });
+
+    const requestedAppointments = await appointmentModel
+      .find({
+        doctor: doctorID,
+        status: "requested",
+      })
+      .populate({ path: "patient" });
+
+    const appointmentData = {
+      upcomingAppointments,
+      pastAppointments,
+      freeAppointments,
+      completedAppointments,
+      requestedAppointments,
+    };
+
+    res.status(200).json(appointmentData);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+*/
 
 const payWithCardCart = async (req, res) => {
   const id = req.user._id;
@@ -1109,18 +1192,19 @@ const payWithCard = async (req, res) => {
 const payWithWallet = async (req, res) => {
   const patientId = req.user._id;
   const price = req.query.price;
-  const url = req.query.url;
-  const type = req.query.type;
+  // const url = req.query.url;
+  // const type = req.query.type;
   try {
     const patient = await patientModel.findById(patientId);
+    console.log(patient.wallet, price)
     if (patient.wallet < price) {
-      return res.json({ success: false, message: "Insufficient funds!" });
+      return res.json({ success: false, title: "Insufficient funds!" });
     }
     const newWallet = patient.wallet - price;
-    const updatedPatient = await patientModel.findByIdAndUpdate(patient._id, {
+    await patientModel.findByIdAndUpdate(patient._id, {
       wallet: newWallet,
     });
-    res.json({ success: true, url: `/${url}` });
+    res.json({ success: true });
   } catch (err) {
     res.json(err.message);
   }
@@ -1248,6 +1332,7 @@ const reserveAppointment = async (req, res) => {
   const patientId = req.user._id;
   const appointmentId = req.body.appointmentId;
   const name = req.body.name;
+  const date = req.body.date;
   const app = await appointmentModel.findById(appointmentId);
   const doctorID = app.doctor;
   const doctor = await doctorModel.findById(doctorID);
@@ -1264,18 +1349,25 @@ const reserveAppointment = async (req, res) => {
   }
   let appointment;
   try {
-    if (followup)
-      appointment = await appointmentModel.findByIdAndUpdate(
-        appointmentId,
-        {
-          patient: new mongoose.Types.ObjectId(patientId),
-          status: "requested",
-          attendantName: name,
-          price: (doctor.hourlyRate + (10 / 100) * clinicMarkup) * discount,
-        },
-        { new: true }
-      );
-    else
+    if (followup) {
+      // appointment = await appointmentModel.findByIdAndUpdate(
+      //   appointmentId,
+      //   {
+      //     patient: new mongoose.Types.ObjectId(patientId),
+      //     status: "requested",
+      //     attendantName: name,
+      //     price: (doctor.hourlyRate + (10 / 100) * clinicMarkup) * discount,
+      //   },
+      //   { new: true }
+      appointment = await appointmentModel.create({
+        patient: new mongoose.Types.ObjectId(patientId),
+        doctor: new mongoose.Types.ObjectId(doctorID),
+        status: "requested",
+        date: date,
+        attendantName: name,
+        price: (doctor.hourlyRate + (10 / 100) * clinicMarkup) * discount,
+      });
+    } else
       appointment = await appointmentModel.findByIdAndUpdate(
         appointmentId,
         {
@@ -1289,7 +1381,7 @@ const reserveAppointment = async (req, res) => {
     await prescriptionModel.create({
       doctor: appointment.doctor,
       patient: new mongoose.Types.ObjectId(patientId),
-      appointment: appointmentId,
+      appointment: appointment._id,
     });
     const expiryTime = new Date();
     const notificationDate = new Date();
@@ -1322,13 +1414,13 @@ const reserveAppointment = async (req, res) => {
     });
     const mailOptionsPatient = {
       from: process.env.NODEMAILER_EMAIL,
-      to: appointment.patient.email,
+      to: patient.email,
       subject: "Appointment Booked",
       text: `You have booked an appointment with Dr.${doctor.name} on ${appointment.date}.`,
     };
     const mailOptionsDoctor = {
       from: process.env.NODEMAILER_EMAIL,
-      to: appointment.doctor.email,
+      to: doctor.email,
       subject: "Appointment Scheduled",
       text: `A new appointment at date ${appointment.date} with patient ${name} has been scheduled.`,
     };
@@ -1338,7 +1430,10 @@ const reserveAppointment = async (req, res) => {
     } catch (error) {
       console.error("Error sending email:", error);
     }
-    res.json("updated Successfully");
+    res.json({
+      success: true,
+      title: date ? "Created Successfully" : "Updated Successfully",
+    });
   } catch (err) {
     res.json(err.message);
   }
@@ -1668,13 +1763,17 @@ const cancelAppointment = async (req, res) => {
     if (oldStatus === "free") {
       return res.json({ success: true, title: "Slot Removed" });
     }
-
+    // console.log(appointment)
     const appointmentDate = new Date(appointment.date);
     const currentDate = new Date();
     const timeDifference = appointmentDate - currentDate;
     const isWithin24Hours = timeDifference < 24 * 60 * 60 * 1000;
     const doctor = await doctorModel.findById(req.user._id);
-    if (oldStatus !== "free" && (!isWithin24Hours || doctor)) {
+    if (
+      oldStatus !== "free" &&
+      appointment.price &&
+      (!isWithin24Hours || doctor)
+    ) {
       const patientID = appointment.patient;
       const patient = await patientModel.findById(patientID);
       patient.wallet += appointment.price;
@@ -1700,6 +1799,7 @@ const cancelAppointment = async (req, res) => {
       expiryTime,
       notificationDate
     );
+    // console.log('done')
     const transporter = nodemailer.createTransport({
       service: process.env.NODEMAILER_SERVICE,
       auth: {
@@ -1726,12 +1826,13 @@ const cancelAppointment = async (req, res) => {
       await transporter.sendMail(mailOptionsPatient);
       await transporter.sendMail(mailOptionsDoctor);
     } catch (error) {
-      console.error("Error sending email:", error);
+      console.log("Error sending email:", error);
     }
 
     return res.json({ success: true, title: "Appointment Cancelled" });
   } catch (error) {
-    return res.json();
+    console.log(error.message);
+    return res.json({ message: "error" });
   }
 };
 
@@ -1802,7 +1903,10 @@ const addPrescriptionToCart = async (req, res) => {
   }
   prescription.sentToPharmacy = true;
   await prescription.save();
-  res.json({ success: true, message: "Prescriptions items added to cart successfully." });
+  res.json({
+    success: true,
+    message: "Prescriptions items added to cart successfully.",
+  });
   //end here
 };
 
@@ -1964,6 +2068,68 @@ const patientRetrieveNotifications = async (req, res) => {
   return res.json(notifications);
 };
 
+const rescheduleAppointmentAsPatient = async (req, res) => {
+  try {
+    const { appointmentId, newDate } = req.body;
+    const patientId = req.user._id;
+    //const patientId = "65775548b35fbc02783d8d9f";
+    const currentDate = new Date();
+
+    const appointment = await appointmentModel
+      .findById(appointmentId)
+      .populate("doctor");
+    if (!appointment) {
+      return res.json({ error: "Appointment not found." });
+    }
+
+    const newDateTime = new Date(newDate);
+
+    if (newDateTime <= currentDate) {
+      return res.json({
+        success: false,
+        title: "Cant Reschedule",
+        message: "Please only select a time slot in the future",
+      });
+    }
+
+    // Check for availability at the new date and time
+    const isAvailable = await checkAppointmentAvailability(
+      appointment.doctor._id,
+      newDateTime
+    );
+    //const isAvailable = await checkAppointmentAvailability(appointment.doctorId, newDateTime);
+
+    if (!isAvailable) {
+      return res.json({
+        success: false,
+        title: "Could Not Reserve",
+        message:
+          "Selected date and time is not available. Please choose another.",
+      });
+    }
+
+    // Update the appointment date
+    appointment.date = newDateTime;
+    await appointment.save();
+
+    res.json({ success: true, title: "Appointment Rescheduled" });
+  } catch (err) {
+    console.log(err);
+    res.json({ error: err.message });
+  }
+};
+
+// Helper function to check appointment availability
+const checkAppointmentAvailability = async (doctorId, newDateTime) => {
+  const existingAppointment = await appointmentModel.findOne({
+    doctor: doctorId,
+    date: newDateTime,
+    status: "free",
+  });
+
+  return !existingAppointment;
+};
+
 module.exports = {
   createFamilyMember,
   searchForDoctorByNameSpeciality,
@@ -2015,4 +2181,5 @@ module.exports = {
   patientRetrieveNotifications,
   payWithWalletCart,
   payWithCardCart,
+  rescheduleAppointmentAsPatient,
 };
