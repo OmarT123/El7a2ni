@@ -315,7 +315,7 @@ const MedicineView = ({ userType, setPage }) => {
             <Typography variant="h4" sx={{ m: "30px" }}>
               Medicine
             </Typography>
-           { userType !== "patient" && <Fab
+           { userType === "pharmacist" && <Fab
               style={buttonStyle}
               onClick={() => setAddMedicineExpanded((prev) => !prev)}
             >
@@ -325,7 +325,7 @@ const MedicineView = ({ userType, setPage }) => {
                 <AddIcon style={iconStyle} />
               )}
             </Fab>}
-            {userType !== "patient" && !salesReportDateExpanded && !addMedicineExpanded && <Button variant="contained" sx={{ m: "30px", marginLeft: '200px' }} onClick={handleSalesReportClick}>
+            {userType !== "patient" && !salesReportDateExpanded && !addMedicineExpanded && <Button variant="contained" sx={{ m: "30px", marginLeft: '800px' }} onClick={handleSalesReportClick}>
               Sales Report
             </Button>}
             {userType === "patient" && <ShoppingCartIcon onClick={()=>setPage('MyCart')} sx={{ marginLeft: '860px', marginTop:"35px", cursor:"pointer" }}/>}
