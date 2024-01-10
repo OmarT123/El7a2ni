@@ -335,25 +335,50 @@ const ViewDoctorWallet = async (req, res) => {
 const viewDoctorAppointments = async (req, res) => {
   try {
     const doctorID = req.user._id;
-    const currentDate = new Date();
+  
 
     const upcomingAppointments = await appointmentModel
       .find({
         doctor: doctorID,
-        date: { $gte: currentDate },
+        status: "upcoming",
       })
       .populate({ path: "patient" });
 
     const pastAppointments = await appointmentModel
       .find({
         doctor: doctorID,
-        date: { $lt: currentDate },
+        status: "cancelled",
+      })
+      .populate({ path: "patient" });
+
+      const freeAppointments = await appointmentModel
+      .find({
+        doctor: doctorID,
+        status: "free",
+      })
+      .populate({ path: "patient" });
+
+
+      const completedAppointments = await appointmentModel
+      .find({
+        doctor: doctorID,
+        status: "completed",
+      })
+      .populate({ path: "patient" });
+
+      const requestedAppointments = await appointmentModel
+      .find({
+        doctor: doctorID,
+        status: "requested",
       })
       .populate({ path: "patient" });
 
     const appointmentData = {
       upcomingAppointments,
       pastAppointments,
+      freeAppointments,
+      completedAppointments,
+      requestedAppointments
     };
 
     res.status(200).json(appointmentData);
