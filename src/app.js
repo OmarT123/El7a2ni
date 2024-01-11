@@ -264,6 +264,7 @@ const {
   rescheduleAppointmentAsPatient,
   getSocketId,
   updateSocketId,
+  ViewAllFamilyMembers
 } = require("./Routes/patientController");
 
 const {
@@ -358,6 +359,7 @@ app.get("/viewAllPharmacists", getUserFromTokenMiddleware, viewAllPharmacists);
 app.get("/viewPharmacist", getUserFromTokenMiddleware, getPharmacist);
 
 //Patient
+app.get('/viewAllFamilyMembers',getUserFromTokenMiddleware, ViewAllFamilyMembers)
 app.put("/updateSocketId",getUserFromTokenMiddleware ,updateSocketId);
 app.get("/getSocketId",getSocketId);
 app.get("/getUniqueCode",getUserFromTokenMiddleware,getUniqueCode);
@@ -408,7 +410,7 @@ app.get(
   getUserFromTokenMiddleware,
   viewPatientAppointments
 );
-app.post("/linkFamilyMember", linkFamilyMemberAccount);
+app.post("/linkFamilyMember",getUserFromTokenMiddleware, linkFamilyMemberAccount);
 app.get(
   "/viewMySubscribedHealthPackage",
   getUserFromTokenMiddleware,

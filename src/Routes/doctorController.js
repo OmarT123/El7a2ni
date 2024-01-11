@@ -27,6 +27,8 @@ const createPrescription = async (req, res) => {
     res.send(err.message);
   }
 };
+
+
 //add/update dosage for each medicine added to the prescription
 const addDosage = async (req, res) => {
   try {

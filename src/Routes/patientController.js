@@ -776,6 +776,20 @@ const getFamilyMembers = async (req, res) => {
   }
 };
 
+const ViewAllFamilyMembers = async(req, res) => {
+  try {
+    const patientId = req.user._id;
+    const patient = await patientModel
+      .findById(patientId)
+      .populate({ path: "familyMembers" });
+    // console.log(final)
+    res.json(patient.familyMembers);
+  } catch (err) {
+    console.log(err.message)
+    res.json(err.message);
+  }
+}
+
 const viewMyPrescriptions = async (req, res) => {
   try {
     const patientId = req.user._id;
@@ -1826,16 +1840,16 @@ const deleteHealthRecord = async (req, res) => {
 //New Req.19//
 const linkFamilyMemberAccount = async (req, res) => {
   try {
-    const patientId = new mongoose.Types.ObjectId(req.query.id);
+    const patientId = req.user._id;
     const { email, phone, relationToPatient } = req.body;
 
     // Validate that the relation is restricted to wife/husband/children
-    const allowedRelations = ["wife", "husband", "children"];
-    if (!allowedRelations.includes(relationToPatient)) {
-      return res.json({
-        error: "Invalid relation. Relation must be wife, husband, or children.",
-      });
-    }
+    // const allowedRelations = ["wife", "husband", "children"];
+    // if (!allowedRelations.includes(relationToPatient)) {
+    //   return res.json({
+    //     error: "Invalid relation. Relation must be wife, husband, or children.",
+    //   });
+    // }
 
     // Find the primary patient
     const primaryPatient = await patientModel.findById(patientId);
@@ -2391,5 +2405,6 @@ module.exports = {
   removeOrderPending,
   rescheduleAppointmentAsPatient,
   updateSocketId,
-  getSocketId
+  getSocketId,
+  ViewAllFamilyMembers
 };
