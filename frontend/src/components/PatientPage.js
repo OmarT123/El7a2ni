@@ -40,10 +40,15 @@ const iconStyle = {
 };
 
 const pdfStyle = {
-  display: 'none',
+  display: "none",
 };
 
-const PatientPage = ({ selectedPatient, setSelectedPatient, setAlert, userType }) => {
+const PatientPage = ({
+  selectedPatient,
+  setSelectedPatient,
+  setAlert,
+  userType,
+}) => {
   const [healthRecords, setHealthRecords] = useState(null);
   const [expandUpload, setExpandUpload] = useState(false);
   const [uploadedHealthRecord, setUploadedHealthRecord] = useState("");
@@ -51,40 +56,45 @@ const PatientPage = ({ selectedPatient, setSelectedPatient, setAlert, userType }
   const [medicine, setMedicine] = useState(null);
   const [filterExpanded, setFilterExpanded] = useState(false);
   const [showResetButton, setShowResetButton] = useState(false);
+  const [addMedicineExpanded, setAddMedicineExpanded] = useState("");
 
   const handleFilterExpandClick = () => {
     setFilterExpanded(!filterExpanded);
   };
 
-  const addPresriptionItemstoCart = async(e, prescription) => {
+  const handleAddMedicineExpanded = (item) => {
+    console.log(item._id, addMedicineExpanded);
+    setAddMedicineExpanded(item._id === addMedicineExpanded ? null : item._it);
+  };
+
+  const addPresriptionItemstoCart = async (e, prescription) => {
     e.preventDefault();
-    const body = {prescription: prescription}
-    const response = await axios.post("/addPrescriptionToCart", body)
-    setAlert({title: "", message: response.data.message});
+    const body = { prescription: prescription };
+    const response = await axios.post("/addPrescriptionToCart", body);
+    setAlert({ title: "", message: response.data.message });
     fetchPrescriptions();
-  }
+  };
 
   const PrescriptionItem = ({ prescription, number }) => {
-    const [addMedicineExpanded, setAddMedicineExpanded] = useState("");
     const [selectedMedicineId, setSelectedMedicineId] = useState("");
 
     const prescriptionItemRef = useRef();
 
     const downloadPrescription = async () => {
       // Hide buttons before generating PDF
-      const buttons = document.querySelectorAll('.exclude-from-pdf');
+      const buttons = document.querySelectorAll(".exclude-from-pdf");
       buttons.forEach((button) => {
-        button.style.display = 'none';
+        button.style.display = "none";
       });
 
       const content = prescriptionItemRef.current;
 
       const pdfOptions = {
         margin: 10,
-        filename: 'Prescription.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
+        filename: "Prescription.pdf",
+        image: { type: "jpeg", quality: 0.98 },
         html2canvas: { scale: 2 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
       };
 
       // Generate PDF
@@ -92,10 +102,9 @@ const PatientPage = ({ selectedPatient, setSelectedPatient, setAlert, userType }
 
       // Show buttons again after generating PDF
       buttons.forEach((button) => {
-        button.style.display = 'block';
+        button.style.display = "block";
       });
     };
-
 
     const handleAddMedicine = async (e) => {
       e.preventDefault();
@@ -174,33 +183,42 @@ const PatientPage = ({ selectedPatient, setSelectedPatient, setAlert, userType }
             <Grid item xs={12} sm={3}>
               {med.dosage}x {med.medId.name}
             </Grid>
-            {userType === "doctor" && <> <Grid item xs={12} sm={3}>
-              <TextField
-                fullWidth
-                value={newDosage}
-                type="number"
-                onChange={(e) => setNewDosage(e.target.value)}
-                label="New Dosage"
-                className="exclude-from-pdf" />
-            </Grid><Grid item sm={2} /><Grid item xs={12} sm={2}>
-                <Button
-                  variant="contained"
-                  onClick={(e) => handleDosageUpdate(e, med.medId._id)}
-                  className="exclude-from-pdf"
-                >
-                  Update
-                </Button>
-              </Grid><Grid item xs={12} sm={2}>
-                <Button
-                  variant="contained"
-                  onClick={(e) => {
-                    handleDeleteMedicine(e, prescription._id, med.medId._id);
-                  }}
-                  className="exclude-from-pdf"
-                >
-                  Delete
-                </Button>
-              </Grid></>}
+            {userType === "doctor" && (
+              <>
+                {" "}
+                <Grid item xs={12} sm={3}>
+                  <TextField
+                    fullWidth
+                    value={newDosage}
+                    type="number"
+                    onChange={(e) => setNewDosage(e.target.value)}
+                    label="New Dosage"
+                    className="exclude-from-pdf"
+                  />
+                </Grid>
+                <Grid item sm={2} />
+                <Grid item xs={12} sm={2}>
+                  <Button
+                    variant="contained"
+                    onClick={(e) => handleDosageUpdate(e, med.medId._id)}
+                    className="exclude-from-pdf"
+                  >
+                    Update
+                  </Button>
+                </Grid>
+                <Grid item xs={12} sm={2}>
+                  <Button
+                    variant="contained"
+                    onClick={(e) => {
+                      handleDeleteMedicine(e, prescription._id, med.medId._id);
+                    }}
+                    className="exclude-from-pdf"
+                  >
+                    Delete
+                  </Button>
+                </Grid>
+              </>
+            )}
           </Grid>
         </ListItem>
       );
@@ -211,7 +229,11 @@ const PatientPage = ({ selectedPatient, setSelectedPatient, setAlert, userType }
         ref={prescriptionItemRef}
         sx={{ padding: "20px", display: "flex", flexDirection: "column" }}
       >
-        {prescription.filled && <Button className="exclude-from-pdf" onClick={downloadPrescription}>Download</Button>}
+        {prescription.filled && (
+          <Button className="exclude-from-pdf" onClick={downloadPrescription}>
+            Download
+          </Button>
+        )}
         <Typography variant="h5">Prescription {number + 1}:</Typography>
         {!prescription.filled && (
           <Typography variant="substitute1">Not Filled</Typography>
@@ -227,65 +249,86 @@ const PatientPage = ({ selectedPatient, setSelectedPatient, setAlert, userType }
                 <MedicineItem med={med} index={index} />
               </>
             ))}
-            {prescription && prescription.doctor && <Typography variant="h5">Doctor name: {prescription.doctor.name}</Typography> }
-            {prescription.sentToPharmacy && prescription.filled && <Typography variant="substitute1">This prescription has been sent to cart before.</Typography>}
-            {!prescription.sentToPharmacy && prescription.filled && <Button variant="contained" sx={{ mt: "10px" }} onClick={(e) => addPresriptionItemstoCart(e, prescription._id)}>Add Prescription Items to Cart</Button>}
-        </List>
-        {userType === "doctor" && <><Button
-          variant="contained"
-          sx={{ mt: "10px" }}
-          className="exclude-from-pdf"
-          onClick={() => setAddMedicineExpanded((prev) => !prev)}
-        >
-          {prescription.filled ? "Add Medicine" : "Fill Prescription"}
-        </Button><Collapse in={addMedicineExpanded}>
-            <Grid
-              container
-              spacing={3}
-              sx={{ mt: 2 }}
-              component="form"
-              noValidate
-              onSubmit={handleAddMedicine}
+          {prescription && prescription.doctor && (
+            <Typography variant="h5">
+              Doctor name: {prescription.doctor.name}
+            </Typography>
+          )}
+          {prescription.sentToPharmacy && prescription.filled && (
+            <Typography variant="substitute1">
+              This prescription has been sent to cart before.
+            </Typography>
+          )}
+          {!prescription.sentToPharmacy && prescription.filled && (
+            <Button
+              variant="contained"
+              sx={{ mt: "10px" }}
+              onClick={(e) => addPresriptionItemstoCart(e, prescription._id)}
             >
-              <Grid item xs={12} sm={6}>
-                <InputLabel id="select-label">Select Option</InputLabel>
-                <Select
-                  fullWidth
-                  labelId="select-label"
-                  id="select"
-                  value={selectedMedicineId}
-                  onChange={(e) => setSelectedMedicineId(e.target.value)}
-                  label="Select Medicine"
-                >
-                  {medicine &&
-                    medicine.map((med) => (
-                      <MenuItem value={med._id} sx={{ maxHeight: "50px" }}>
-                        <img
-                          src={med.picture}
-                          height="40px"
-                          width="50px"
-                          style={{ marginRight: "30px" }} />{" "}
-                        {med.name}
-                      </MenuItem>
-                    ))}
-                </Select>
+              Add Prescription Items to Cart
+            </Button>
+          )}
+        </List>
+        {userType === "doctor" && (
+          <>
+            <Button
+              variant="contained"
+              sx={{ mt: "10px" }}
+              className="exclude-from-pdf"
+              onClick={(e) => handleAddMedicineExpanded(prescription)}
+            >
+              {prescription.filled ? "Add Medicine" : "Fill Prescription"}
+            </Button>
+              <Grid
+                container
+                spacing={3}
+                sx={{ mt: 2 }}
+                component="form"
+                noValidate
+                onSubmit={handleAddMedicine}
+              >
+                <Grid item xs={12} sm={6}>
+                  <InputLabel id="select-label">Select Option</InputLabel>
+                  <Select
+                    fullWidth
+                    labelId="select-label"
+                    id="select"
+                    value={selectedMedicineId}
+                    onChange={(e) => setSelectedMedicineId(e.target.value)}
+                    label="Select Medicine"
+                  >
+                    {medicine &&
+                      medicine.map((med) => (
+                        <MenuItem value={med._id} sx={{ maxHeight: "50px" }}>
+                          <img
+                            src={med.picture}
+                            height="40px"
+                            width="50px"
+                            style={{ marginRight: "30px" }}
+                          />{" "}
+                          {med.name}
+                        </MenuItem>
+                      ))}
+                  </Select>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    id="dosage"
+                    type="number"
+                    label="Dosage"
+                    name="dosage"
+                    sx={{ mt: 3 }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Button variant="contained" type="submit">
+                    Add
+                  </Button>
+                </Grid>
               </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  id="dosage"
-                  type="number"
-                  label="Dosage"
-                  name="dosage"
-                  sx={{ mt: 3 }} />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Button variant="contained" type="submit">
-                  Add
-                </Button>
-              </Grid>
-            </Grid>
-          </Collapse></>}
+          </>
+        )}
       </Paper>
     );
   };
@@ -358,8 +401,11 @@ const PatientPage = ({ selectedPatient, setSelectedPatient, setAlert, userType }
 
   const fetchMedicine = async () => {
     try {
+      console.log("before");
       const res = await axios.get("/viewMedicineUser");
+      console.log("after");
       const medicinesData = res.data;
+      console.log(res.data);
       setMedicine(medicinesData);
     } catch (error) {
       console.error("Error fetching medicines:", error);
@@ -380,28 +426,29 @@ const PatientPage = ({ selectedPatient, setSelectedPatient, setAlert, userType }
   const handleSubmit = async (e) => {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
-    const body = {}
+    const body = {};
     const date = data.get("FilterDate");
     const filled = data.get("filled");
     const doctor = data.get("doctor");
     if (!date && !filled && !doctor)
-      return setAlert({ title: "Missing fields", message: "You have to select at least one element to filter." })
-    if (date)
-      body["date"] = date;
+      return setAlert({
+        title: "Missing fields",
+        message: "You have to select at least one element to filter.",
+      });
+    if (date) body["date"] = date;
     if (filled === "true" || filled === "false")
-      body["filled"] = filled === "true" ? true : false
-    if (doctor)
-      body["doctor"] = doctor
-    const response = await axios.get("/filterPrescriptionByDateDoctorStatus", { params: body });
-    if(response.data.success){
+      body["filled"] = filled === "true" ? true : false;
+    if (doctor) body["doctor"] = doctor;
+    const response = await axios.get("/filterPrescriptionByDateDoctorStatus", {
+      params: body,
+    });
+    if (response.data.success) {
       setShowResetButton(true);
       setPrescriptions(response.data.prescriptions);
+    } else {
+      setAlert({ title: "", message: response.data.message });
     }
-    else {
-      setAlert({title:"", message: response.data.message})
-    }
-    
-  }
+  };
 
   const handleResetSearchClick = async () => {
     setPrescriptions("");
@@ -411,103 +458,110 @@ const PatientPage = ({ selectedPatient, setSelectedPatient, setAlert, userType }
   };
 
   useEffect(() => {
+    console.log("patient profile");
     fetchHealthRecords();
+    console.log("hr fetched");
+    fetchMedicine();
+    console.log("med fetched");
     if (userType === "doctor") {
       fetchPrescriptions();
-      fetchMedicine();
-    }
-    else {
+    } else {
       fetchPatientPrescriptions();
     }
-  }, [prescriptions]);
+  }, []);
 
   return (
     <>
-      <Typography variant="h3" sx={{ textAlign: 'center' }}>My Medical Folder</Typography>
+      <Typography variant="h3" sx={{ textAlign: "center" }}>
+        My Medical Folder
+      </Typography>
       <Container maxWidth="md" sx={{ height: "100%", marginTop: 15 }}>
-        {userType === "doctor" && <Box
-          sx={{ display: "flex", flexDirection: "row", alignItems: "center" }}
-        >
-          <Avatar
-            sx={{ width: 200, height: 200 }}
-            alt={"Profile"}
-            src="profile.jpg"
-          />
-          <Box sx={{ width: "300px" }} />
-          <Grid
-            container
-            sx={{ width: "1000px" }}
-            spacing={3}
-            justifyContent="center"
+        {userType === "doctor" && (
+          <Box
+            sx={{ display: "flex", flexDirection: "row", alignItems: "center" }}
           >
-            <Grid item xs={12} sm={12} align="center">
-              <Typography variant="h4">
-                {selectedPatient.name && selectedPatient.name.toUpperCase()}
-              </Typography>
-              <Typography
-                variant={selectedPatient.name ? "subtitle1" : "h4"}
-                sx={{ color: "#555" }}
-              >
-                {selectedPatient.username}
-              </Typography>
-            </Grid>
-            <Grid item xs={12} sm={6} align="left">
-              {selectedPatient.email && (
-                <Typography variant="subtitle1">
-                  <strong>Email:</strong> {selectedPatient.email}
-                </Typography>
-              )}
-            </Grid>
-            <Grid item xs={12} sm={6} align="left">
-              {selectedPatient.birthDate && (
-                <Typography variant="subtitle1">
-                  <strong>Birthdate:</strong>
-                  {new Date(selectedPatient.birthDate).toLocaleDateString(
-                    "en-US",
-                    {
-                      year: "numeric",
-                      month: "2-digit",
-                      day: "2-digit",
-                    }
-                  )}
-                </Typography>
-              )}
-            </Grid>
-            <Grid item xs={0} sm={12} />
-            <Grid item xs={12} sm={6} align="left">
-              {selectedPatient.gender && (
-                <Typography variant="subtitle1">
-                  <strong>Gender:</strong>
-                  {selectedPatient.gender}
-                </Typography>
-              )}
-            </Grid>
-            <Grid item xs={12} sm={6} align="left">
-              {selectedPatient.mobileNumber && (
-                <Typography variant="subtitle1">
-                  <strong>Phone Number:</strong> {selectedPatient.mobileNumber}
-                </Typography>
-              )}
-            </Grid>
-            <Grid item sm={12} />
+            <Avatar
+              sx={{ width: 200, height: 200 }}
+              alt={"Profile"}
+              src="profile.jpg"
+            />
+            <Box sx={{ width: "300px" }} />
             <Grid
-              item
-              xs={12}
-              sm={selectedPatient.emergencyContact ? 12 : 6}
-              align={selectedPatient.emergencyContact ? "center" : "left"}
+              container
+              sx={{ width: "1000px" }}
+              spacing={3}
+              justifyContent="center"
             >
-              {selectedPatient.emergencyContact && (
-                <Typography variant="subtitle1">
-                  <strong>Emergency Contact:</strong>{" "}
-                  {selectedPatient.emergencyContact.name} (
-                  {selectedPatient.emergencyContact.relation}),{" "}
-                  {selectedPatient.emergencyContact.mobileNumber}
+              <Grid item xs={12} sm={12} align="center">
+                <Typography variant="h4">
+                  {selectedPatient.name && selectedPatient.name.toUpperCase()}
                 </Typography>
-              )}
+                <Typography
+                  variant={selectedPatient.name ? "subtitle1" : "h4"}
+                  sx={{ color: "#555" }}
+                >
+                  {selectedPatient.username}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={6} align="left">
+                {selectedPatient.email && (
+                  <Typography variant="subtitle1">
+                    <strong>Email:</strong> {selectedPatient.email}
+                  </Typography>
+                )}
+              </Grid>
+              <Grid item xs={12} sm={6} align="left">
+                {selectedPatient.birthDate && (
+                  <Typography variant="subtitle1">
+                    <strong>Birthdate:</strong>
+                    {new Date(selectedPatient.birthDate).toLocaleDateString(
+                      "en-US",
+                      {
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                      }
+                    )}
+                  </Typography>
+                )}
+              </Grid>
+              <Grid item xs={0} sm={12} />
+              <Grid item xs={12} sm={6} align="left">
+                {selectedPatient.gender && (
+                  <Typography variant="subtitle1">
+                    <strong>Gender:</strong>
+                    {selectedPatient.gender}
+                  </Typography>
+                )}
+              </Grid>
+              <Grid item xs={12} sm={6} align="left">
+                {selectedPatient.mobileNumber && (
+                  <Typography variant="subtitle1">
+                    <strong>Phone Number:</strong>{" "}
+                    {selectedPatient.mobileNumber}
+                  </Typography>
+                )}
+              </Grid>
+              <Grid item sm={12} />
+              <Grid
+                item
+                xs={12}
+                sm={selectedPatient.emergencyContact ? 12 : 6}
+                align={selectedPatient.emergencyContact ? "center" : "left"}
+              >
+                {selectedPatient.emergencyContact && (
+                  <Typography variant="subtitle1">
+                    <strong>Emergency Contact:</strong>{" "}
+                    {selectedPatient.emergencyContact.name} (
+                    {selectedPatient.emergencyContact.relation}),{" "}
+                    {selectedPatient.emergencyContact.mobileNumber}
+                  </Typography>
+                )}
+              </Grid>
+              <Grid item xs={0} sm={6} />
             </Grid>
-            <Grid item xs={0} sm={6} />
-          </Grid>
-        </Box>}
+          </Box>
+        )}
         <hr />
         <Typography variant="h5" sx={{ my: "30px" }}>
           Health Records
@@ -555,21 +609,33 @@ const PatientPage = ({ selectedPatient, setSelectedPatient, setAlert, userType }
         <Typography variant="h5" sx={{ my: "30px", mr: "30px" }}>
           Prescriptions
         </Typography>
-        {userType === "patient" && !filterExpanded && !showResetButton && <Button variant="contained" sx={{ marginLeft: '600px' , marginTop:'-125px'}} onClick={handleFilterExpandClick}>
-          Filter Prescriptions
-        </Button>}
-        <Box component={"form"} onSubmit={(e) => handleSubmit(e)} sx={{ display: 'flex', alignItems: 'center' }}>
-          {filterExpanded && !showResetButton &&
-            <><TextField
-              id="FilterDate"
-              label="Flter by Date"
-              type="date"
-              placeholder="Filter by Date"
-              name="FilterDate"
-              InputLabelProps={{
-                shrink: true,
-              }}
-              sx={{ width: "100%", marginLeft: '100px'}} />
+        {userType === "patient" && !filterExpanded && !showResetButton && (
+          <Button
+            variant="contained"
+            sx={{ marginLeft: "600px", marginTop: "-125px" }}
+            onClick={handleFilterExpandClick}
+          >
+            Filter Prescriptions
+          </Button>
+        )}
+        <Box
+          component={"form"}
+          onSubmit={(e) => handleSubmit(e)}
+          sx={{ display: "flex", alignItems: "center" }}
+        >
+          {filterExpanded && !showResetButton && (
+            <>
+              <TextField
+                id="FilterDate"
+                label="Flter by Date"
+                type="date"
+                placeholder="Filter by Date"
+                name="FilterDate"
+                InputLabelProps={{
+                  shrink: true,
+                }}
+                sx={{ width: "100%", marginLeft: "100px" }}
+              />
               <TextField
                 id="filled"
                 label="Choose filled/unfilled"
@@ -578,7 +644,7 @@ const PatientPage = ({ selectedPatient, setSelectedPatient, setAlert, userType }
                 InputLabelProps={{
                   shrink: true,
                 }}
-                sx={{ width: "100%", marginLeft: '50px' }}
+                sx={{ width: "100%", marginLeft: "50px" }}
               >
                 <MenuItem value={true}>Filled</MenuItem>
                 <MenuItem value={false}>Not Filled</MenuItem>
@@ -592,10 +658,10 @@ const PatientPage = ({ selectedPatient, setSelectedPatient, setAlert, userType }
                 InputLabelProps={{
                   shrink: true,
                 }}
-                sx={{ width: "100%", marginLeft: '50px' }}
+                sx={{ width: "100%", marginLeft: "50px" }}
               />
             </>
-          }
+          )}
           {showResetButton && (
             <Button
               variant="outlined"
@@ -612,9 +678,11 @@ const PatientPage = ({ selectedPatient, setSelectedPatient, setAlert, userType }
               Reset Search
             </Button>
           )}
-          {filterExpanded && !showResetButton && <Button variant="contained" sx={{ m: "30px" }} type="submit">
-            Submit
-          </Button>}
+          {filterExpanded && !showResetButton && (
+            <Button variant="contained" sx={{ m: "30px" }} type="submit">
+              Submit
+            </Button>
+          )}
         </Box>
         {prescriptions && (
           <Grid container spacing={3}>
@@ -629,7 +697,7 @@ const PatientPage = ({ selectedPatient, setSelectedPatient, setAlert, userType }
               ))}
           </Grid>
         )}
-      </Container >
+      </Container>
     </>
   );
 };

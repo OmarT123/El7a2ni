@@ -453,6 +453,7 @@ const PatientsView = ({
             selectedPatient={selectedPatient}
             setSelectedPatient={setSelectedPatient}
             setAlert={setAlert}
+            userType="doctor"
           />
         </>
       )}

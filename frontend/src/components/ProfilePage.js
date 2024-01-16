@@ -76,7 +76,7 @@ const ProfilePage = ({ userData }) => {
     phone: "",
     relationToPatient: "",
   });
-  const [patientRelationToPatient, setPatientRelationToPatient] = useState('')
+  const [patientRelationToPatient, setPatientRelationToPatient] = useState("");
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -109,10 +109,14 @@ const ProfilePage = ({ userData }) => {
 
     try {
       const data = new FormData(e.currentTarget);
-      const formData = {phone:data.get('phoneNumber'),email:data.get('patientEmail'), relationToPatient: patientRelationToPatient}
+      const formData = {
+        phone: data.get("phoneNumber"),
+        email: data.get("patientEmail"),
+        relationToPatient: patientRelationToPatient,
+      };
       const response = await axios.post(`/linkFamilyMember`, formData);
-      console.log(response.data)
-      fetchFamilyMembers()
+      console.log(response.data);
+      fetchFamilyMembers();
       // setSuccessMessa//ge(response.data);
     } catch (error) {
       if (error.response && error.response.data && error.response.data.error) {
@@ -232,7 +236,7 @@ const ProfilePage = ({ userData }) => {
               )}
             </Grid>
             <Grid item xs={12} sm={6} align="left">
-              {userData.wallet && (
+              {userData.wallet >= 0 && (
                 <Typography variant="subtitle1">
                   <strong>Wallet:</strong> ${userData.wallet}
                 </Typography>
@@ -441,7 +445,11 @@ const ProfilePage = ({ userData }) => {
                   </Box>
                 </Grid>
                 <Grid item sm={6}>
-                  <Box component="form" noValidate onSubmit={linkPatientAccount}>
+                  <Box
+                    component="form"
+                    noValidate
+                    onSubmit={linkPatientAccount}
+                  >
                     <Grid container spacing={3} sx={{ mt: 3 }}>
                       <Grid item xs={12} sm={6}>
                         <TextField
@@ -469,7 +477,9 @@ const ProfilePage = ({ userData }) => {
                           labelId="relation-label"
                           id="relation"
                           value={patientRelationToPatient}
-                          onChange={(e) => setPatientRelationToPatient(e.target.value)}
+                          onChange={(e) =>
+                            setPatientRelationToPatient(e.target.value)
+                          }
                           label="Select Relation"
                         >
                           <MenuItem value="husband">Husband</MenuItem>

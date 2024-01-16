@@ -151,6 +151,7 @@ const addDoctor = async (req, res) => {
     }
 
     const user = await userModel.findOne({ username });
+    console.log(user)
     if (user) {
       res.json({ success: false, title: "Username already exists" });
     } else {
